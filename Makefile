@@ -47,9 +47,9 @@ build: setup
 # Build for local use without Apple Developer certificate
 local: check setup
 	@echo "Building VoiceInk for local use (no Apple Developer certificate required)..."
-	@rm -rf $(LOCAL_DERIVED_DATA)
+	@rm -rf "$(LOCAL_DERIVED_DATA)"
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
-		-derivedDataPath $(LOCAL_DERIVED_DATA) \
+		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
 		-xcconfig LocalBuild.xcconfig \
 		CODE_SIGN_IDENTITY="-" \
 		CODE_SIGNING_REQUIRED=NO \
