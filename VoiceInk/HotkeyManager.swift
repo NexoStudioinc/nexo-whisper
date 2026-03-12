@@ -354,7 +354,8 @@ class HotkeyManager: ObservableObject {
             fnDebounceTask?.cancel()
             fnDebounceTask = Task { [pendingState = isKeyPressed, pendingTime = eventTime] in
                 try? await Task.sleep(nanoseconds: 75_000_000) // 75ms
-                if pendingFnKeyState == pendingState {
+                guard !Task.isCancelled, pendingFnKeyState == pendingState else { return }
+                Task { @MainActor in
                     await self.processKeyPress(isKeyPressed: pendingState, eventTime: pendingTime, mode: activeMode)
                 }
             }
