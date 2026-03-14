@@ -102,9 +102,6 @@ struct ModelSettingsView: View {
             FillerWordsSettingsView()
 
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(10)
         // Reset the editor when language changes
         .onChange(of: selectedLanguage) { oldValue, newValue in
             if isEditing {

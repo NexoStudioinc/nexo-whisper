@@ -6,161 +6,144 @@ struct EnhancementSettingsView: View {
     @State private var isEditingPrompt = false
     @State private var isShortcutsExpanded = false
     @State private var selectedPromptForEdit: CustomPrompt?
-    
+    @State private var panelID = UUID()
+
+    private let panelWidth: CGFloat = 450
+
     private var isPanelOpen: Bool {
         isEditingPrompt || selectedPromptForEdit != nil
     }
-    
+
+    private func openPanel() {
+        panelID = UUID()
+    }
+
     private func closePanel() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+        withAnimation(.smooth(duration: 0.3)) {
             isEditingPrompt = false
             selectedPromptForEdit = nil
         }
     }
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Form {
-                Section {
-                    Toggle(isOn: $enhancementService.isEnhancementEnabled) {
+        Form {
+            Section {
+                Toggle(isOn: $enhancementService.isEnhancementEnabled) {
+                    HStack(spacing: 4) {
+                        Text("Enable Enhancement")
+                        InfoTip(
+                            "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc.",
+                            learnMoreURL: "https://tryvoiceink.com/docs/enhancements-configuring-models"
+                        )
+                    }
+                }
+                .toggleStyle(.switch)
+
+                HStack(spacing: 24) {
+                    Toggle(isOn: $enhancementService.useClipboardContext) {
                         HStack(spacing: 4) {
-                            Text("Enable Enhancement")
-                            InfoTip(
-                                "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc.",
-                                learnMoreURL: "https://tryvoiceink.com/docs/enhancements-configuring-models"
-                            )
+                            Text("Clipboard Context")
+                            InfoTip("Use clipboard text to understand context for better enhancement.")
                         }
                     }
                     .toggleStyle(.switch)
-                    
-                    HStack(spacing: 24) {
-                        Toggle(isOn: $enhancementService.useClipboardContext) {
-                            HStack(spacing: 4) {
-                                Text("Clipboard Context")
-                                InfoTip("Use clipboard text to understand context for better enhancement.")
-                            }
-                        }
-                        .toggleStyle(.switch)
 
-                        Toggle(isOn: $enhancementService.useScreenCaptureContext) {
-                            HStack(spacing: 4) {
-                                Text("Screen Context")
-                                InfoTip("Capture on-screen text to understand context for better enhancement.")
-                            }
+                    Toggle(isOn: $enhancementService.useScreenCaptureContext) {
+                        HStack(spacing: 4) {
+                            Text("Screen Context")
+                            InfoTip("Capture on-screen text to understand context for better enhancement.")
                         }
-                        .toggleStyle(.switch)
                     }
-                    .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
-                } header: {
-                    Text("General")
-                }
-                
-                APIKeyManagementView()
-                    .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
-                
-                Section {
-                    ReorderablePromptGrid(
-                        selectedPromptId: enhancementService.selectedPromptId,
-                        onPromptSelected: { prompt in
-                            enhancementService.setActivePrompt(prompt)
-                        },
-                        onEditPrompt: { prompt in
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-                                selectedPromptForEdit = prompt
-                            }
-                        },
-                        onDeletePrompt: { prompt in
-                            enhancementService.deletePrompt(prompt)
-                        }
-                    )
-                    .padding(.vertical, 8)
-                } header: {
-                    HStack {
-                        Text("Enhancement Prompts")
-                        Spacer()
-                        Button {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-                                isEditingPrompt = true
-                            }
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 18))
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .help("Add new prompt")
-                    }
+                    .toggleStyle(.switch)
                 }
                 .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
-                
-                Section {
-                    DisclosureGroup(isExpanded: $isShortcutsExpanded) {
-                        EnhancementShortcutsView()
-                            .padding(.vertical, 8)
-                    } label: {
-                        HStack {
-                            Text("Shortcuts")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation {
-                                isShortcutsExpanded.toggle()
-                            }
-                        }
-                    }
-                }
-                .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+            } header: {
+                Text("General")
             }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-            .background(Color(NSColor.controlBackgroundColor))
-            .disabled(isPanelOpen)
-            .blur(radius: isPanelOpen ? 2 : 0)
-            .animation(.spring(response: 0.4, dampingFraction: 0.9), value: isPanelOpen)
-            
-            if isPanelOpen {
-                Color.black.opacity(0.2)
-                    .ignoresSafeArea()
+
+            APIKeyManagementView()
+                .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+
+            Section {
+                ReorderablePromptGrid(
+                    selectedPromptId: enhancementService.selectedPromptId,
+                    onPromptSelected: { prompt in
+                        enhancementService.setActivePrompt(prompt)
+                    },
+                    onEditPrompt: { prompt in
+                        openPanel()
+                        withAnimation(.smooth(duration: 0.3)) {
+                            selectedPromptForEdit = prompt
+                        }
+                    },
+                    onDeletePrompt: { prompt in
+                        enhancementService.deletePrompt(prompt)
+                    }
+                )
+                .padding(.vertical, 8)
+            } header: {
+                HStack {
+                    Text("Enhancement Prompts")
+                    Spacer()
+                    Button {
+                        openPanel()
+                        withAnimation(.smooth(duration: 0.3)) {
+                            isEditingPrompt = true
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Add new prompt")
+                }
+            }
+            .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+
+            Section {
+                DisclosureGroup(isExpanded: $isShortcutsExpanded) {
+                    EnhancementShortcutsView()
+                        .padding(.vertical, 8)
+                } label: {
+                    HStack {
+                        Text("Shortcuts")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
                     .onTapGesture {
+                        withAnimation {
+                            isShortcutsExpanded.toggle()
+                        }
+                    }
+                }
+            }
+            .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .background(Color(NSColor.controlBackgroundColor))
+        .slidingPanel(isPresented: .init(
+            get: { isPanelOpen },
+            set: { newValue in
+                if !newValue { closePanel() }
+            }
+        ), width: panelWidth) {
+            Group {
+                if let prompt = selectedPromptForEdit {
+                    PromptEditorView(mode: .edit(prompt)) {
                         closePanel()
                     }
-                    .transition(.opacity)
-                    .zIndex(1)
-            }
-            
-            if isPanelOpen {
-                HStack(spacing: 0) {
-                    Spacer()
-                    
-                    Group {
-                        if let prompt = selectedPromptForEdit {
-                            PromptEditorView(mode: .edit(prompt)) {
-                                closePanel()
-                            }
-                        } else if isEditingPrompt {
-                            PromptEditorView(mode: .add) {
-                                closePanel()
-                            }
-                        }
+                } else if isEditingPrompt {
+                    PromptEditorView(mode: .add) {
+                        closePanel()
                     }
-                    .frame(width: 450)
-                    .frame(maxHeight: .infinity)
-                    .background(
-                        Color(NSColor.windowBackgroundColor)
-                    )
-                    .overlay(
-                        Divider(), alignment: .leading
-                    )
-                    .shadow(color: .black.opacity(0.15), radius: 12, x: -4, y: 0)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
-                .ignoresSafeArea()
-                .zIndex(2)
             }
+            .id(panelID)
         }
         .frame(minWidth: 500, minHeight: 400)
     }
