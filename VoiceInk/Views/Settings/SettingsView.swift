@@ -39,6 +39,7 @@ struct SettingsView: View {
             Section {
                 LabeledContent("Shortcut 1") {
                     HStack(spacing: 8) {
+                        Spacer()
                         if hotkeyManager.selectedHotkey1 != .none {
                             hotkeyModePicker(binding: $hotkeyManager.hotkeyMode1)
                         }
@@ -53,6 +54,7 @@ struct SettingsView: View {
                 if hotkeyManager.selectedHotkey2 != .none {
                     LabeledContent("Shortcut 2") {
                         HStack(spacing: 8) {
+                            Spacer()
                             hotkeyModePicker(binding: $hotkeyManager.hotkeyMode2)
                             hotkeyPicker(binding: $hotkeyManager.selectedHotkey2)
                             if hotkeyManager.selectedHotkey2 == .custom {
@@ -314,7 +316,7 @@ struct SettingsView: View {
             }
         }
         .labelsHidden()
-        .frame(width: 140)
+        .fixedSize()
     }
 
     @ViewBuilder
@@ -325,7 +327,7 @@ struct SettingsView: View {
             }
         }
         .labelsHidden()
-        .frame(width: 110)
+        .fixedSize()
     }
 }
 
