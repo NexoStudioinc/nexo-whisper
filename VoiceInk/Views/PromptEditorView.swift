@@ -90,7 +90,9 @@ struct PromptEditorView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
             .background(Color(NSColor.windowBackgroundColor))
-            .overlay(Divider().opacity(0.5), alignment: .bottom)
+            .overlay(
+                Divider().opacity(0.5), alignment: .bottom
+            )
 
             // Content
             if isEditingPredefinedPrompt {
@@ -101,7 +103,6 @@ struct PromptEditorView: View {
 
             // Footer
             VStack(spacing: 0) {
-                Divider()
                 HStack {
                     Button("Cancel") { dismissPanel() }
                         .keyboardShortcut(.escape, modifiers: [])
@@ -146,6 +147,7 @@ struct PromptEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: - Custom Prompt Form
@@ -197,12 +199,13 @@ struct PromptEditorView: View {
                     }
                 }
 
-                HStack(spacing: 8) {
-                    Toggle("Use System Template", isOn: $useSystemInstructions)
-                        .toggleStyle(.switch)
-
-                    InfoTip("If enabled, your instructions are combined with a general-purpose template to improve transcription quality.\n\nDisable for full control over the AI's system prompt (for advanced users).")
+                Toggle(isOn: $useSystemInstructions) {
+                    HStack(spacing: 4) {
+                        Text("Use System Template")
+                        InfoTip("If enabled, your instructions are combined with a general-purpose template to improve transcription quality.\n\nDisable for full control over the AI's system prompt (for advanced users).")
+                    }
                 }
+                .toggleStyle(.switch)
             } header: {
                 Text("Instructions")
             }
@@ -237,6 +240,7 @@ struct PromptEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
     }
 
     private func save() {

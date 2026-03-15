@@ -93,13 +93,12 @@ struct ModelManagementView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
             .background(Color(NSColor.windowBackgroundColor))
-            .overlay(Divider().opacity(0.5), alignment: .bottom)
+            .overlay(
+                Divider().opacity(0.5), alignment: .bottom
+            )
 
             // Content
-            ScrollView {
-                ModelSettingsView(whisperPrompt: whisperPrompt)
-                    .padding(20)
-            }
+            ModelSettingsView(whisperPrompt: whisperPrompt)
         }
     }
     
