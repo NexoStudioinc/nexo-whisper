@@ -111,9 +111,15 @@ class TranscriptionPipeline {
                 await promptDetectionService.applyDetectionResult(detectionResult, to: enhancementService)
             }
 
+            let isSkipShortEnhancementEnabled = UserDefaults.standard.bool(forKey: "SkipShortEnhancement")
+            let savedThreshold = UserDefaults.standard.integer(forKey: "ShortEnhancementWordThreshold")
+            let shortEnhancementWordThreshold = savedThreshold > 0 ? savedThreshold : 5
+            let shouldSkipEnhancement = isSkipShortEnhancementEnabled && WordCounter.count(in: text) <= shortEnhancementWordThreshold
+
             if let enhancementService,
                enhancementService.isEnhancementEnabled,
-               enhancementService.isConfigured {
+               enhancementService.isConfigured,
+               !shouldSkipEnhancement {
                 if shouldCancel() { await onCleanup(); return }
 
                 onStateChange(.enhancing)

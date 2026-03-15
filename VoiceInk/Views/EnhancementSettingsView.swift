@@ -4,17 +4,29 @@ import UniformTypeIdentifiers
 struct EnhancementSettingsView: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @State private var isEditingPrompt = false
-    @State private var isShortcutsExpanded = false
+    @State private var isShowingSettings = false
     @State private var selectedPromptForEdit: CustomPrompt?
     @State private var panelID = UUID()
 
     private let panelWidth: CGFloat = 450
 
-    private var isPanelOpen: Bool {
-        isEditingPrompt || selectedPromptForEdit != nil
+    private enum PanelType {
+        case promptEditor
+        case settings
     }
 
-    private func openPanel() {
+    private var activePanel: PanelType? {
+        if isShowingSettings { return .settings }
+        if isEditingPrompt || selectedPromptForEdit != nil { return .promptEditor }
+        return nil
+    }
+
+    private var isPanelOpen: Bool {
+        activePanel != nil
+    }
+
+    private func openPromptPanel() {
+        isShowingSettings = false
         panelID = UUID()
     }
 
@@ -22,9 +34,10 @@ struct EnhancementSettingsView: View {
         withAnimation(.smooth(duration: 0.3)) {
             isEditingPrompt = false
             selectedPromptForEdit = nil
+            isShowingSettings = false
         }
     }
-    
+
     var body: some View {
         Form {
             Section {
@@ -38,27 +51,24 @@ struct EnhancementSettingsView: View {
                     }
                 }
                 .toggleStyle(.switch)
-
-                HStack(spacing: 24) {
-                    Toggle(isOn: $enhancementService.useClipboardContext) {
-                        HStack(spacing: 4) {
-                            Text("Clipboard Context")
-                            InfoTip("Use clipboard text to understand context for better enhancement.")
-                        }
-                    }
-                    .toggleStyle(.switch)
-
-                    Toggle(isOn: $enhancementService.useScreenCaptureContext) {
-                        HStack(spacing: 4) {
-                            Text("Screen Context")
-                            InfoTip("Capture on-screen text to understand context for better enhancement.")
-                        }
-                    }
-                    .toggleStyle(.switch)
-                }
-                .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
             } header: {
-                Text("General")
+                HStack {
+                    Text("General")
+                    Spacer()
+                    Button {
+                        withAnimation(.smooth(duration: 0.3)) {
+                            isEditingPrompt = false
+                            selectedPromptForEdit = nil
+                            isShowingSettings.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "gear")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isShowingSettings ? .accentColor : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Enhancement settings")
+                }
             }
 
             APIKeyManagementView()
@@ -71,7 +81,7 @@ struct EnhancementSettingsView: View {
                         enhancementService.setActivePrompt(prompt)
                     },
                     onEditPrompt: { prompt in
-                        openPanel()
+                        openPromptPanel()
                         withAnimation(.smooth(duration: 0.3)) {
                             selectedPromptForEdit = prompt
                         }
@@ -86,7 +96,7 @@ struct EnhancementSettingsView: View {
                     Text("Enhancement Prompts")
                     Spacer()
                     Button {
-                        openPanel()
+                        openPromptPanel()
                         withAnimation(.smooth(duration: 0.3)) {
                             isEditingPrompt = true
                         }
@@ -101,27 +111,6 @@ struct EnhancementSettingsView: View {
                 }
             }
             .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
-
-            Section {
-                DisclosureGroup(isExpanded: $isShortcutsExpanded) {
-                    EnhancementShortcutsView()
-                        .padding(.vertical, 8)
-                } label: {
-                    HStack {
-                        Text("Shortcuts")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        withAnimation {
-                            isShortcutsExpanded.toggle()
-                        }
-                    }
-                }
-            }
-            .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
@@ -133,17 +122,26 @@ struct EnhancementSettingsView: View {
             }
         ), width: panelWidth) {
             Group {
-                if let prompt = selectedPromptForEdit {
-                    PromptEditorView(mode: .edit(prompt)) {
-                        closePanel()
+                switch activePanel {
+                case .settings:
+                    EnhancementSettingsPanel(onDismiss: closePanel)
+                case .promptEditor:
+                    Group {
+                        if let prompt = selectedPromptForEdit {
+                            PromptEditorView(mode: .edit(prompt)) {
+                                closePanel()
+                            }
+                        } else if isEditingPrompt {
+                            PromptEditorView(mode: .add) {
+                                closePanel()
+                            }
+                        }
                     }
-                } else if isEditingPrompt {
-                    PromptEditorView(mode: .add) {
-                        closePanel()
-                    }
+                    .id(panelID)
+                case nil:
+                    EmptyView()
                 }
             }
-            .id(panelID)
         }
         .frame(minWidth: 500, minHeight: 400)
     }
@@ -152,14 +150,14 @@ struct EnhancementSettingsView: View {
 // MARK: - Reorderable Grid
 private struct ReorderablePromptGrid: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
-    
+
     let selectedPromptId: UUID?
     let onPromptSelected: (CustomPrompt) -> Void
     let onEditPrompt: ((CustomPrompt) -> Void)?
     let onDeletePrompt: ((CustomPrompt) -> Void)?
-    
+
     @State private var draggingItem: CustomPrompt?
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if enhancementService.customPrompts.isEmpty {
@@ -170,7 +168,7 @@ private struct ReorderablePromptGrid: View {
                 let columns = [
                     GridItem(.adaptive(minimum: 80, maximum: 100), spacing: 36)
                 ]
-                
+
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(enhancementService.customPrompts) { prompt in
                         prompt.promptIcon(
@@ -211,12 +209,12 @@ private struct ReorderablePromptGrid: View {
                 }
                 .padding(.vertical, 12)
                 .padding(.horizontal, 16)
-                
+
                 HStack {
                     Image(systemName: "info.circle")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    
+
                     Text("Double-click to edit • Right-click for more options")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -233,12 +231,12 @@ private struct PromptDropDelegate: DropDelegate {
     let item: CustomPrompt
     @Binding var prompts: [CustomPrompt]
     @Binding var draggingItem: CustomPrompt?
-    
+
     func dropEntered(info: DropInfo) {
         guard let draggingItem = draggingItem, draggingItem != item else { return }
         guard let fromIndex = prompts.firstIndex(of: draggingItem),
               let toIndex = prompts.firstIndex(of: item) else { return }
-        
+
         if prompts[toIndex].id != draggingItem.id {
             withAnimation(.easeInOut(duration: 0.12)) {
                 let from = fromIndex
@@ -247,11 +245,11 @@ private struct PromptDropDelegate: DropDelegate {
             }
         }
     }
-    
+
     func dropUpdated(info: DropInfo) -> DropProposal? {
         DropProposal(operation: .move)
     }
-    
+
     func performDrop(info: DropInfo) -> Bool {
         draggingItem = nil
         return true
