@@ -171,9 +171,9 @@ class TranscriptionPipeline {
                 CursorPaster.pasteAtCursor(textToPaste + (appendSpace ? " " : ""))
 
                 let powerMode = PowerModeManager.shared
-                if let activeConfig = powerMode.currentActiveConfiguration, activeConfig.isAutoSendEnabled {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        CursorPaster.pressEnter()
+                if let activeConfig = powerMode.currentActiveConfiguration, activeConfig.autoSendKey.isEnabled {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        CursorPaster.performAutoSend(activeConfig.autoSendKey)
                     }
                 }
             }

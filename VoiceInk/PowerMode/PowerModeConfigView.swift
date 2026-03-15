@@ -28,7 +28,7 @@ struct ConfigurationView: View {
     @State private var websiteConfigs: [URLConfig] = []
     @State private var newWebsiteURL: String = ""
     @State private var useScreenCapture = false
-    @State private var isAutoSendEnabled = false
+    @State private var autoSendKey: AutoSendKey = .none
     @State private var isDefault = false
     @State private var isShowingDeleteConfirmation = false
     @State private var powerModeConfigId: UUID = UUID()
@@ -70,7 +70,7 @@ struct ConfigurationView: View {
             _configName = State(initialValue: "")
             _selectedEmoji = State(initialValue: "✏️")
             _useScreenCapture = State(initialValue: false)
-            _isAutoSendEnabled = State(initialValue: false)
+            _autoSendKey = State(initialValue: .none)
             _isDefault = State(initialValue: false)
             // Use UserDefaults directly since EnvironmentObjects aren't available in init
             _selectedAIProvider = State(initialValue: UserDefaults.standard.string(forKey: "selectedAIProvider"))
@@ -88,7 +88,7 @@ struct ConfigurationView: View {
             _selectedAppConfigs = State(initialValue: latestConfig.appConfigs ?? [])
             _websiteConfigs = State(initialValue: latestConfig.urlConfigs ?? [])
             _useScreenCapture = State(initialValue: latestConfig.useScreenCapture)
-            _isAutoSendEnabled = State(initialValue: latestConfig.isAutoSendEnabled)
+            _autoSendKey = State(initialValue: latestConfig.autoSendKey)
             _isDefault = State(initialValue: latestConfig.isDefault)
             _selectedAIProvider = State(initialValue: latestConfig.selectedAIProvider)
             _selectedAIModel = State(initialValue: latestConfig.selectedAIModel)
@@ -432,10 +432,14 @@ struct ConfigurationView: View {
                         }
                     }
 
-                    Toggle(isOn: $isAutoSendEnabled) {
+                    Picker(selection: $autoSendKey) {
+                        ForEach(AutoSendKey.allCases, id: \.self) { key in
+                            Text(key.displayName).tag(key)
+                        }
+                    } label: {
                         HStack(spacing: 6) {
                             Text("Auto Send")
-                            InfoTip("Automatically presses the Return/Enter key after pasting text. Useful for chat applications or forms.")
+                            InfoTip("Automatically presses a key combination after pasting text. Useful for chat applications or forms that use different send shortcuts.")
                         }
                     }
 
@@ -554,7 +558,7 @@ struct ConfigurationView: View {
                 useScreenCapture: useScreenCapture,
                 selectedAIProvider: selectedAIProvider,
                 selectedAIModel: selectedAIModel,
-                isAutoSendEnabled: isAutoSendEnabled,
+                autoSendKey: autoSendKey,
                 isDefault: isDefault,
                 hotkeyShortcut: hotkeyString
             )
@@ -569,7 +573,7 @@ struct ConfigurationView: View {
             updatedConfig.appConfigs = selectedAppConfigs.isEmpty ? nil : selectedAppConfigs
             updatedConfig.urlConfigs = websiteConfigs.isEmpty ? nil : websiteConfigs
             updatedConfig.useScreenCapture = useScreenCapture
-            updatedConfig.isAutoSendEnabled = isAutoSendEnabled
+            updatedConfig.autoSendKey = autoSendKey
             updatedConfig.selectedAIProvider = selectedAIProvider
             updatedConfig.selectedAIModel = selectedAIModel
             updatedConfig.isDefault = isDefault
