@@ -81,7 +81,8 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         selectedAIProvider = try container.decodeIfPresent(String.self, forKey: .selectedAIProvider)
         selectedAIModel = try container.decodeIfPresent(String.self, forKey: .selectedAIModel)
         // Migrate from old isAutoSendEnabled bool to new autoSendKey enum
-        if let newKey = try container.decodeIfPresent(AutoSendKey.self, forKey: .autoSendKey) {
+        if let rawValue = try container.decodeIfPresent(String.self, forKey: .autoSendKey),
+           let newKey = AutoSendKey(rawValue: rawValue) {
             autoSendKey = newKey
         } else if let oldBool = try container.decodeIfPresent(Bool.self, forKey: .isAutoSendEnabled), oldBool {
             autoSendKey = .enter
