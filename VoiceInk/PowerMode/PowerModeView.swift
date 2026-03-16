@@ -249,11 +249,15 @@ struct ReorderPanelView: View {
                     .font(.system(size: 16, weight: .semibold))
                 Spacer()
                 Button(action: onDismiss) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 18))
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
+                        .padding(6)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
+                .help("Close")
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
