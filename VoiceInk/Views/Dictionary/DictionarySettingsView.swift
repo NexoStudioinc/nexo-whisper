@@ -52,7 +52,6 @@ struct DictionarySettingsView: View {
     private var mainContent: some View {
         VStack(spacing: 40) {
             sectionSelector
-            
             selectedSectionContent
         }
         .padding(.horizontal, 32)
