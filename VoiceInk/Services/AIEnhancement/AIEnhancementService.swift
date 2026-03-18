@@ -248,6 +248,7 @@ class AIEnhancementService: ObservableObject {
                 }
                 let temperature = aiService.currentModel.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3
                 let reasoningEffort = ReasoningConfig.getReasoningParameter(for: aiService.currentModel)
+                let extraBody = ReasoningConfig.getExtraBodyParameters(for: aiService.currentModel)
                 result = try await OpenAILLMClient.chatCompletion(
                     baseURL: baseURL,
                     apiKey: aiService.apiKey,
@@ -256,6 +257,7 @@ class AIEnhancementService: ObservableObject {
                     systemPrompt: systemMessage,
                     temperature: temperature,
                     reasoningEffort: reasoningEffort,
+                    extraBody: extraBody,
                     timeout: baseTimeout
                 )
             }
