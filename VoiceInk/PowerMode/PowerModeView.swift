@@ -244,9 +244,11 @@ struct ReorderPanelView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
+            HStack(spacing: 12) {
                 Text("Reorder Power Modes")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
                 Spacer()
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
@@ -260,10 +262,9 @@ struct ReorderPanelView: View {
                 .help("Close")
             }
             .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 16)
-
-            Divider()
+            .padding(.vertical, 16)
+            .background(Color(NSColor.windowBackgroundColor))
+            .overlay(Divider().opacity(0.5), alignment: .bottom)
 
             // Reorder list
             List {

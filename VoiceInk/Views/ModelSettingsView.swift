@@ -13,32 +13,35 @@ struct ModelSettingsView: View {
     var body: some View {
         Form {
             Section {
-                if isEditing {
-                    TextEditor(text: $customPrompt)
-                        .font(.system(size: 12))
-                        .frame(height: 80)
-                        .scrollContentBackground(.hidden)
+                VStack(alignment: .leading, spacing: 8) {
+                    if isEditing {
+                        TextEditor(text: $customPrompt)
+                            .font(.system(size: 12))
+                            .frame(minHeight: 40, maxHeight: 80)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .scrollContentBackground(.hidden)
 
-                    Button("Save") {
-                        whisperPrompt.setCustomPrompt(customPrompt, for: selectedLanguage)
-                        isEditing = false
-                    }
-                } else {
-                    Text(whisperPrompt.getLanguagePrompt(for: selectedLanguage))
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Button("Save") {
+                            whisperPrompt.setCustomPrompt(customPrompt, for: selectedLanguage)
+                            isEditing = false
+                        }
+                    } else {
+                        Text(whisperPrompt.getLanguagePrompt(for: selectedLanguage))
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Button("Edit") {
-                        customPrompt = whisperPrompt.getLanguagePrompt(for: selectedLanguage)
-                        isEditing = true
+                        Button("Edit") {
+                            customPrompt = whisperPrompt.getLanguagePrompt(for: selectedLanguage)
+                            isEditing = true
+                        }
                     }
                 }
             } header: {
                 HStack(spacing: 4) {
                     Text("Output Format")
                     InfoTip(
-                        "Unlike GPT, Voice Models(whisper) follows the style of your prompt rather than instructions. Use examples of your desired output format instead of commands.",
+                        "Only supported for local Whisper models. Unlike GPT, Voice Models(whisper) follows the style of your prompt rather than instructions. Use examples of your desired output format instead of commands.",
                         learnMoreURL: "https://cookbook.openai.com/examples/whisper_prompting_guide#comparison-with-gpt-prompting"
                     )
                 }
