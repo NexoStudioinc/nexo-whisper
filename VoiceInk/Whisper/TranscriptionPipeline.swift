@@ -137,6 +137,12 @@ class TranscriptionPipeline {
                     finalPastedText = enhancedText
                 } catch {
                     transcription.enhancedText = "Enhancement failed: \(error)"
+                    await MainActor.run {
+                        NotificationManager.shared.showNotification(
+                            title: "Enhancement failed",
+                            type: .warning
+                        )
+                    }
                     if shouldCancel() { await onCleanup(); return }
                 }
             }
