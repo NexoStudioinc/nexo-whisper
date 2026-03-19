@@ -2,8 +2,8 @@ import SwiftUI
 
 struct EnhancementSettingsPanel: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
-    @AppStorage("SkipShortEnhancement") private var isSkipShortEnhancementEnabled = false
-    @AppStorage("ShortEnhancementWordThreshold") private var shortEnhancementWordThreshold = 5
+    @AppStorage("SkipShortEnhancement") private var isSkipShortEnhancementEnabled = true
+    @AppStorage("ShortEnhancementWordThreshold") private var shortEnhancementWordThreshold = 3
     @State private var isShortEnhancementExpanded = false
     @State private var isHandlingToggleChange = false
 
