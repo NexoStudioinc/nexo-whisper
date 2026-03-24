@@ -120,7 +120,7 @@ class ParakeetTranscriptionService: TranscriptionService {
 
         let result = try await asrManager.transcribe(speechAudio)
 
-        return result.text
+        return TextNormalizer.shared.normalizeSentence(result.text)
     }
 
     private func readAudioSamples(from url: URL) throws -> [Float] {

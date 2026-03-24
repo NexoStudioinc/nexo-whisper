@@ -8,12 +8,19 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
 
     @State private var activePopover: ActivePopoverState = .none
 
-    // MARK: - Design Constants
-    private let mainContentHeight: CGFloat = 40
-    private let width: CGFloat = 184
+    // MARK: - Layout Constants
+
+    private let controlBarHeight: CGFloat = 40
+    private let compactWidth: CGFloat = 184
+    private let expandedWidth: CGFloat = 300
     private let cornerRadius: CGFloat = 20
 
-    private var contentLayout: some View {
+    // true when live transcript is streaming in during recording
+    private var hasLiveTranscript: Bool {
+        stateProvider.recordingState == .recording && !stateProvider.partialTranscript.isEmpty
+    }
+
+    private var controlBar: some View {
         HStack(spacing: 0) {
             RecorderPromptButton(
                 activePopover: $activePopover,
@@ -38,16 +45,29 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
             )
             .padding(.trailing, 12)
         }
-        .frame(height: mainContentHeight)
+        .frame(height: controlBarHeight)
+    }
+
+    private var transcriptSection: some View {
+        VStack(spacing: 0) {
+            if hasLiveTranscript {
+                LiveTranscriptView(text: stateProvider.partialTranscript)
+                Divider().background(Color.white.opacity(0.15))
+            }
+        }
     }
 
     var body: some View {
         if windowManager.isVisible {
-            contentLayout
-                .frame(width: width)
-                .background(Color.black)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            VStack(spacing: 0) {
+                transcriptSection
+                controlBar
+            }
+            .frame(width: hasLiveTranscript ? expandedWidth : compactWidth)
+            .background(Color.black)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .animation(.easeInOut(duration: 0.3), value: hasLiveTranscript)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
     }
 }
