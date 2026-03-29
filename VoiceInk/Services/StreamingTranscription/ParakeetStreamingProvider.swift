@@ -81,7 +81,7 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
         transcriptionTask?.cancel()
         transcriptionTask = nil
 
-        asrManager?.cleanup()
+        await asrManager?.cleanup()
         asrManager = nil
 
         bufferLock.lock()
