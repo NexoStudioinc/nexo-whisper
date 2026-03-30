@@ -4,8 +4,8 @@ struct EnhancementSettingsPanel: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @AppStorage("SkipShortEnhancement") private var isSkipShortEnhancementEnabled = true
     @AppStorage("ShortEnhancementWordThreshold") private var shortEnhancementWordThreshold = 3
-    @AppStorage("EnhancementTimeoutSeconds") private var enhancementTimeoutSeconds = 10
-    @AppStorage("EnhancementRetryOnTimeout") private var retryOnTimeout = false
+    @AppStorage("EnhancementTimeoutSeconds") private var enhancementTimeoutSeconds = 7
+    @AppStorage("EnhancementRetryOnTimeout") private var retryOnTimeout = true
     @State private var isShortEnhancementExpanded = false
     @State private var isHandlingToggleChange = false
 

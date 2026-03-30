@@ -69,7 +69,7 @@ class AIEnhancementService: ObservableObject {
     private let customVocabularyService: CustomVocabularyService
     private var baseTimeout: TimeInterval {
         let stored = UserDefaults.standard.integer(forKey: "EnhancementTimeoutSeconds")
-        return stored > 0 ? TimeInterval(stored) : 10
+        return stored > 0 ? TimeInterval(stored) : 7
     }
     private let rateLimitInterval: TimeInterval = 1.0
     private var lastRequestTime: Date?
