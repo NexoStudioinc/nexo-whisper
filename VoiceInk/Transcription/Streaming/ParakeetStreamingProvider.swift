@@ -79,6 +79,7 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
 
     func disconnect() async {
         transcriptionTask?.cancel()
+        await transcriptionTask?.value
         transcriptionTask = nil
 
         await asrManager?.cleanup()

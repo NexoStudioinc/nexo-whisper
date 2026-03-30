@@ -144,9 +144,9 @@ class ParakeetTranscriptionService: TranscriptionService {
     }
 
     // Releases ASR/VAD resources but preserves cached models for reuse
-    func cleanup() {
+    func cleanup() async {
         if let manager = asrManager {
-            Task { await manager.cleanup() }
+            await manager.cleanup()
         }
         asrManager = nil
         vadManager = nil

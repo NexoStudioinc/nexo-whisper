@@ -95,7 +95,7 @@ final class WordAgreementEngine {
         let commonPrefix = findLongestCommonPrefix(current: words, previous: previousWords)
         previousWords = words
 
-        if commonPrefix.count >= 1 {
+        if commonPrefix.count >= config.minWordsToConfirm {
             consecutiveAgreementCount += 1
         } else {
             consecutiveAgreementCount = 0
