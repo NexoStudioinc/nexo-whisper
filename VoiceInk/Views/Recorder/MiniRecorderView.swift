@@ -13,7 +13,8 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
     private let controlBarHeight: CGFloat = 40
     private let compactWidth: CGFloat = 184
     private let expandedWidth: CGFloat = 300
-    private let cornerRadius: CGFloat = 20
+    private let compactCornerRadius: CGFloat = 20
+    private let expandedCornerRadius: CGFloat = 14
 
     // true when live transcript is streaming in during recording
     private var hasLiveTranscript: Bool {
@@ -65,7 +66,7 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
             }
             .frame(width: hasLiveTranscript ? expandedWidth : compactWidth)
             .background(Color.black)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: hasLiveTranscript ? expandedCornerRadius : compactCornerRadius, style: .continuous))
             .animation(.easeInOut(duration: 0.3), value: hasLiveTranscript)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
