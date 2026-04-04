@@ -26,9 +26,12 @@ enum DictionaryService {
             return insertVocabularyWord(word, context: context)
         }
 
+        var addedWords = Set(existing.map { $0.word.lowercased() })
         for word in parts {
-            if !existing.contains(where: { $0.word.lowercased() == word.lowercased() }) {
+            let lower = word.lowercased()
+            if !addedWords.contains(lower) {
                 insertVocabularyWord(word, context: context)
+                addedWords.insert(lower)
             }
         }
         return nil

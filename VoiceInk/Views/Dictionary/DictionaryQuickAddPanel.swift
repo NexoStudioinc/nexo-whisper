@@ -10,6 +10,7 @@ final class DictionaryQuickAddManager {
     private init() {}
 
     private var panel: DictionaryQuickAddPanel?
+    private var hostingController: NSHostingController<AnyView>?
     private var previousApp: NSRunningApplication?
 
     var isVisible: Bool { panel?.isVisible == true }
@@ -28,13 +29,15 @@ final class DictionaryQuickAddManager {
 
         let view = DictionaryQuickAddView(
             onDismiss: { [weak self] in self?.hide() },
-            onModeChange: { [weak self] mode in
-                self?.panel?.resize(to: NSSize(width: 500, height: mode.panelHeight))
+            onResize: { [weak self] height in
+                self?.panel?.resize(to: NSSize(width: 500, height: height))
             }
         )
         .modelContainer(modelContainer)
 
-        newPanel.contentView = NSHostingController(rootView: view).view
+        let controller = NSHostingController(rootView: AnyView(view))
+        newPanel.contentView = controller.view
+        hostingController = controller
         panel = newPanel
         newPanel.makeKeyAndOrderFront(nil)
     }
@@ -43,6 +46,7 @@ final class DictionaryQuickAddManager {
         guard isVisible else { return }
         panel?.orderOut(nil)
         panel = nil
+        hostingController = nil
         previousApp?.activate(options: .activateIgnoringOtherApps)
         previousApp = nil
     }
@@ -95,11 +99,13 @@ class DictionaryQuickAddPanel: NSPanel {
     }
 
     func resize(to size: NSSize) {
-        let origin = DictionaryQuickAddPanel.centeredOrigin(for: size)
+        let currentFrame = frame
+        let x = currentFrame.midX - size.width / 2
+        let y = currentFrame.maxY - size.height
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.18
             ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            animator().setFrame(NSRect(origin: origin, size: size), display: true)
+            animator().setFrame(NSRect(x: x, y: y, width: size.width, height: size.height), display: true)
         }
     }
 
@@ -147,18 +153,26 @@ struct DictionaryQuickAddView: View {
     @State private var wordInput = ""
     @State private var originalInput = ""
     @State private var replacementInput = ""
+    @State private var errorMessage: String?
     @FocusState private var focusedField: Field?
 
     enum Field: Hashable { case word, original, replacement }
 
     let onDismiss: () -> Void
-    let onModeChange: (Mode) -> Void
+    let onResize: (CGFloat) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             modeBar
             Divider().opacity(0.4)
             inputArea
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 6)
+            }
             Divider().opacity(0.4)
             hintBar
         }
@@ -180,10 +194,15 @@ struct DictionaryQuickAddView: View {
             wordInput = ""
             originalInput = ""
             replacementInput = ""
+            errorMessage = nil
             DispatchQueue.main.async {
                 focusedField = newMode == .vocabulary ? .word : .original
             }
-            onModeChange(newMode)
+            onResize(newMode.panelHeight)
+        }
+        .onChange(of: errorMessage) { _, newError in
+            let height = mode.panelHeight + (newError != nil ? 24 : 0)
+            onResize(height)
         }
     }
 
@@ -254,6 +273,7 @@ struct DictionaryQuickAddView: View {
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 14))
                     .focused($focusedField, equals: .original)
+                    .onSubmit { focusedField = .replacement }
             }
 
             HStack(spacing: 10) {
@@ -301,7 +321,10 @@ struct DictionaryQuickAddView: View {
     private func submitVocabulary() {
         let input = wordInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !input.isEmpty else { return }
-        DictionaryService.addVocabularyWords(input, existing: Array(vocabularyWords), context: modelContext)
+        if let error = DictionaryService.addVocabularyWords(input, existing: Array(vocabularyWords), context: modelContext) {
+            errorMessage = error
+            return
+        }
         onDismiss()
     }
 
@@ -309,7 +332,10 @@ struct DictionaryQuickAddView: View {
         let original = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
         let replacement = replacementInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !original.isEmpty, !replacement.isEmpty else { return }
-        DictionaryService.addWordReplacement(original: original, replacement: replacement, existing: Array(wordReplacements), context: modelContext)
+        if let error = DictionaryService.addWordReplacement(original: original, replacement: replacement, existing: Array(wordReplacements), context: modelContext) {
+            errorMessage = error
+            return
+        }
         onDismiss()
     }
 }
