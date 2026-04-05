@@ -27,14 +27,17 @@ enum DictionaryService {
         }
 
         var addedWords = Set(existing.map { $0.word.lowercased() })
+        var errors = [String]()
         for word in parts {
             let lower = word.lowercased()
             if !addedWords.contains(lower) {
-                insertVocabularyWord(word, context: context)
+                if let error = insertVocabularyWord(word, context: context) {
+                    errors.append(error)
+                }
                 addedWords.insert(lower)
             }
         }
-        return nil
+        return errors.isEmpty ? nil : errors.joined(separator: "; ")
     }
 
     @discardableResult

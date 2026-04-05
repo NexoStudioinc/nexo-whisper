@@ -100,9 +100,7 @@ final class AutoLearnVocabularyService {
             var value: CFTypeRef?
             if AXUIElementCopyAttributeValue(changedElement, kAXValueAttribute as CFString, &value) == .success,
                let text = value as? String {
-                DispatchQueue.main.async {
-                    service.lastKnownText = text
-                }
+                service.lastKnownText = text
             }
         }
 
@@ -200,6 +198,8 @@ final class AutoLearnVocabularyService {
         let existing = (try? context.fetch(descriptor)) ?? []
         let existingWords = Set(existing.map { $0.word.lowercased() })
 
+        var addedWords: [VocabularyWord] = []
+
         for word in uniqueWordsToAdd {
             guard !existingWords.contains(word.lowercased()) else {
                 logger.notice("⚠️ \"\(word, privacy: .public)\" already in Vocabulary — skipping")
@@ -208,20 +208,32 @@ final class AutoLearnVocabularyService {
 
             let newWord = VocabularyWord(word: word)
             context.insert(newWord)
-            try? context.save()
+            addedWords.append(newWord)
             logger.notice("✅ Added \"\(word, privacy: .public)\" to Vocabulary")
+        }
 
-            Task { @MainActor in
-                NotificationManager.shared.showNotification(
-                    title: "Added \"\(word)\" to Vocabulary",
-                    type: .success,
-                    duration: 4.0,
-                    actionButton: ("Undo", {
-                        context.delete(newWord)
-                        try? context.save()
-                    })
-                )
-            }
+        guard !addedWords.isEmpty else { return }
+        try? context.save()
+
+        let title: String
+        if addedWords.count == 1 {
+            title = "Added \"\(addedWords[0].word)\" to Vocabulary"
+        } else {
+            title = "Added \(addedWords.count) words to Vocabulary"
+        }
+
+        Task { @MainActor in
+            NotificationManager.shared.showNotification(
+                title: title,
+                type: .success,
+                duration: 4.0,
+                actionButton: ("Undo", {
+                    for word in addedWords {
+                        context.delete(word)
+                    }
+                    try? context.save()
+                })
+            )
         }
     }
 
