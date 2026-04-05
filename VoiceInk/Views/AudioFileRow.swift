@@ -91,47 +91,44 @@ struct AudioFileRow: View {
 
     @ViewBuilder
     private var completedRows: some View {
-        Button {
-            onToggleExpand()
-        } label: {
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+        HStack {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
 
-                Text(item.filename)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+            Text(item.filename)
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .truncationMode(.middle)
 
-                if !isExpanded, let transcription = item.transcription {
-                    Text(transcription.enhancedText ?? transcription.text)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                if let transcription = item.transcription {
-                    HStack(spacing: 2) {
-                        CopyIconButton(textToCopy: actionText)
-                        SaveIconButton(textToSave: actionText)
-                    }
-
-                    if transcription.duration > 0 {
-                        Text(formatDuration(transcription.duration))
-                            .font(.caption.weight(.medium))
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Image(systemName: "chevron.right")
-                    .font(.caption2.weight(.semibold))
+            if !isExpanded, let transcription = item.transcription {
+                Text(transcription.enhancedText ?? transcription.text)
                     .foregroundColor(.secondary)
-                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                    .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                    .lineLimit(1)
             }
+
+            Spacer()
+
+            if let transcription = item.transcription {
+                HStack(spacing: 2) {
+                    CopyIconButton(textToCopy: actionText)
+                    SaveIconButton(textToSave: actionText)
+                }
+
+                if transcription.duration > 0 {
+                    Text(formatDuration(transcription.duration))
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption2.weight(.semibold))
+                .foregroundColor(.secondary)
+                .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .onTapGesture { onToggleExpand() }
 
         if isExpanded, let transcription = item.transcription {
             if transcription.enhancedText != nil {

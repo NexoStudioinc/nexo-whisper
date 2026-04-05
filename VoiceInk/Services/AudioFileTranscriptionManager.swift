@@ -17,6 +17,7 @@ class AudioTranscriptionManager: ObservableObject {
     // MARK: - Private
 
     private var processingTask: Task<Void, Never>?
+    private var processingGeneration: UInt64 = 0
     private let audioProcessor = AudioProcessor()
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioTranscriptionManager")
 
@@ -71,6 +72,8 @@ class AudioTranscriptionManager: ObservableObject {
     func startProcessing(modelContext: ModelContext, engine: VoiceInkEngine) {
         guard !isProcessingQueue else { return }
         isProcessingQueue = true
+        processingGeneration &+= 1
+        let generation = processingGeneration
 
         processingTask = Task { [weak self] in
             guard let self else { return }
@@ -80,7 +83,9 @@ class AudioTranscriptionManager: ObservableObject {
                 await self.processItem(item, modelContext: modelContext, engine: engine)
             }
 
-            self.isProcessingQueue = false
+            if self.processingGeneration == generation {
+                self.isProcessingQueue = false
+            }
         }
     }
 
@@ -108,17 +113,16 @@ class AudioTranscriptionManager: ObservableObject {
     }
 
     private func processItem(_ item: AudioFileQueueItem, modelContext: ModelContext, engine: VoiceInkEngine) async {
+        let serviceRegistry = TranscriptionServiceRegistry(
+            modelProvider: engine.whisperModelManager,
+            modelsDirectory: engine.whisperModelManager.modelsDirectory,
+            modelContext: modelContext
+        )
+
         do {
             guard let currentModel = engine.transcriptionModelManager.currentTranscriptionModel else {
                 throw TranscriptionError.noModelSelected
             }
-
-            let serviceRegistry = TranscriptionServiceRegistry(
-                modelProvider: engine.whisperModelManager,
-                modelsDirectory: engine.whisperModelManager.modelsDirectory,
-                modelContext: modelContext
-            )
-            defer { Task { await serviceRegistry.cleanup() } }
 
             // Phase: Loading
             item.status = .processing(phase: .loading)
@@ -234,6 +238,8 @@ class AudioTranscriptionManager: ObservableObject {
                 item.status = .failed(message: error.localizedDescription)
             }
         }
+
+        await serviceRegistry.cleanup()
     }
 }
 
