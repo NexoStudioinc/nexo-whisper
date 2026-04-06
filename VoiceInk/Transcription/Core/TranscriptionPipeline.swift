@@ -114,7 +114,7 @@ class TranscriptionPipeline {
             let isSkipShortEnhancementEnabled = UserDefaults.standard.bool(forKey: "SkipShortEnhancement")
             let savedThreshold = UserDefaults.standard.integer(forKey: "ShortEnhancementWordThreshold")
             let shortEnhancementWordThreshold = savedThreshold > 0 ? savedThreshold : 3
-            let shouldSkipEnhancement = isSkipShortEnhancementEnabled && WordCounter.count(in: text) <= shortEnhancementWordThreshold
+            let shouldSkipEnhancement = isSkipShortEnhancementEnabled && WordCounter.count(in: text) <= shortEnhancementWordThreshold && !(promptDetectionResult?.shouldEnableAI == true)
 
             if let enhancementService,
                enhancementService.isEnhancementEnabled,
