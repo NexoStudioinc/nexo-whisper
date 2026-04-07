@@ -102,7 +102,7 @@ import Foundation
         ),
         
         // Parakeet Models
-        ParakeetModel(
+        FluidAudioModel(
             name: "parakeet-tdt-0.6b-v2",
             displayName: "Parakeet V2",
             description: "NVIDIA's Parakeet V2 model optimized for lightning-fast English-only transcription",
@@ -110,9 +110,9 @@ import Foundation
             speed: 0.99,
             accuracy: 0.94,
             ramUsage: 0.8,
-            supportedLanguages: getLanguageDictionary(isMultilingual: false, provider: .parakeet)
+            supportedLanguages: getLanguageDictionary(isMultilingual: false, provider: .fluidAudio)
         ),
-        ParakeetModel(
+        FluidAudioModel(
             name: "parakeet-tdt-0.6b-v3",
             displayName: "Parakeet V3",
             description: "NVIDIA's Parakeet V3 model with multilingual support across English and 25 European languages",
@@ -120,7 +120,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.94,
             ramUsage: 0.8,
-            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .parakeet)
+            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .fluidAudio)
         ),
 
          // Local Models
