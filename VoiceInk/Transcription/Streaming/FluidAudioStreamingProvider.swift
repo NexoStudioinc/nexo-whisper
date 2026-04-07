@@ -2,11 +2,11 @@ import FluidAudio
 import Foundation
 import os
 
-/// Agreement-based on-device streaming transcription using Parakeet ASR.
-final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
+/// Agreement-based on-device streaming transcription using FluidAudio ASR.
+final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
 
-    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "ParakeetStreaming")
-    private let parakeetService: ParakeetTranscriptionService
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "FluidAudioStreaming")
+    private let fluidAudioService: FluidAudioTranscriptionService
     private var eventsContinuation: AsyncStream<StreamingTranscriptionEvent>.Continuation?
 
     private(set) var transcriptionEvents: AsyncStream<StreamingTranscriptionEvent>
@@ -26,8 +26,8 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
     private var lastTranscribedSampleCount = 0
     private let minNewSamples = 8000 // ~0.5s
 
-    init(parakeetService: ParakeetTranscriptionService, config: AgreementConfig = AgreementConfig()) {
-        self.parakeetService = parakeetService
+    init(fluidAudioService: FluidAudioTranscriptionService, config: AgreementConfig = AgreementConfig()) {
+        self.fluidAudioService = fluidAudioService
         self.config = config
         self.agreementEngine = WordAgreementEngine(config: config)
 
@@ -42,8 +42,8 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
     }
 
     func connect(model: any TranscriptionModel, language: String?) async throws {
-        let version: AsrModelVersion = model.name.lowercased().contains("v2") ? .v2 : .v3
-        let models = try await parakeetService.getOrLoadModels(for: version)
+        let version: AsrModelVersion = FluidAudioModelManager.asrVersion(for: model.name)
+        let models = try await fluidAudioService.getOrLoadModels(for: version)
 
         let manager = AsrManager(config: .default)
         try await manager.initialize(models: models)
@@ -57,7 +57,7 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
         startTranscriptionLoop()
 
         eventsContinuation?.yield(.sessionStarted)
-        logger.notice("Parakeet agreement streaming started for \(model.displayName, privacy: .public)")
+        logger.notice("FluidAudio agreement streaming started for \(model.displayName, privacy: .public)")
     }
 
     func sendAudioChunk(_ data: Data) async throws {
@@ -92,7 +92,7 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
         agreementEngine.reset()
 
         eventsContinuation?.finish()
-        logger.notice("Parakeet agreement streaming disconnected")
+        logger.notice("FluidAudio agreement streaming disconnected")
     }
 
     // MARK: - Private

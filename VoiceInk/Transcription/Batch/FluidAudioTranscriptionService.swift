@@ -4,16 +4,16 @@ import AVFoundation
 import FluidAudio
 import os.log
 
-class ParakeetTranscriptionService: TranscriptionService {
+class FluidAudioTranscriptionService: TranscriptionService {
     private var asrManager: AsrManager?
     private var vadManager: VadManager?
     private var activeVersion: AsrModelVersion?
     private var cachedModels: AsrModels?
     private var loadingTask: (version: AsrModelVersion, task: Task<AsrModels, Error>)?
-    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink.parakeet", category: "ParakeetTranscriptionService")
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink.fluidaudio", category: "FluidAudioTranscriptionService")
 
     private func version(for model: any TranscriptionModel) -> AsrModelVersion {
-        model.name.lowercased().contains("v2") ? .v2 : .v3
+        FluidAudioModelManager.asrVersion(for: model.name)
     }
 
     private func ensureModelsLoaded(for version: AsrModelVersion) async throws {
@@ -71,7 +71,7 @@ class ParakeetTranscriptionService: TranscriptionService {
         }
     }
 
-    func loadModel(for model: ParakeetModel) async throws {
+    func loadModel(for model: FluidAudioModel) async throws {
         try await ensureModelsLoaded(for: version(for: model))
     }
 
