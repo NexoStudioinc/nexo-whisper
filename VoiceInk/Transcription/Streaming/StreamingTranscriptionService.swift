@@ -176,6 +176,8 @@ class StreamingTranscriptionService {
             return MistralStreamingProvider()
         case .soniox:
             return SonioxStreamingProvider(modelContext: modelContext)
+        case .speechmatics:
+            return SpeechmaticsStreamingProvider(modelContext: modelContext)
         case .fluidAudio:
             guard let fluidAudioService else {
                 fatalError("FluidAudioTranscriptionService required for FluidAudio streaming. Ensure it is passed to StreamingTranscriptionService.")

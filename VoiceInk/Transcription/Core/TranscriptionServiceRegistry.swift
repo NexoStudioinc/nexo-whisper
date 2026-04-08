@@ -83,6 +83,8 @@ class TranscriptionServiceRegistry {
             return model.name == "voxtral-mini-transcribe-realtime-2602"
         case .soniox:
             return model.name == "stt-rt-v4"
+        case .speechmatics:
+            return model.name == "speechmatics-enhanced"
         case .fluidAudio:
             return UserDefaults.standard.object(forKey: "parakeet-streaming-enabled") as? Bool ?? true
         default:

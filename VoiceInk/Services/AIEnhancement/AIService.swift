@@ -12,6 +12,7 @@ enum AIProvider: String, CaseIterable {
     case elevenLabs = "ElevenLabs"
     case deepgram = "Deepgram"
     case soniox = "Soniox"
+    case speechmatics = "Speechmatics"
     case ollama = "Ollama"
     case custom = "Custom"
     
@@ -38,6 +39,8 @@ enum AIProvider: String, CaseIterable {
             return "https://api.deepgram.com/v1/listen"
         case .soniox:
             return "https://api.soniox.com/v1"
+        case .speechmatics:
+            return "https://asr.api.speechmatics.com/v2"
         case .ollama:
             return UserDefaults.standard.string(forKey: "ollamaBaseURL") ?? "http://localhost:11434"
         case .custom:
@@ -65,6 +68,8 @@ enum AIProvider: String, CaseIterable {
             return "whisper-1"
         case .soniox:
             return "stt-async-v4"
+        case .speechmatics:
+            return "speechmatics-enhanced"
         case .ollama:
             return UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "mistral"
         case .custom:
@@ -133,6 +138,8 @@ enum AIProvider: String, CaseIterable {
             return ["whisper-1"]
         case .soniox:
             return ["stt-async-v4"]
+        case .speechmatics:
+            return ["speechmatics-enhanced"]
         case .ollama:
             return []
         case .custom:
@@ -329,6 +336,8 @@ class AIService: ObservableObject {
                 result = await MistralTranscriptionClient.verifyAPIKey(key)
             case .soniox:
                 result = await SonioxClient.verifyAPIKey(key)
+            case .speechmatics:
+                result = await SpeechmaticsClient.verifyAPIKey(key)
             case .openRouter:
                 result = await OpenRouterClient.verifyAPIKey(key, model: currentModel)
             case .gemini:
