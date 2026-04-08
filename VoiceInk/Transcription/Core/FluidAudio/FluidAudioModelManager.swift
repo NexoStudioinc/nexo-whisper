@@ -19,7 +19,7 @@ class FluidAudioModelManager: ObservableObject {
         "parakeet-tdt-0.6b-v3": .v3,
     ]
 
-    static func asrVersion(for modelName: String) -> AsrModelVersion {
+    nonisolated static func asrVersion(for modelName: String) -> AsrModelVersion {
         modelVersionMap[modelName] ?? .v3
     }
 
