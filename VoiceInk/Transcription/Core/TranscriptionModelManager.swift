@@ -60,6 +60,8 @@ class TranscriptionModelManager: ObservableObject {
                 return APIKeyManager.shared.hasAPIKey(forProvider: "Gemini")
             case .soniox:
                 return APIKeyManager.shared.hasAPIKey(forProvider: "Soniox")
+            case .speechmatics:
+                return APIKeyManager.shared.hasAPIKey(forProvider: "Speechmatics")
             case .custom:
                 return true
             }
