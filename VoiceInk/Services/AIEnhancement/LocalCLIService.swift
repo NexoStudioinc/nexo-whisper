@@ -22,7 +22,7 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .claude:
             return "claude -p \"$VOICEINK_FULL_PROMPT\""
         case .codex:
-            return "codex exec \"$VOICEINK_FULL_PROMPT\""
+            return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""
         }
     }
 }
