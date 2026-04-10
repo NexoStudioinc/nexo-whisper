@@ -30,7 +30,7 @@ class FluidAudioTranscriptionService: TranscriptionService {
         let models = try await getOrLoadModels(for: version)
 
         let manager = AsrManager(config: .default)
-        try await manager.initialize(models: models)
+        try await manager.loadModels(models)
         self.asrManager = manager
         self.activeVersion = version
     }
@@ -118,7 +118,8 @@ class FluidAudioTranscriptionService: TranscriptionService {
             speechAudio += [Float](repeating: 0, count: trailingSilenceSamples)
         }
 
-        let result = try await asrManager.transcribe(speechAudio)
+        var decoderState = TdtDecoderState.make(decoderLayers: await asrManager.decoderLayerCount)
+        let result = try await asrManager.transcribe(speechAudio, decoderState: &decoderState)
 
         return TextNormalizer.shared.normalizeSentence(result.text)
     }
