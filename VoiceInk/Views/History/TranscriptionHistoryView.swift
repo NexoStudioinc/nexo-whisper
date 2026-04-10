@@ -220,7 +220,9 @@ struct TranscriptionHistoryView: View {
     private var centerPaneView: some View {
         Group {
             if let transcription = selectedTranscription {
-                TranscriptionDetailView(transcription: transcription)
+                TranscriptionDetailView(transcription: transcription, onInfoTap: {
+                    withAnimation { isRightSidebarVisible.toggle() }
+                })
                     .id(transcription.id)
             } else {
                 ScrollView {
@@ -258,7 +260,7 @@ struct TranscriptionHistoryView: View {
     private var rightSidebarView: some View {
         Group {
             if let transcription = selectedTranscription {
-                TranscriptionMetadataView(transcription: transcription)
+                TranscriptionInfoPanel(transcription: transcription)
                     .id(transcription.id)
             } else {
                 VStack(spacing: 12) {
@@ -275,23 +277,29 @@ struct TranscriptionHistoryView: View {
         }
     }
 
+    private var allSelected: Bool {
+        !displayedTranscriptions.isEmpty && selectedTranscriptions.count >= displayedTranscriptions.count
+    }
+
     private var selectionToolbar: some View {
         HStack(spacing: 12) {
-            if selectedTranscriptions.isEmpty {
-                Button("Select All") {
-                    Task { await selectAllTranscriptions() }
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
-            } else {
+            if allSelected {
                 Button("Deselect All") {
                     selectedTranscriptions.removeAll()
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)
+            } else {
+                Button("Select All") {
+                    Task { await selectAllTranscriptions() }
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+            }
 
+            if !selectedTranscriptions.isEmpty {
                 Divider()
                     .frame(height: 16)
 
