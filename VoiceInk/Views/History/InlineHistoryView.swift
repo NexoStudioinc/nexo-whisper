@@ -7,8 +7,8 @@ struct InlineHistoryView: View {
     @State private var expandedId: UUID?
     @State private var selectedTranscriptions: Set<Transcription> = []
     @State private var showDeleteConfirmation = false
-    @State private var showAnalysisView = false
     @State private var isPanelPresented = false
+    @State private var panelMode: PanelMode = .info
     @State private var panelTranscriptionId: UUID?
     @State private var displayedTranscriptions: [Transcription] = []
     @State private var isLoading = false
@@ -93,6 +93,7 @@ struct InlineHistoryView: View {
                 .onTapGesture {
                     withAnimation(.smooth(duration: 0.3)) {
                         isPanelPresented = false
+                        panelMode = .info
                     }
                 }
                 .animation(.smooth(duration: 0.3), value: isPanelPresented)
@@ -100,7 +101,7 @@ struct InlineHistoryView: View {
         .overlay(alignment: .trailing) {
             if isPanelPresented {
                 panelContent
-                    .frame(width: 380)
+                    .frame(width: 400)
                     .frame(maxHeight: .infinity)
                     .background(Color(NSColor.windowBackgroundColor))
                     .overlay(alignment: .leading) {
@@ -121,11 +122,6 @@ struct InlineHistoryView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This action cannot be undone. Are you sure you want to delete \(selectedTranscriptions.count) item\(selectedTranscriptions.count == 1 ? "" : "s")?")
-        }
-        .sheet(isPresented: $showAnalysisView) {
-            if !selectedTranscriptions.isEmpty {
-                PerformanceAnalysisView(transcriptions: Array(selectedTranscriptions))
-            }
         }
         .onAppear {
             isViewCurrentlyVisible = true
@@ -185,7 +181,10 @@ struct InlineHistoryView: View {
 
             Spacer()
 
-            Button(action: { showAnalysisView = true }) {
+            Button(action: {
+                panelMode = .analysis
+                withAnimation(.smooth(duration: 0.3)) { isPanelPresented = true }
+            }) {
                 Label("Analyze", systemImage: "chart.bar.xaxis")
                     .font(.system(size: 12, weight: .medium))
             }
@@ -220,7 +219,7 @@ struct InlineHistoryView: View {
                 .foregroundColor(.secondary)
             } else {
                 Button("Select All") {
-                    selectedTranscriptions = Set(displayedTranscriptions)
+                    Task { await selectAllTranscriptions() }
                 }
                 .font(.system(size: 12, weight: .medium))
                 .buttonStyle(.plain)
@@ -272,6 +271,7 @@ struct InlineHistoryView: View {
                         onToggleCheck: { toggleSelection(transcription) },
                         onShowInfo: {
                             panelTranscriptionId = transcription.id
+                            panelMode = .info
                             withAnimation(.smooth(duration: 0.3)) {
                                 isPanelPresented = true
                             }
@@ -304,9 +304,28 @@ struct InlineHistoryView: View {
         .scrollContentBackground(.hidden)
     }
 
-    // MARK: - Sliding Panel (Details + AI Request only)
+    // MARK: - Sliding Panel
 
+    @ViewBuilder
     private var panelContent: some View {
+        switch panelMode {
+        case .info:
+            infoPanelContent
+        case .analysis:
+            PerformanceAnalysisPanelView(
+                transcriptions: Array(selectedTranscriptions),
+                onClose: {
+                    withAnimation(.smooth(duration: 0.3)) {
+                        isPanelPresented = false
+                        panelMode = .info
+                    }
+                }
+            )
+            .id(selectedTranscriptions.count)
+        }
+    }
+
+    private var infoPanelContent: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Text("Info")
@@ -316,6 +335,7 @@ struct InlineHistoryView: View {
                 Button(action: {
                     withAnimation(.smooth(duration: 0.3)) {
                         isPanelPresented = false
+                        panelMode = .info
                     }
                 }) {
                     Image(systemName: "xmark")
@@ -433,6 +453,35 @@ struct InlineHistoryView: View {
                 print("Error saving deletion: \(error.localizedDescription)")
                 await loadInitialContent()
             }
+        }
+    }
+
+    private func selectAllTranscriptions() async {
+        do {
+            var allDescriptor = FetchDescriptor<Transcription>()
+
+            if !searchText.isEmpty {
+                allDescriptor.predicate = #Predicate<Transcription> { transcription in
+                    transcription.text.localizedStandardContains(searchText) ||
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
+                }
+            }
+
+            allDescriptor.propertiesToFetch = [\.id]
+            let allTranscriptions = try modelContext.fetch(allDescriptor)
+            let visibleIds = Set(displayedTranscriptions.map { $0.id })
+
+            await MainActor.run {
+                selectedTranscriptions = Set(displayedTranscriptions)
+
+                for transcription in allTranscriptions {
+                    if !visibleIds.contains(transcription.id) {
+                        selectedTranscriptions.insert(transcription)
+                    }
+                }
+            }
+        } catch {
+            print("Error selecting all transcriptions: \(error)")
         }
     }
 }
