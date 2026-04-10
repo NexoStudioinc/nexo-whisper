@@ -165,9 +165,7 @@ struct InlineHistoryView: View {
                 Capsule()
                     .fill(Color.secondary.opacity(0.08))
             )
-            .frame(maxWidth: 280)
-
-            Spacer()
+            .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)

@@ -11,16 +11,14 @@ struct TranscriptionHistoryView: View {
     @State private var isAnalysisPanelPresented = false
     @State private var isLeftSidebarVisible = true
     @State private var isRightSidebarVisible = true
-    @State private var leftSidebarWidth: CGFloat = 260
-    @State private var rightSidebarWidth: CGFloat = 260
+    @State private var leftSidebarWidth: CGFloat = 300
+    @State private var rightSidebarWidth: CGFloat = 350
     @State private var displayedTranscriptions: [Transcription] = []
     @State private var isLoading = false
     @State private var hasMoreContent = true
     @State private var lastTimestamp: Date?
 
     private let exportService = VoiceInkCSVExportService()
-    private let minSidebarWidth: CGFloat = 200
-    private let maxSidebarWidth: CGFloat = 350
     private let pageSize = 20
     
     @Query(Self.createLatestTranscriptionIndicatorDescriptor()) private var latestTranscriptionIndicator: [Transcription]
@@ -65,11 +63,7 @@ struct TranscriptionHistoryView: View {
         HStack(spacing: 0) {
             if isLeftSidebarVisible {
                 leftSidebarView
-                    .frame(
-                        minWidth: minSidebarWidth,
-                        idealWidth: leftSidebarWidth,
-                        maxWidth: maxSidebarWidth
-                    )
+                    .frame(width: leftSidebarWidth)
                     .transition(.move(edge: .leading))
 
                 Divider()
@@ -82,11 +76,7 @@ struct TranscriptionHistoryView: View {
                 Divider()
 
                 rightSidebarView
-                    .frame(
-                        minWidth: minSidebarWidth,
-                        idealWidth: rightSidebarWidth,
-                        maxWidth: maxSidebarWidth
-                    )
+                    .frame(width: rightSidebarWidth)
                     .transition(.move(edge: .trailing))
             }
         }
@@ -447,13 +437,6 @@ struct TranscriptionHistoryView: View {
         } catch {
             print("Error saving deletion: \(error.localizedDescription)")
             await loadInitialContent()
-        }
-    }
-
-    private func deleteTranscription(_ transcription: Transcription) {
-        performDeletion(for: transcription)
-        Task {
-            await saveAndReload()
         }
     }
 
