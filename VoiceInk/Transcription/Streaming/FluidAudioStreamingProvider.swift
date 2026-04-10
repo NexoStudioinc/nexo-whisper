@@ -18,7 +18,7 @@ final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
     private var trimmedSampleCount: Int = 0
 
     private var asrManager: AsrManager?
-    private var decoderState: TdtDecoderState?
+    private var decoderLayerCount: Int = 0
     private let agreementEngine: WordAgreementEngine
     private let config: AgreementConfig
 
@@ -49,7 +49,7 @@ final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
         let manager = AsrManager(config: .default)
         try await manager.loadModels(models)
         self.asrManager = manager
-        self.decoderState = TdtDecoderState.make(decoderLayers: await manager.decoderLayerCount)
+        self.decoderLayerCount = await manager.decoderLayerCount
 
         agreementEngine.reset()
         audioBuffer = []
@@ -86,7 +86,7 @@ final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
 
         await asrManager?.cleanup()
         asrManager = nil
-        decoderState = nil
+        decoderLayerCount = 0
 
         bufferLock.lock()
         audioBuffer = []
@@ -156,9 +156,8 @@ final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
         guard audioSlice.count >= Int(sampleRate) else { return }
 
         do {
-            var state = decoderState ?? TdtDecoderState.make()
+            var state = TdtDecoderState.make(decoderLayers: decoderLayerCount)
             let result = try await asrManager.transcribe(audioSlice, decoderState: &state)
-            decoderState = state
             lastTranscribedSampleCount = absoluteSampleCount
 
             guard let tokenTimings = result.tokenTimings, !tokenTimings.isEmpty else {
@@ -229,9 +228,8 @@ final class FluidAudioStreamingProvider: StreamingTranscriptionProvider {
         }
 
         do {
-            var state = decoderState ?? TdtDecoderState.make()
+            var state = TdtDecoderState.make(decoderLayers: decoderLayerCount)
             let result = try await asrManager.transcribe(samples, decoderState: &state)
-            decoderState = state
             let text = result.text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty else { return nil }
             return TextNormalizer.shared.normalizeSentence(text)
