@@ -8,7 +8,7 @@ struct TranscriptionHistoryView: View {
     @State private var selectedTranscriptions: Set<Transcription> = []
     @State private var showDeleteConfirmation = false
     @State private var isViewCurrentlyVisible = false
-    @State private var showAnalysisView = false
+    @State private var isAnalysisPanelPresented = false
     @State private var isLeftSidebarVisible = true
     @State private var isRightSidebarVisible = true
     @State private var leftSidebarWidth: CGFloat = 260
@@ -111,11 +111,42 @@ struct TranscriptionHistoryView: View {
         } message: {
             Text("This action cannot be undone. Are you sure you want to delete \(selectedTranscriptions.count) item\(selectedTranscriptions.count == 1 ? "" : "s")?")
         }
-        .sheet(isPresented: $showAnalysisView) {
-            if !selectedTranscriptions.isEmpty {
-                PerformanceAnalysisView(transcriptions: Array(selectedTranscriptions))
+        .overlay {
+            Color.black.opacity(isAnalysisPanelPresented ? 0.1 : 0)
+                .ignoresSafeArea()
+                .allowsHitTesting(isAnalysisPanelPresented)
+                .onTapGesture {
+                    withAnimation(.smooth(duration: 0.3)) {
+                        isAnalysisPanelPresented = false
+                    }
+                }
+                .animation(.smooth(duration: 0.3), value: isAnalysisPanelPresented)
+        }
+        .overlay(alignment: .trailing) {
+            if isAnalysisPanelPresented {
+                PerformanceAnalysisPanelView(
+                    transcriptions: Array(selectedTranscriptions),
+                    onClose: {
+                        withAnimation(.smooth(duration: 0.3)) {
+                            isAnalysisPanelPresented = false
+                        }
+                    }
+                )
+                .id(selectedTranscriptions.count)
+                .frame(width: 400)
+                .frame(maxHeight: .infinity)
+                .background(Color(NSColor.windowBackgroundColor))
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color(NSColor.separatorColor))
+                        .frame(width: 1)
+                }
+                .shadow(color: .black.opacity(0.08), radius: 8, x: -2, y: 0)
+                .ignoresSafeArea()
+                .transition(.move(edge: .trailing))
             }
         }
+        .animation(.smooth(duration: 0.3), value: isAnalysisPanelPresented)
         .onAppear {
             isViewCurrentlyVisible = true
             Task {
@@ -220,7 +251,9 @@ struct TranscriptionHistoryView: View {
     private var centerPaneView: some View {
         Group {
             if let transcription = selectedTranscription {
-                TranscriptionDetailView(transcription: transcription)
+                TranscriptionDetailView(transcription: transcription, onInfoTap: {
+                    withAnimation { isRightSidebarVisible.toggle() }
+                })
                     .id(transcription.id)
             } else {
                 ScrollView {
@@ -258,7 +291,7 @@ struct TranscriptionHistoryView: View {
     private var rightSidebarView: some View {
         Group {
             if let transcription = selectedTranscription {
-                TranscriptionMetadataView(transcription: transcription)
+                TranscriptionInfoPanel(transcription: transcription)
                     .id(transcription.id)
             } else {
                 VStack(spacing: 12) {
@@ -275,27 +308,35 @@ struct TranscriptionHistoryView: View {
         }
     }
 
+    private var allSelected: Bool {
+        !displayedTranscriptions.isEmpty && displayedTranscriptions.allSatisfy { selectedTranscriptions.contains($0) }
+    }
+
     private var selectionToolbar: some View {
         HStack(spacing: 12) {
-            if selectedTranscriptions.isEmpty {
-                Button("Select All") {
-                    Task { await selectAllTranscriptions() }
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
-            } else {
+            if allSelected {
                 Button("Deselect All") {
                     selectedTranscriptions.removeAll()
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)
+            } else {
+                Button("Select All") {
+                    Task { await selectAllTranscriptions() }
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+            }
 
+            if !selectedTranscriptions.isEmpty {
                 Divider()
                     .frame(height: 16)
 
-                Button(action: { showAnalysisView = true }) {
+                Button(action: {
+                    withAnimation(.smooth(duration: 0.3)) { isAnalysisPanelPresented = true }
+                }) {
                     Image(systemName: "chart.bar.xaxis")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.secondary)
