@@ -58,7 +58,7 @@ struct InlineHistoryView: View {
     }
 
     private var allSelected: Bool {
-        !displayedTranscriptions.isEmpty && selectedTranscriptions.count >= displayedTranscriptions.count
+        !displayedTranscriptions.isEmpty && displayedTranscriptions.allSatisfy { selectedTranscriptions.contains($0) }
     }
 
     private var panelTranscription: Transcription? {
