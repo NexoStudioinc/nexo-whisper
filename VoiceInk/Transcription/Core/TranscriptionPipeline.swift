@@ -175,12 +175,6 @@ class TranscriptionPipeline {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                // Capture element while target field still has focus, before Cmd+V fires
-                let autoLearn = AutoLearnVocabularyService.shared
-                if let element = autoLearn.captureFocusedElement() {
-                    autoLearn.prepareMonitoring(pastedText: textToPaste, element: element, modelContext: self.modelContext)
-                }
-
                 let appendSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
                 CursorPaster.pasteAtCursor(textToPaste + (appendSpace ? " " : ""))
 
@@ -200,8 +194,5 @@ class TranscriptionPipeline {
         }
 
         await onDismiss()
-
-        // Start monitoring only after recorder is fully dismissed — no race with focus changes from our own UI
-        AutoLearnVocabularyService.shared.beginMonitoring()
     }
 }
