@@ -74,22 +74,8 @@ class TranscriptionServiceRegistry {
 
     /// Whether the given model supports streaming transcription
     private func supportsStreaming(model: any TranscriptionModel) -> Bool {
-        switch model.provider {
-        case .elevenLabs:
-            return model.name == "scribe_v2"
-        case .deepgram:
-            return model.name == "nova-3" || model.name == "nova-3-medical"
-        case .mistral:
-            return model.name == "voxtral-mini-transcribe-realtime-2602"
-        case .soniox:
-            return model.name == "stt-rt-v4"
-        case .speechmatics:
-            return model.name == "speechmatics-enhanced"
-        case .fluidAudio:
-            return UserDefaults.standard.object(forKey: "parakeet-streaming-enabled") as? Bool ?? true
-        default:
-            return false
-        }
+        guard model.supportsStreaming else { return false }
+        return UserDefaults.standard.object(forKey: "streaming-enabled-\(model.name)") as? Bool ?? true
     }
 
     func cleanup() async {

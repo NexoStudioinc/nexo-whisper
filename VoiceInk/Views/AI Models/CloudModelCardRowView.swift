@@ -11,6 +11,7 @@ struct CloudModelCardView: View {
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @State private var isExpanded = false
     @State private var apiKey = ""
+    @State private var streamingEnabled = true
     @State private var isVerifying = false
     @State private var verificationStatus: VerificationStatus = .none
     @State private var verificationError: String? = nil
@@ -71,6 +72,7 @@ struct CloudModelCardView: View {
         .background(CardBackground(isSelected: isCurrent, useAccentGradientWhenSelected: isCurrent))
         .onAppear {
             loadSavedAPIKey()
+            streamingEnabled = UserDefaults.standard.object(forKey: streamingDefaultsKey) as? Bool ?? true
         }
     }
     
@@ -198,6 +200,18 @@ struct CloudModelCardView: View {
             
             if isConfigured {
                 Menu {
+                    if model.supportsStreaming {
+                        Button {
+                            streamingEnabled.toggle()
+                            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
+                        } label: {
+                            Label(
+                                streamingEnabled ? "Disable Live Streaming" : "Enable Live Streaming",
+                                systemImage: streamingEnabled ? "waveform.slash" : "waveform"
+                            )
+                        }
+                    }
+
                     Button {
                         clearAPIKey()
                     } label: {
@@ -268,6 +282,10 @@ struct CloudModelCardView: View {
         }
     }
     
+    private var streamingDefaultsKey: String {
+        "streaming-enabled-\(model.name)"
+    }
+
     private func loadSavedAPIKey() {
         if let savedKey = APIKeyManager.shared.getAPIKey(forProvider: providerKey) {
             apiKey = savedKey

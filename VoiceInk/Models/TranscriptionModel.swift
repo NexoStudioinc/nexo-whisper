@@ -28,6 +28,8 @@ protocol TranscriptionModel: Identifiable, Hashable {
     var isMultilingualModel: Bool { get }
     var supportedLanguages: [String: String] { get }
 
+    // Streaming capability
+    var supportsStreaming: Bool { get }
 }
 
 extension TranscriptionModel {
@@ -38,6 +40,8 @@ extension TranscriptionModel {
     var language: String {
         isMultilingualModel ? "Multilingual" : "English-only"
     }
+
+    var supportsStreaming: Bool { false }
 }
 
 // A new struct for Apple's native models
@@ -62,6 +66,7 @@ struct FluidAudioModel: TranscriptionModel {
     let speed: Double
     let accuracy: Double
     let ramUsage: Double
+    let supportsStreaming: Bool
     var isMultilingualModel: Bool {
         supportedLanguages.count > 1
     }
@@ -78,9 +83,10 @@ struct CloudModel: TranscriptionModel {
     let speed: Double
     let accuracy: Double
     let isMultilingualModel: Bool
+    let supportsStreaming: Bool
     let supportedLanguages: [String: String]
 
-    init(id: UUID = UUID(), name: String, displayName: String, description: String, provider: ModelProvider, speed: Double, accuracy: Double, isMultilingual: Bool, supportedLanguages: [String: String]) {
+    init(id: UUID = UUID(), name: String, displayName: String, description: String, provider: ModelProvider, speed: Double, accuracy: Double, isMultilingual: Bool, supportsStreaming: Bool = false, supportedLanguages: [String: String]) {
         self.id = id
         self.name = name
         self.displayName = displayName
@@ -89,6 +95,7 @@ struct CloudModel: TranscriptionModel {
         self.speed = speed
         self.accuracy = accuracy
         self.isMultilingualModel = isMultilingual
+        self.supportsStreaming = supportsStreaming
         self.supportedLanguages = supportedLanguages
     }
 }

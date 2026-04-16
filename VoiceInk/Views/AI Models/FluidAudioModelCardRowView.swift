@@ -6,7 +6,11 @@ struct FluidAudioModelCardRowView: View {
     let model: FluidAudioModel
     @ObservedObject var fluidAudioModelManager: FluidAudioModelManager
     @ObservedObject var transcriptionModelManager: TranscriptionModelManager
-    @AppStorage("parakeet-streaming-enabled") private var streamingEnabled = true
+    @State private var streamingEnabled = true
+
+    private var streamingDefaultsKey: String {
+        "streaming-enabled-\(model.name)"
+    }
 
     var isCurrent: Bool {
         transcriptionModelManager.currentTranscriptionModel?.name == model.name
@@ -34,6 +38,9 @@ struct FluidAudioModelCardRowView: View {
         }
         .padding(16)
         .background(CardBackground(isSelected: isCurrent, useAccentGradientWhenSelected: isCurrent))
+        .onAppear {
+            streamingEnabled = UserDefaults.standard.object(forKey: streamingDefaultsKey) as? Bool ?? true
+        }
     }
 
     private var headerSection: some View {
@@ -159,10 +166,13 @@ struct FluidAudioModelCardRowView: View {
                         Label("Show in Finder", systemImage: "folder")
                     }
 
-                    Button {
-                        streamingEnabled.toggle()
-                    } label: {
-                        Label(streamingEnabled ? "Disable Live Streaming" : "Enable Live Streaming", systemImage: streamingEnabled ? "waveform.slash" : "waveform")
+                    if model.supportsStreaming {
+                        Button {
+                            streamingEnabled.toggle()
+                            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
+                        } label: {
+                            Label(streamingEnabled ? "Disable Live Streaming" : "Enable Live Streaming", systemImage: streamingEnabled ? "waveform.slash" : "waveform")
+                        }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")

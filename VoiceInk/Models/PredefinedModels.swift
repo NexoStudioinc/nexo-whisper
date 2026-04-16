@@ -124,6 +124,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.94,
             ramUsage: 0.8,
+            supportsStreaming: false,
             supportedLanguages: getLanguageDictionary(isMultilingual: false, provider: .fluidAudio)
         ),
         FluidAudioModel(
@@ -134,6 +135,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.94,
             ramUsage: 0.8,
+            supportsStreaming: false,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .fluidAudio)
         ),
 
@@ -249,6 +251,7 @@ import Foundation
            speed: 0.99,
            accuracy: 0.98,
            isMultilingual: true,
+           supportsStreaming: false,
            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .elevenLabs)
        ),
        CloudModel(
@@ -259,6 +262,7 @@ import Foundation
            speed: 0.99,
            accuracy: 0.96,
            isMultilingual: true,
+           supportsStreaming: false,
            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .deepgram)
        ),
        CloudModel(
@@ -269,6 +273,7 @@ import Foundation
            speed: 0.99,
            accuracy: 0.96,
            isMultilingual: false,
+           supportsStreaming: false,
            supportedLanguages: getLanguageDictionary(isMultilingual: false, provider: .deepgram)
        ),
         CloudModel(
@@ -289,6 +294,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.97,
             isMultilingual: true,
+            supportsStreaming: false,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .mistral)
         ),
         
@@ -352,6 +358,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.97,
             isMultilingual: true,
+            supportsStreaming: false,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .soniox)
         ),
 
@@ -364,6 +371,7 @@ import Foundation
             speed: 0.99,
             accuracy: 0.98,
             isMultilingual: true,
+            supportsStreaming: false,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .speechmatics)
         )
      ]
