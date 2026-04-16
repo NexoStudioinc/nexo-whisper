@@ -695,7 +695,7 @@
 		};
 		E1D7EF972E35E16C00640029 /* XCRemoteSwiftPackageReference "mediaremote-adapter" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ejbills/mediaremote-adapter";
+			repositoryURL = "https://github.com/Beingpax/mediaremote-adapter";
 			requirement = {
 				branch = master;
 				kind = branch;

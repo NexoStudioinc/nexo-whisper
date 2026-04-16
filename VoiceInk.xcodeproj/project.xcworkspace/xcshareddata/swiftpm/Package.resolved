@@ -58,10 +58,10 @@
     {
       "identity" : "mediaremote-adapter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ejbills/mediaremote-adapter",
+      "location" : "https://github.com/Beingpax/mediaremote-adapter",
       "state" : {
         "branch" : "master",
-        "revision" : "b8ce5d15898299d4d314413a3c4e3a1f3f678fa2"
+        "revision" : "b97fa53f0654c8e33519e8a601b0bead3abd310a"
       }
     },
     {
