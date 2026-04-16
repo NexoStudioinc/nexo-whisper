@@ -81,9 +81,13 @@ struct CloudModelCardView: View {
             Text(model.displayName)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Color(.labelColor))
-            
+
             statusBadge
-            
+
+            if model.supportsStreaming && isConfigured {
+                streamingModeBadge
+            }
+
             Spacer()
         }
     }
@@ -115,6 +119,30 @@ struct CloudModelCardView: View {
         }
     }
     
+    private var streamingModeBadge: some View {
+        Button {
+            streamingEnabled.toggle()
+            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: streamingEnabled ? "waveform" : "doc.text")
+                    .font(.system(size: 8, weight: .semibold))
+                Text(streamingEnabled ? "Live" : "Batch")
+                    .font(.system(size: 11, weight: .medium))
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+                Capsule().fill(streamingEnabled
+                    ? Color.accentColor.opacity(0.15)
+                    : Color(.secondaryLabelColor).opacity(0.15))
+            )
+            .foregroundColor(streamingEnabled ? Color.accentColor : Color(.secondaryLabelColor))
+        }
+        .buttonStyle(.plain)
+        .help(streamingEnabled ? "Live streaming enabled — click to switch to batch" : "Batch mode — click to enable live streaming")
+    }
+
     private var metadataSection: some View {
         HStack(spacing: 12) {
             // Provider
@@ -200,18 +228,6 @@ struct CloudModelCardView: View {
             
             if isConfigured {
                 Menu {
-                    if model.supportsStreaming {
-                        Button {
-                            streamingEnabled.toggle()
-                            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
-                        } label: {
-                            Label(
-                                streamingEnabled ? "Disable Live Streaming" : "Enable Live Streaming",
-                                systemImage: streamingEnabled ? "waveform.slash" : "waveform"
-                            )
-                        }
-                    }
-
                     Button {
                         clearAPIKey()
                     } label: {

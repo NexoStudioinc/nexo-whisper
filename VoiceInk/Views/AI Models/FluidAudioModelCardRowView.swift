@@ -50,8 +50,37 @@ struct FluidAudioModelCardRowView: View {
                 .foregroundColor(Color(.labelColor))
 
             statusBadge
+
+            if model.supportsStreaming && isDownloaded {
+                streamingModeBadge
+            }
+
             Spacer()
         }
+    }
+
+    private var streamingModeBadge: some View {
+        Button {
+            streamingEnabled.toggle()
+            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: streamingEnabled ? "waveform" : "doc.text")
+                    .font(.system(size: 8, weight: .semibold))
+                Text(streamingEnabled ? "Live" : "Batch")
+                    .font(.system(size: 11, weight: .medium))
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+                Capsule().fill(streamingEnabled
+                    ? Color.accentColor.opacity(0.15)
+                    : Color(.secondaryLabelColor).opacity(0.15))
+            )
+            .foregroundColor(streamingEnabled ? Color.accentColor : Color(.secondaryLabelColor))
+        }
+        .buttonStyle(.plain)
+        .help(streamingEnabled ? "Live streaming enabled — click to switch to batch" : "Batch mode — click to enable live streaming")
     }
 
     private var statusBadge: some View {
@@ -166,14 +195,6 @@ struct FluidAudioModelCardRowView: View {
                         Label("Show in Finder", systemImage: "folder")
                     }
 
-                    if model.supportsStreaming {
-                        Button {
-                            streamingEnabled.toggle()
-                            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
-                        } label: {
-                            Label(streamingEnabled ? "Disable Live Streaming" : "Enable Live Streaming", systemImage: streamingEnabled ? "waveform.slash" : "waveform")
-                        }
-                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .font(.system(size: 14))
