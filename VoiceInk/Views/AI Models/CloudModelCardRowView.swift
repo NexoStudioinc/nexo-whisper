@@ -82,8 +82,6 @@ struct CloudModelCardView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Color(.labelColor))
 
-            statusBadge
-
             if model.supportsStreaming && isConfigured {
                 streamingModeBadge
             }
@@ -92,55 +90,16 @@ struct CloudModelCardView: View {
         }
     }
     
-    private var statusBadge: some View {
-        Group {
-            if isCurrent {
-                Text("Default")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.accentColor))
-                    .foregroundColor(.white)
-            } else if isConfigured {
-                Text("Configured")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color(.systemGreen).opacity(0.2)))
-                    .foregroundColor(Color(.systemGreen))
-            } else {
-                Text("Setup Required")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color(.systemOrange).opacity(0.2)))
-                    .foregroundColor(Color(.systemOrange))
-            }
-        }
-    }
-    
     private var streamingModeBadge: some View {
-        Button {
-            streamingEnabled.toggle()
-            UserDefaults.standard.set(streamingEnabled, forKey: streamingDefaultsKey)
-        } label: {
-            HStack(spacing: 3) {
-                Image(systemName: streamingEnabled ? "waveform" : "doc.text")
-                    .font(.system(size: 8, weight: .semibold))
-                Text(streamingEnabled ? "Live" : "Batch")
-                    .font(.system(size: 11, weight: .medium))
+        Toggle("Real-time", isOn: $streamingEnabled)
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundColor(Color(.secondaryLabelColor))
+            .onChange(of: streamingEnabled) { _, newValue in
+                UserDefaults.standard.set(newValue, forKey: streamingDefaultsKey)
             }
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(
-                Capsule().fill(streamingEnabled
-                    ? Color.accentColor.opacity(0.15)
-                    : Color(.secondaryLabelColor).opacity(0.15))
-            )
-            .foregroundColor(streamingEnabled ? Color.accentColor : Color(.secondaryLabelColor))
-        }
-        .buttonStyle(.plain)
-        .help(streamingEnabled ? "Live streaming enabled — click to switch to batch" : "Batch mode — click to enable live streaming")
+            .help(streamingEnabled ? "Live streaming enabled — click to switch to batch" : "Batch mode — click to enable live streaming")
     }
 
     private var metadataSection: some View {

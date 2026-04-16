@@ -245,8 +245,8 @@ import Foundation
        ),
        CloudModel(
            name: "scribe_v2",
-           displayName: "Scribe V2 Realtime (ElevenLabs)",
-           description: "ElevenLabs' Scribe V2 Realtime model for the most accurate transcription",
+           displayName: "Scribe V2 (ElevenLabs)",
+           description: "ElevenLabs' Scribe V2 model for the most accurate transcription",
            provider: .elevenLabs,
            speed: 0.99,
            accuracy: 0.98,
@@ -256,8 +256,8 @@ import Foundation
        ),
        CloudModel(
            name: "nova-3",
-           displayName: "Nova 3 Realtime (Deepgram)",
-           description: "Deepgram's latest Nova 3 model for realtime transcription",
+           displayName: "Nova 3 (Deepgram)",
+           description: "Deepgram's latest Nova 3 model for fast, accurate transcription",
            provider: .deepgram,
            speed: 0.99,
            accuracy: 0.96,
@@ -267,7 +267,7 @@ import Foundation
        ),
        CloudModel(
            name: "nova-3-medical",
-           displayName: "Nova 3 Medical Realtime (Deepgram)",
+           displayName: "Nova 3 Medical (Deepgram)",
            description: "Specialized medical transcription model optimized for clinical environments",
            provider: .deepgram,
            speed: 0.99,
@@ -278,21 +278,11 @@ import Foundation
        ),
         CloudModel(
             name: "voxtral-mini-latest",
-            displayName: "Voxtral Transcribe 2 (Mistral)",
-            description: "Mistral's latest transcription model for fast and accurate transcription",
-            provider: .mistral,
-            speed: 0.8,
-            accuracy: 0.98,
-            isMultilingual: true,
-            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .mistral)
-        ),
-        CloudModel(
-            name: "voxtral-mini-transcribe-realtime-2602",
-            displayName: "Voxtral Realtime (Mistral)",
-            description: "Mistral's Voxtral Realtime model for streaming transcription",
+            displayName: "Voxtral (Mistral)",
+            description: "Mistral's Voxtral model for fast and accurate transcription",
             provider: .mistral,
             speed: 0.99,
-            accuracy: 0.97,
+            accuracy: 0.98,
             isMultilingual: true,
             supportsStreaming: true,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .mistral)
@@ -343,20 +333,10 @@ import Foundation
         CloudModel(
             name: "stt-async-v4",
             displayName: "Soniox V4",
-            description: "Soniox asynchronous transcription model v4 with human-parity accuracy",
-            provider: .soniox,
-            speed: 0.8,
-            accuracy: 0.98,
-            isMultilingual: true,
-            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .soniox)
-        ),
-        CloudModel(
-            name: "stt-rt-v4",
-            displayName: "Soniox Realtime V4",
-            description: "Soniox real-time streaming model v4 for low-latency transcription",
+            description: "Soniox transcription model v4 with human-parity accuracy",
             provider: .soniox,
             speed: 0.99,
-            accuracy: 0.97,
+            accuracy: 0.98,
             isMultilingual: true,
             supportsStreaming: true,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .soniox)
@@ -365,7 +345,7 @@ import Foundation
         // Speechmatics Models
         CloudModel(
             name: "speechmatics-enhanced",
-            displayName: "Speechmatics Realtime",
+            displayName: "Speechmatics",
             description: "Speechmatics enhanced accuracy transcription with real-time streaming and 50+ language support",
             provider: .speechmatics,
             speed: 0.99,
