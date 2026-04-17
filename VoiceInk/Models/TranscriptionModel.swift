@@ -28,7 +28,6 @@ protocol TranscriptionModel: Identifiable, Hashable {
     var isMultilingualModel: Bool { get }
     var supportedLanguages: [String: String] { get }
 
-    // Streaming capability
     var supportsStreaming: Bool { get }
 }
 
@@ -71,6 +70,18 @@ struct FluidAudioModel: TranscriptionModel {
         supportedLanguages.count > 1
     }
     let supportedLanguages: [String: String]
+
+    init(name: String, displayName: String, description: String, size: String, speed: Double, accuracy: Double, ramUsage: Double, supportsStreaming: Bool = false, supportedLanguages: [String: String]) {
+        self.name = name
+        self.displayName = displayName
+        self.description = description
+        self.size = size
+        self.speed = speed
+        self.accuracy = accuracy
+        self.ramUsage = ramUsage
+        self.supportsStreaming = supportsStreaming
+        self.supportedLanguages = supportedLanguages
+    }
 }
 
 // A new struct for cloud models
