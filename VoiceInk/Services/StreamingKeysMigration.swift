@@ -33,6 +33,23 @@ enum StreamingKeysMigration {
             defaults.set(replacement, forKey: "CurrentTranscriptionModel")
         }
 
+        // Remap selectedTranscriptionModelName inside each stored PowerModeConfig.
+        // Uses JSONSerialization so the migration stays independent of the PowerModeConfig struct shape.
+        let powerModeKey = "powerModeConfigurationsV2"
+        if let data = defaults.data(forKey: powerModeKey),
+           var configs = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] {
+            var changed = false
+            for index in configs.indices {
+                guard let savedModel = configs[index]["selectedTranscriptionModelName"] as? String,
+                      let replacement = removedModelMappings[savedModel] else { continue }
+                configs[index]["selectedTranscriptionModelName"] = replacement
+                changed = true
+            }
+            if changed, let newData = try? JSONSerialization.data(withJSONObject: configs) {
+                defaults.set(newData, forKey: powerModeKey)
+            }
+        }
+
         defaults.set(true, forKey: "streaming-keys-migrated")
     }
 }
