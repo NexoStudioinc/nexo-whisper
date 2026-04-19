@@ -40,6 +40,8 @@ struct CloudModelCardView: View {
             return "Soniox"
         case .speechmatics:
             return "Speechmatics"
+        case .xai:
+            return "xAI"
         default:
             return model.provider.rawValue
         }
@@ -296,6 +298,8 @@ struct CloudModelCardView: View {
                 result = await SonioxClient.verifyAPIKey(key)
             case .speechmatics:
                 result = await SpeechmaticsClient.verifyAPIKey(key)
+            case .xai:
+                result = await XAIClient.verifyAPIKey(key)
             default:
                 await MainActor.run {
                     isVerifying = false

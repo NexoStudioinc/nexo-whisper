@@ -24,6 +24,17 @@ import Foundation
                 filtered["auto"] = "Auto-detect"
                 return filtered
             }
+            // For xAI, return only the 25 languages supported by Grok STT
+            if provider == .xai {
+                let xaiSupportedCodes = [
+                    "ar", "cs", "da", "nl", "en", "fr", "de", "hi", "id", "it",
+                    "ja", "ko", "mk", "ms", "fa", "pl", "pt", "ro", "ru", "es",
+                    "sv", "th", "tr", "vi"
+                ]
+                var filtered = allLanguages.filter { xaiSupportedCodes.contains($0.key) }
+                filtered["auto"] = "Auto-detect"
+                return filtered
+            }
             // For Soniox, return only the 60 languages supported by stt-async-v4
             if provider == .soniox {
                 let sonioxSupportedCodes = [
@@ -286,6 +297,17 @@ import Foundation
             isMultilingual: true,
             supportsStreaming: true,
             supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .mistral)
+        ),
+        CloudModel(
+            name: "grok-stt",
+            displayName: "Grok (xAI)",
+            description: "xAI's Grok speech-to-text with real-time streaming and batch transcription",
+            provider: .xai,
+            speed: 0.99,
+            accuracy: 0.98,
+            isMultilingual: true,
+            supportsStreaming: true,
+            supportedLanguages: getLanguageDictionary(isMultilingual: true, provider: .xai)
         ),
 
         // Gemini Models

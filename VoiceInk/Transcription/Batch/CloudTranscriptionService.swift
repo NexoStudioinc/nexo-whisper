@@ -121,6 +121,16 @@ class CloudTranscriptionService: TranscriptionService {
                     customVocabulary: customVocabulary
                 )
 
+            case .xai:
+                let apiKey = try requireAPIKey(forProvider: "xAI")
+                return try await XAIClient.transcribe(
+                    audioData: audioData,
+                    fileName: fileName,
+                    apiKey: apiKey,
+                    language: language,
+                    format: true
+                )
+
             case .custom:
                 guard let customModel = model as? CustomCloudModel else {
                     throw CloudTranscriptionError.unsupportedProvider
