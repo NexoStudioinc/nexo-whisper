@@ -6,7 +6,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     weak var menuBarManager: MenuBarManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        StreamingKeysMigration.run()
         menuBarManager?.applyActivationPolicy()
     }
 
