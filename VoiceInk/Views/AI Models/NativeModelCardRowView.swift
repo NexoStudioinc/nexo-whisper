@@ -30,29 +30,7 @@ struct NativeAppleModelCardView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Color(.labelColor))
             
-            statusBadge
-            
             Spacer()
-        }
-    }
-    
-    private var statusBadge: some View {
-        Group {
-            if isCurrent {
-                Text("Default")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.accentColor))
-                    .foregroundColor(.white)
-            } else {
-                Text("Built-in")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.blue.opacity(0.2)))
-                    .foregroundColor(Color.blue)
-            }
         }
     }
     

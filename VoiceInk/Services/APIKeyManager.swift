@@ -21,6 +21,7 @@ final class APIKeyManager {
         "elevenlabs": "elevenLabsAPIKey",
         "soniox": "sonioxAPIKey",
         "speechmatics": "speechmaticsAPIKey",
+        "xai": "xaiAPIKey",
         "openai": "openAIAPIKey",
         "anthropic": "anthropicAPIKey",
         "openrouter": "openRouterAPIKey"
@@ -36,6 +37,7 @@ final class APIKeyManager {
         "ElevenLabsAPIKey": "elevenLabsAPIKey",
         "SonioxAPIKey": "sonioxAPIKey",
         "SpeechmaticsAPIKey": "speechmaticsAPIKey",
+        "XAIAPIKey": "xaiAPIKey",
         "OpenAIAPIKey": "openAIAPIKey",
         "AnthropicAPIKey": "anthropicAPIKey",
         "OpenRouterAPIKey": "openRouterAPIKey"
@@ -206,6 +208,8 @@ final class APIKeyManager {
             return "SonioxAPIKey"
         case "speechmatics":
             return "SpeechmaticsAPIKey"
+        case "xai":
+            return "XAIAPIKey"
         case "openai":
             return "OpenAIAPIKey"
         case "anthropic":

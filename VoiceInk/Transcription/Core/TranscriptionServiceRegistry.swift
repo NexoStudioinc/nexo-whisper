@@ -38,10 +38,9 @@ class TranscriptionServiceRegistry {
     }
 
     func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
-        let effectiveModel = batchFallbackModel(for: model) ?? model
-        let service = service(for: effectiveModel.provider)
-        logger.debug("Transcribing with \(effectiveModel.displayName, privacy: .public) using \(String(describing: type(of: service)), privacy: .public)")
-        return try await service.transcribe(audioURL: audioURL, model: effectiveModel)
+        let service = service(for: model.provider)
+        logger.debug("Transcribing with \(model.displayName, privacy: .public) using \(String(describing: type(of: service)), privacy: .public)")
+        return try await service.transcribe(audioURL: audioURL, model: model)
     }
 
     /// Creates a streaming or file-based session depending on the model's capabilities.
@@ -53,43 +52,16 @@ class TranscriptionServiceRegistry {
                 onPartialTranscript: onPartialTranscript
             )
             let fallback = service(for: model.provider)
-            let fallbackModel = batchFallbackModel(for: model)
-            return StreamingTranscriptionSession(streamingService: streamingService, fallbackService: fallback, fallbackModel: fallbackModel)
+            return StreamingTranscriptionSession(streamingService: streamingService, fallbackService: fallback)
         } else {
             return FileTranscriptionSession(service: service(for: model.provider))
         }
     }
 
-    // Maps streaming-only models to a batch-compatible equivalent for fallback.
-    private func batchFallbackModel(for model: any TranscriptionModel) -> (any TranscriptionModel)? {
-        switch (model.provider, model.name) {
-        case (.mistral, "voxtral-mini-transcribe-realtime-2602"):
-            return PredefinedModels.models.first { $0.name == "voxtral-mini-latest" }
-        case (.soniox, "stt-rt-v4"):
-            return PredefinedModels.models.first { $0.name == "stt-async-v4" }
-        default:
-            return nil
-        }
-    }
-
     /// Whether the given model supports streaming transcription
     private func supportsStreaming(model: any TranscriptionModel) -> Bool {
-        switch model.provider {
-        case .elevenLabs:
-            return model.name == "scribe_v2"
-        case .deepgram:
-            return model.name == "nova-3" || model.name == "nova-3-medical"
-        case .mistral:
-            return model.name == "voxtral-mini-transcribe-realtime-2602"
-        case .soniox:
-            return model.name == "stt-rt-v4"
-        case .speechmatics:
-            return model.name == "speechmatics-enhanced"
-        case .fluidAudio:
-            return UserDefaults.standard.object(forKey: "parakeet-streaming-enabled") as? Bool ?? true
-        default:
-            return false
-        }
+        guard model.supportsStreaming else { return false }
+        return UserDefaults.standard.object(forKey: "streaming-enabled-\(model.name)") as? Bool ?? true
     }
 
     func cleanup() async {

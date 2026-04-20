@@ -11,6 +11,7 @@ enum ModelProvider: String, Codable, Hashable, CaseIterable {
     case gemini = "Gemini"
     case soniox = "Soniox"
     case speechmatics = "Speechmatics"
+    case xai = "xAI"
     case custom = "Custom"
     case nativeApple = "Native Apple"
     // Future providers can be added here
@@ -28,6 +29,7 @@ protocol TranscriptionModel: Identifiable, Hashable {
     var isMultilingualModel: Bool { get }
     var supportedLanguages: [String: String] { get }
 
+    var supportsStreaming: Bool { get }
 }
 
 extension TranscriptionModel {
@@ -38,6 +40,8 @@ extension TranscriptionModel {
     var language: String {
         isMultilingualModel ? "Multilingual" : "English-only"
     }
+
+    var supportsStreaming: Bool { false }
 }
 
 // A new struct for Apple's native models
@@ -62,10 +66,23 @@ struct FluidAudioModel: TranscriptionModel {
     let speed: Double
     let accuracy: Double
     let ramUsage: Double
+    let supportsStreaming: Bool
     var isMultilingualModel: Bool {
         supportedLanguages.count > 1
     }
     let supportedLanguages: [String: String]
+
+    init(name: String, displayName: String, description: String, size: String, speed: Double, accuracy: Double, ramUsage: Double, supportsStreaming: Bool = false, supportedLanguages: [String: String]) {
+        self.name = name
+        self.displayName = displayName
+        self.description = description
+        self.size = size
+        self.speed = speed
+        self.accuracy = accuracy
+        self.ramUsage = ramUsage
+        self.supportsStreaming = supportsStreaming
+        self.supportedLanguages = supportedLanguages
+    }
 }
 
 // A new struct for cloud models
@@ -78,9 +95,10 @@ struct CloudModel: TranscriptionModel {
     let speed: Double
     let accuracy: Double
     let isMultilingualModel: Bool
+    let supportsStreaming: Bool
     let supportedLanguages: [String: String]
 
-    init(id: UUID = UUID(), name: String, displayName: String, description: String, provider: ModelProvider, speed: Double, accuracy: Double, isMultilingual: Bool, supportedLanguages: [String: String]) {
+    init(id: UUID = UUID(), name: String, displayName: String, description: String, provider: ModelProvider, speed: Double, accuracy: Double, isMultilingual: Bool, supportsStreaming: Bool = false, supportedLanguages: [String: String]) {
         self.id = id
         self.name = name
         self.displayName = displayName
@@ -89,6 +107,7 @@ struct CloudModel: TranscriptionModel {
         self.speed = speed
         self.accuracy = accuracy
         self.isMultilingualModel = isMultilingual
+        self.supportsStreaming = supportsStreaming
         self.supportedLanguages = supportedLanguages
     }
 }
@@ -118,7 +137,7 @@ struct CustomCloudModel: TranscriptionModel, Codable {
         self.apiEndpoint = apiEndpoint
         self.modelName = modelName
         self.isMultilingualModel = isMultilingual
-        self.supportedLanguages = supportedLanguages ?? PredefinedModels.getLanguageDictionary(isMultilingual: isMultilingual)
+        self.supportedLanguages = supportedLanguages ?? LanguageDictionary.forProvider(isMultilingual: isMultilingual)
     }
 
     /// Custom Codable to migrate legacy apiKey from JSON to Keychain.
@@ -196,6 +215,6 @@ struct ImportedLocalModel: TranscriptionModel {
         self.displayName = fileBaseName
         self.description = "Imported local model"
         self.isMultilingualModel = true
-        self.supportedLanguages = PredefinedModels.getLanguageDictionary(isMultilingual: true, provider: .local)
+        self.supportedLanguages = LanguageDictionary.forProvider(isMultilingual: true, provider: .local)
     }
 }

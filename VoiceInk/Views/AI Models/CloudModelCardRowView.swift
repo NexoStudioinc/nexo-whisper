@@ -11,6 +11,15 @@ struct CloudModelCardView: View {
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @State private var isExpanded = false
     @State private var apiKey = ""
+    @State private var streamingEnabled: Bool
+
+    init(model: CloudModel, isCurrent: Bool, setDefaultAction: @escaping () -> Void) {
+        self.model = model
+        self.isCurrent = isCurrent
+        self.setDefaultAction = setDefaultAction
+        let key = "streaming-enabled-\(model.name)"
+        _streamingEnabled = State(initialValue: UserDefaults.standard.object(forKey: key) as? Bool ?? true)
+    }
     @State private var isVerifying = false
     @State private var verificationStatus: VerificationStatus = .none
     @State private var verificationError: String? = nil
@@ -39,6 +48,8 @@ struct CloudModelCardView: View {
             return "Soniox"
         case .speechmatics:
             return "Speechmatics"
+        case .xai:
+            return "xAI"
         default:
             return model.provider.rawValue
         }
@@ -79,40 +90,27 @@ struct CloudModelCardView: View {
             Text(model.displayName)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Color(.labelColor))
-            
-            statusBadge
-            
+
+            if model.supportsStreaming && isConfigured {
+                streamingModeBadge
+            }
+
             Spacer()
         }
     }
     
-    private var statusBadge: some View {
-        Group {
-            if isCurrent {
-                Text("Default")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.accentColor))
-                    .foregroundColor(.white)
-            } else if isConfigured {
-                Text("Configured")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color(.systemGreen).opacity(0.2)))
-                    .foregroundColor(Color(.systemGreen))
-            } else {
-                Text("Setup Required")
-                    .font(.system(size: 11, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color(.systemOrange).opacity(0.2)))
-                    .foregroundColor(Color(.systemOrange))
+    private var streamingModeBadge: some View {
+        Toggle("Real-time", isOn: $streamingEnabled)
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundColor(Color(.secondaryLabelColor))
+            .onChange(of: streamingEnabled) { _, newValue in
+                UserDefaults.standard.set(newValue, forKey: streamingDefaultsKey)
             }
-        }
+            .help(streamingEnabled ? "Live streaming enabled — click to switch to batch" : "Batch mode — click to enable live streaming")
     }
-    
+
     private var metadataSection: some View {
         HStack(spacing: 12) {
             // Provider
@@ -268,6 +266,10 @@ struct CloudModelCardView: View {
         }
     }
     
+    private var streamingDefaultsKey: String {
+        "streaming-enabled-\(model.name)"
+    }
+
     private func loadSavedAPIKey() {
         if let savedKey = APIKeyManager.shared.getAPIKey(forProvider: providerKey) {
             apiKey = savedKey
@@ -303,6 +305,8 @@ struct CloudModelCardView: View {
                 result = await SonioxClient.verifyAPIKey(key)
             case .speechmatics:
                 result = await SpeechmaticsClient.verifyAPIKey(key)
+            case .xai:
+                result = await XAIClient.verifyAPIKey(key)
             default:
                 await MainActor.run {
                     isVerifying = false

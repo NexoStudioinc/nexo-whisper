@@ -178,6 +178,8 @@ class StreamingTranscriptionService {
             return SonioxStreamingProvider(modelContext: modelContext)
         case .speechmatics:
             return SpeechmaticsStreamingProvider(modelContext: modelContext)
+        case .xai:
+            return XAIStreamingProvider()
         case .fluidAudio:
             guard let fluidAudioService else {
                 fatalError("FluidAudioTranscriptionService required for FluidAudio streaming. Ensure it is passed to StreamingTranscriptionService.")
@@ -229,8 +231,11 @@ class StreamingTranscriptionService {
                         if !trimmed.isEmpty {
                             self.committedSegments.append(trimmed)
                         }
-
-                        // Signal for any committed response (including empty) during committing phase.
+                        // Refresh the live preview so it keeps showing the full running transcript
+                        // after a commit (instead of resetting to empty until the next partial).
+                        if self.state == .streaming {
+                            self.onPartialTranscript?(self.committedSegments.joined(separator: " "))
+                        }
                         if self.state == .committing {
                             self.commitSignal?.yield()
                         }
@@ -238,7 +243,17 @@ class StreamingTranscriptionService {
                 case .partial(let text):
                     await MainActor.run {
                         if self.state == .streaming {
-                            self.onPartialTranscript?(text)
+                            let prefix = self.committedSegments.joined(separator: " ")
+                            let display: String
+                            if prefix.isEmpty {
+                                display = text
+                            } else if text.hasPrefix(prefix) || text.hasPrefix(prefix + " ") {
+                                // Provider already sends cumulative partials (e.g. FluidAudio fullText).
+                                display = text
+                            } else {
+                                display = prefix + " " + text
+                            }
+                            self.onPartialTranscript?(display)
                         }
                     }
                 case .sessionStarted:
