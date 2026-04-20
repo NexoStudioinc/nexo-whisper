@@ -276,9 +276,6 @@ struct VoiceInkApp: App {
                             return
                         }
 
-                        // Migrate dictionary data from UserDefaults to SwiftData (one-time operation)
-                        DictionaryMigrationService.shared.migrateIfNeeded(context: container.mainContext)
-
                         updaterViewModel.silentlyCheckForUpdates()
                         if enableAnnouncements {
                             AnnouncementsService.shared.start()
