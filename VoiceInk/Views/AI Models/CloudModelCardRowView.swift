@@ -11,7 +11,15 @@ struct CloudModelCardView: View {
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @State private var isExpanded = false
     @State private var apiKey = ""
-    @State private var streamingEnabled = true
+    @State private var streamingEnabled: Bool
+
+    init(model: CloudModel, isCurrent: Bool, setDefaultAction: @escaping () -> Void) {
+        self.model = model
+        self.isCurrent = isCurrent
+        self.setDefaultAction = setDefaultAction
+        let key = "streaming-enabled-\(model.name)"
+        _streamingEnabled = State(initialValue: UserDefaults.standard.object(forKey: key) as? Bool ?? true)
+    }
     @State private var isVerifying = false
     @State private var verificationStatus: VerificationStatus = .none
     @State private var verificationError: String? = nil
@@ -74,7 +82,6 @@ struct CloudModelCardView: View {
         .background(CardBackground(isSelected: isCurrent, useAccentGradientWhenSelected: isCurrent))
         .onAppear {
             loadSavedAPIKey()
-            streamingEnabled = UserDefaults.standard.object(forKey: streamingDefaultsKey) as? Bool ?? true
         }
     }
     

@@ -6,7 +6,15 @@ struct FluidAudioModelCardRowView: View {
     let model: FluidAudioModel
     @ObservedObject var fluidAudioModelManager: FluidAudioModelManager
     @ObservedObject var transcriptionModelManager: TranscriptionModelManager
-    @State private var streamingEnabled = true
+    @State private var streamingEnabled: Bool
+
+    init(model: FluidAudioModel, fluidAudioModelManager: FluidAudioModelManager, transcriptionModelManager: TranscriptionModelManager) {
+        self.model = model
+        _fluidAudioModelManager = ObservedObject(wrappedValue: fluidAudioModelManager)
+        _transcriptionModelManager = ObservedObject(wrappedValue: transcriptionModelManager)
+        let key = "streaming-enabled-\(model.name)"
+        _streamingEnabled = State(initialValue: UserDefaults.standard.object(forKey: key) as? Bool ?? true)
+    }
 
     private var streamingDefaultsKey: String {
         "streaming-enabled-\(model.name)"
@@ -38,9 +46,6 @@ struct FluidAudioModelCardRowView: View {
         }
         .padding(16)
         .background(CardBackground(isSelected: isCurrent, useAccentGradientWhenSelected: isCurrent))
-        .onAppear {
-            streamingEnabled = UserDefaults.standard.object(forKey: streamingDefaultsKey) as? Bool ?? true
-        }
     }
 
     private var headerSection: some View {
