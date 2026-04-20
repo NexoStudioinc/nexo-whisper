@@ -30,7 +30,7 @@ final class XAIStreamingProvider: StreamingTranscriptionProvider {
         startEventForwarding()
 
         do {
-            try await client.connect(apiKey: apiKey, model: "", language: language)
+            try await client.connect(apiKey: apiKey, model: model.name, language: language)
         } catch {
             forwardingTask?.cancel()
             forwardingTask = nil

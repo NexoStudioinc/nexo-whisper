@@ -244,7 +244,15 @@ class StreamingTranscriptionService {
                     await MainActor.run {
                         if self.state == .streaming {
                             let prefix = self.committedSegments.joined(separator: " ")
-                            let display = prefix.isEmpty ? text : prefix + " " + text
+                            let display: String
+                            if prefix.isEmpty {
+                                display = text
+                            } else if text.hasPrefix(prefix) || text.hasPrefix(prefix + " ") {
+                                // Provider already sends cumulative partials (e.g. FluidAudio fullText).
+                                display = text
+                            } else {
+                                display = prefix + " " + text
+                            }
                             self.onPartialTranscript?(display)
                         }
                     }

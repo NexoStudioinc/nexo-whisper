@@ -137,7 +137,7 @@ struct CustomCloudModel: TranscriptionModel, Codable {
         self.apiEndpoint = apiEndpoint
         self.modelName = modelName
         self.isMultilingualModel = isMultilingual
-        self.supportedLanguages = supportedLanguages ?? PredefinedModels.getLanguageDictionary(isMultilingual: isMultilingual)
+        self.supportedLanguages = supportedLanguages ?? LanguageDictionary.forProvider(isMultilingual: isMultilingual)
     }
 
     /// Custom Codable to migrate legacy apiKey from JSON to Keychain.
@@ -215,6 +215,6 @@ struct ImportedLocalModel: TranscriptionModel {
         self.displayName = fileBaseName
         self.description = "Imported local model"
         self.isMultilingualModel = true
-        self.supportedLanguages = PredefinedModels.getLanguageDictionary(isMultilingual: true, provider: .local)
+        self.supportedLanguages = LanguageDictionary.forProvider(isMultilingual: true, provider: .local)
     }
 }
