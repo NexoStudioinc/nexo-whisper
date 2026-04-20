@@ -167,27 +167,17 @@ class StreamingTranscriptionService {
     // MARK: - Private
 
     private func createProvider(for model: any TranscriptionModel) -> StreamingTranscriptionProvider {
-        switch model.provider {
-        case .elevenLabs:
-            return ElevenLabsStreamingProvider()
-        case .deepgram:
-            return DeepgramStreamingProvider(modelContext: modelContext)
-        case .mistral:
-            return MistralStreamingProvider()
-        case .soniox:
-            return SonioxStreamingProvider(modelContext: modelContext)
-        case .speechmatics:
-            return SpeechmaticsStreamingProvider(modelContext: modelContext)
-        case .xai:
-            return XAIStreamingProvider()
-        case .fluidAudio:
+        if model.provider == .fluidAudio {
             guard let fluidAudioService else {
                 fatalError("FluidAudioTranscriptionService required for FluidAudio streaming. Ensure it is passed to StreamingTranscriptionService.")
             }
             return FluidAudioStreamingProvider(fluidAudioService: fluidAudioService)
-        default:
+        }
+        guard let cloudProvider = CloudProviderRegistry.provider(for: model.provider),
+              let streamingProvider = cloudProvider.makeStreamingProvider(modelContext: modelContext) else {
             fatalError("Unsupported streaming provider: \(model.provider). Check supportsStreaming() before calling startStreaming().")
         }
+        return streamingProvider
     }
 
     /// Consumes audio chunks from the AsyncStream and sends them to the provider.
