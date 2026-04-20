@@ -14,7 +14,20 @@ enum ModelProvider: String, Codable, Hashable, CaseIterable {
     case xai = "xAI"
     case custom = "Custom"
     case nativeApple = "Native Apple"
-    // Future providers can be added here
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // "Local" was the raw value before renaming to "Whisper"
+        if raw == "Local" {
+            self = .whisper
+            return
+        }
+        guard let value = ModelProvider(rawValue: raw) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid ModelProvider: \(raw)")
+        }
+        self = value
+    }
 }
 
 // A unified protocol for any transcription model

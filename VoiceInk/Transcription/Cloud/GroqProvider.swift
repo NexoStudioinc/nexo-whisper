@@ -36,10 +36,9 @@ struct GroqProvider: CloudProvider {
     func makeStreamingProvider(modelContext: ModelContext) -> (any StreamingTranscriptionProvider)? { nil }
 
     func verifyAPIKey(_ key: String) async -> (isValid: Bool, errorMessage: String?) {
-        return await OpenAILLMClient.verifyAPIKey(
-            baseURL: URL(string: "https://api.groq.com/openai/v1/chat/completions")!,
-            apiKey: key,
-            model: "whisper-large-v3-turbo"
+        return await OpenAITranscriptionClient.verifyAPIKey(
+            baseURL: URL(string: "https://api.groq.com/openai")!,
+            apiKey: key
         )
     }
 }

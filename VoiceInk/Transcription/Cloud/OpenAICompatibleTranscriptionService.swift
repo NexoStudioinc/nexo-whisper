@@ -1,9 +1,6 @@
 import Foundation
-import os
 
 class OpenAICompatibleTranscriptionService {
-    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "OpenAICompatibleTranscriptionService")
-
     func transcribe(audioURL: URL, model: CustomCloudModel) async throws -> String {
         guard let url = URL(string: model.apiEndpoint) else {
             throw NSError(domain: "CustomWhisperTranscriptionService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid API endpoint URL"])
@@ -24,14 +21,12 @@ class OpenAICompatibleTranscriptionService {
 
         if !(200...299).contains(httpResponse.statusCode) {
             let errorMessage = String(data: data, encoding: .utf8) ?? "No error message"
-            logger.error("Custom Whisper API request failed with status \(httpResponse.statusCode): \(errorMessage, privacy: .public)")
             throw CloudTranscriptionError.apiRequestFailed(statusCode: httpResponse.statusCode, message: errorMessage)
         }
 
         do {
             return try JSONDecoder().decode(TranscriptionResponse.self, from: data).text
         } catch {
-            logger.error("Failed to decode Custom Whisper API response: \(error.localizedDescription, privacy: .public)")
             throw CloudTranscriptionError.noTranscriptionReturned
         }
     }
