@@ -1,8 +1,8 @@
 import SwiftUI
 import AppKit
 // MARK: - Local Model Card View
-struct LocalModelCardView: View {
-    let model: LocalModel
+struct WhisperModelCardView: View {
+    let model: WhisperModel
     let isDownloaded: Bool
     let isCurrent: Bool
     let downloadProgress: [String: Double]
@@ -175,8 +175,8 @@ struct LocalModelCardView: View {
 }
 
 // MARK: - Imported Local Model (minimal UI)
-struct ImportedLocalModelCardView: View {
-    let model: ImportedLocalModel
+struct ImportedWhisperModelCardView: View {
+    let model: ImportedWhisperModel
     let isDownloaded: Bool
     let isCurrent: Bool
     let modelURL: URL?

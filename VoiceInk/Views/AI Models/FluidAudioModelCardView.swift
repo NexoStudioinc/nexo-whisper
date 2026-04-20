@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import AppKit
 
-struct FluidAudioModelCardRowView: View {
+struct FluidAudioModelCardView: View {
     let model: FluidAudioModel
     @ObservedObject var fluidAudioModelManager: FluidAudioModelManager
     @ObservedObject var transcriptionModelManager: TranscriptionModelManager

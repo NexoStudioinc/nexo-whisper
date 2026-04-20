@@ -33,26 +33,7 @@ struct CloudModelCardView: View {
     }
     
     private var providerKey: String {
-        switch model.provider {
-        case .groq:
-            return "Groq"
-        case .elevenLabs:
-            return "ElevenLabs"
-        case .deepgram:
-            return "Deepgram"
-        case .mistral:
-            return "Mistral"
-        case .gemini:
-            return "Gemini"
-        case .soniox:
-            return "Soniox"
-        case .speechmatics:
-            return "Speechmatics"
-        case .xai:
-            return "xAI"
-        default:
-            return model.provider.rawValue
-        }
+        CloudProviderRegistry.provider(for: model.provider)?.providerKey ?? model.provider.rawValue
     }
     
     var body: some View {
@@ -284,37 +265,15 @@ struct CloudModelCardView: View {
         verificationStatus = .verifying
         let key = apiKey
 
+        guard let cloudProvider = CloudProviderRegistry.provider(for: model.provider) else {
+            isVerifying = false
+            verificationStatus = .failure
+            verificationError = "Unsupported provider"
+            return
+        }
+
         Task {
-            let result: (isValid: Bool, errorMessage: String?)
-            switch model.provider {
-            case .groq:
-                result = await OpenAILLMClient.verifyAPIKey(
-                    baseURL: URL(string: "https://api.groq.com/openai/v1/chat/completions")!,
-                    apiKey: key,
-                    model: model.name
-                )
-            case .elevenLabs:
-                result = await ElevenLabsClient.verifyAPIKey(key)
-            case .deepgram:
-                result = await DeepgramClient.verifyAPIKey(key)
-            case .mistral:
-                result = await MistralTranscriptionClient.verifyAPIKey(key)
-            case .gemini:
-                result = await GeminiTranscriptionClient.verifyAPIKey(key)
-            case .soniox:
-                result = await SonioxClient.verifyAPIKey(key)
-            case .speechmatics:
-                result = await SpeechmaticsClient.verifyAPIKey(key)
-            case .xai:
-                result = await XAIClient.verifyAPIKey(key)
-            default:
-                await MainActor.run {
-                    isVerifying = false
-                    verificationStatus = .failure
-                    verificationError = "Unsupported provider"
-                }
-                return
-            }
+            let result = await cloudProvider.verifyAPIKey(key)
 
             await MainActor.run {
                 isVerifying = false

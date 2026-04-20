@@ -5,12 +5,12 @@ import os
 
 @MainActor
 class TranscriptionServiceRegistry {
-    private weak var modelProvider: (any LocalModelProvider)?
+    private weak var modelProvider: (any WhisperModelProvider)?
     private let modelsDirectory: URL
     private let modelContext: ModelContext
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionServiceRegistry")
 
-    private(set) lazy var localTranscriptionService = LocalTranscriptionService(
+    private(set) lazy var localTranscriptionService = WhisperTranscriptionService(
         modelsDirectory: modelsDirectory,
         modelProvider: modelProvider
     )
@@ -18,7 +18,7 @@ class TranscriptionServiceRegistry {
     private(set) lazy var nativeAppleTranscriptionService = NativeAppleTranscriptionService()
     private(set) lazy var fluidAudioTranscriptionService = FluidAudioTranscriptionService()
 
-    init(modelProvider: any LocalModelProvider, modelsDirectory: URL, modelContext: ModelContext) {
+    init(modelProvider: any WhisperModelProvider, modelsDirectory: URL, modelContext: ModelContext) {
         self.modelProvider = modelProvider
         self.modelsDirectory = modelsDirectory
         self.modelContext = modelContext
@@ -26,7 +26,7 @@ class TranscriptionServiceRegistry {
 
     func service(for provider: ModelProvider) -> TranscriptionService {
         switch provider {
-        case .local:
+        case .whisper:
             return localTranscriptionService
         case .fluidAudio:
             return fluidAudioTranscriptionService
