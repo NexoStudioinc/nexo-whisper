@@ -88,12 +88,9 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
             if let recordedFile {
                 if !shouldCancelRecording {
-                    let audioAsset = AVURLAsset(url: recordedFile)
-                    let duration = (try? CMTimeGetSeconds(await audioAsset.load(.duration))) ?? 0.0
-
                     let transcription = Transcription(
                         text: "",
-                        duration: duration,
+                        duration: 0,
                         audioFileURL: recordedFile.absoluteString,
                         transcriptionStatus: .pending
                     )
