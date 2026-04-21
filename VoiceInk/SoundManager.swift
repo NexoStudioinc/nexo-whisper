@@ -110,9 +110,7 @@ class SoundManager: ObservableObject {
             startSoundDelegate = nil
             player.delegate = nil
         }
-        DispatchQueue.global(qos: .userInteractive).async {
-            player.play()
-        }
+        player.play()
     }
 
     func playStopSound() {

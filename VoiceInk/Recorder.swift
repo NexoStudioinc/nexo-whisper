@@ -131,14 +131,16 @@ class Recorder: NSObject, ObservableObject {
                     guard let self = self else { return }
                     await self.playbackController.pauseMedia()
                 }
-                completion(.success(()))
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
             } catch {
                 capturedLogger.error("Failed to start recording: \(error.localizedDescription, privacy: .public)")
                 DispatchQueue.main.async { [weak self] in
                     self?.stopRecording()
                     self?.deviceManager.isRecordingActive = false
+                    completion(.failure(error))
                 }
-                completion(.failure(error))
             }
         }
     }
