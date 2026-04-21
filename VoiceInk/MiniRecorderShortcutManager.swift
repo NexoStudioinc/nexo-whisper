@@ -5,7 +5,7 @@ import AppKit
 extension KeyboardShortcuts.Name {
     static let escapeRecorder = Self("escapeRecorder")
     static let cancelRecorder = Self("cancelRecorder")
-    static let toggleEnhancement = Self("toggleEnhancement")
+    static let toggleEnhancement = Self("toggleEnhancement", default: .init(.e, modifiers: .command))
     // AI Prompt selection shortcuts
     static let selectPrompt1 = Self("selectPrompt1")
     static let selectPrompt2 = Self("selectPrompt2")
@@ -148,10 +148,6 @@ class MiniRecorderShortcutManager: ObservableObject {
     }
     
     private func setupEnhancementShortcut() {
-        if KeyboardShortcuts.getShortcut(for: .toggleEnhancement) == nil {
-            KeyboardShortcuts.setShortcut(.init(.e, modifiers: .command), for: .toggleEnhancement)
-        }
-
         KeyboardShortcuts.onKeyDown(for: .toggleEnhancement) { [weak self] in
             Task { @MainActor in
                 guard let self = self,
