@@ -11,6 +11,7 @@
                     <li>⚡ Per-model streaming toggle</li>
                     <li>👁️ Hide live text display for real-time models</li>
                     <li>⌨️ Customizable enhancement shortcut</li>
+                    <li>🔧 Fixed CPU spike issue</li>
                     <li>🐛 Bug fixes and improvements</li>
                 </ul>
             ]]></description>
