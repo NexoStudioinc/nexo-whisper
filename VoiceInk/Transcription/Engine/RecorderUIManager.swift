@@ -140,7 +140,7 @@ class RecorderUIManager: ObservableObject {
 
         await engine.cleanupResources()
 
-        if UserDefaults.standard.bool(forKey: PowerModeDefaults.autoRestoreKey) {
+        if !UserDefaults.standard.bool(forKey: "powerModePersistConfig") {
             await PowerModeSessionManager.shared.endSession()
             await MainActor.run {
                 PowerModeManager.shared.setActiveConfiguration(nil)
