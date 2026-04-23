@@ -17,23 +17,29 @@ class WordReplacementService {
 
         var modifiedText = text
 
+        // Longest-first so specific triggers match before shorter overlapping ones
+        let sortedReplacements = replacements.sorted {
+            $0.originalText.count > $1.originalText.count
+        }
+
         // Apply replacements (case-insensitive)
-        for replacement in replacements {
+        for replacement in sortedReplacements {
             let originalGroup = replacement.originalText
             let replacementText = replacement.replacementText
 
-            // Split comma-separated originals at apply time only
             let variants = originalGroup
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
+                .sorted { $0.count > $1.count }
 
             for original in variants {
                 let usesBoundaries = usesWordBoundaries(for: original)
 
                 if usesBoundaries {
-                    // Word-boundary regex for full original string
-                    let pattern = "\\b\(NSRegularExpression.escapedPattern(for: original))\\b"
+                    // Lookarounds instead of \b so punctuation acts as a word boundary
+                    let escaped = NSRegularExpression.escapedPattern(for: original)
+                    let pattern = "(?<![a-zA-Z0-9])\(escaped)(?![a-zA-Z0-9])"
                     if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
                         let range = NSRange(modifiedText.startIndex..., in: modifiedText)
                         modifiedText = regex.stringByReplacingMatches(
