@@ -3,7 +3,7 @@ import SwiftUI
 import AppKit
 
 struct EmailSupport {
-    private static let supportEmailAddress = "prakashjoshipax@gmail.com"
+    private static let supportEmailAddress = "support@tryvoiceink.com"
     private static let supportEmailSubject = "VoiceInk Support Request"
 
     static func generateSupportEmailBody() -> String {
