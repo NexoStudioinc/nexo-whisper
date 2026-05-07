@@ -53,8 +53,8 @@ struct CustomModelBackup: Codable {
             name: name,
             displayName: displayName,
             description: description,
-            apiEndpoint: apiEndpoint,
-            modelName: modelName,
+            apiEndpoint: apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines),
+            modelName: modelName.trimmingCharacters(in: .whitespacesAndNewlines),
             isMultilingual: isMultilingualModel,
             supportedLanguages: supportedLanguages
         )
@@ -106,6 +106,10 @@ struct GeneralBackup: Codable {
 
 struct WordBackup: Codable {
     let word: String
+
+    init(word: String) {
+        self.word = word
+    }
 }
 
 struct BackupFile: Codable {
@@ -118,4 +122,33 @@ struct BackupFile: Codable {
     let generalSettings: GeneralBackup?
     let customEmojis: [String]?
     let customCloudModels: [CustomModelBackup]?
+
+    private enum CodingKeys: String, CodingKey {
+        case version, customPrompts, powerModeConfigs, powerModeShortcuts, vocabularyWords, wordReplacements, generalSettings, customEmojis, customCloudModels
+    }
+
+    init(version: String, customPrompts: [CustomPrompt], powerModeConfigs: [PowerModeConfig], powerModeShortcuts: [String: KeyboardShortcuts.Shortcut]?, vocabularyWords: [WordBackup]?, wordReplacements: [String: String]?, generalSettings: GeneralBackup?, customEmojis: [String]?, customCloudModels: [CustomModelBackup]?) {
+        self.version = version
+        self.customPrompts = customPrompts
+        self.powerModeConfigs = powerModeConfigs
+        self.powerModeShortcuts = powerModeShortcuts
+        self.vocabularyWords = vocabularyWords
+        self.wordReplacements = wordReplacements
+        self.generalSettings = generalSettings
+        self.customEmojis = customEmojis
+        self.customCloudModels = customCloudModels
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(String.self, forKey: .version) ?? "0.0.0"
+        customPrompts = try container.decodeIfPresent([CustomPrompt].self, forKey: .customPrompts) ?? []
+        powerModeConfigs = try container.decodeIfPresent([PowerModeConfig].self, forKey: .powerModeConfigs) ?? []
+        powerModeShortcuts = try container.decodeIfPresent([String: KeyboardShortcuts.Shortcut].self, forKey: .powerModeShortcuts)
+        vocabularyWords = try container.decodeIfPresent([WordBackup].self, forKey: .vocabularyWords)
+        wordReplacements = try container.decodeIfPresent([String: String].self, forKey: .wordReplacements)
+        generalSettings = try container.decodeIfPresent(GeneralBackup.self, forKey: .generalSettings)
+        customEmojis = try container.decodeIfPresent([String].self, forKey: .customEmojis)
+        customCloudModels = try container.decodeIfPresent([CustomModelBackup].self, forKey: .customCloudModels)
+    }
 }

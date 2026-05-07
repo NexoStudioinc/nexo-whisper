@@ -273,7 +273,7 @@ class ImportExportService {
                 return
             }
 
-            BackupImporter.apply(
+            try BackupImporter.apply(
                 backup,
                 categories: selectedCategories,
                 enhancementService: enhancementService,

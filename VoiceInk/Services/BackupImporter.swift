@@ -3,6 +3,17 @@ import KeyboardShortcuts
 import LaunchAtLogin
 import SwiftData
 
+enum BackupImportError: LocalizedError {
+    case saveFailed(String, Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .saveFailed(let item, let error):
+            return "Failed to save imported \(item): \(error.localizedDescription)"
+        }
+    }
+}
+
 enum BackupImporter {
     private static let keyIsAudioCleanupEnabled = "IsAudioCleanupEnabled"
     private static let keyIsTranscriptionCleanupEnabled = "IsTranscriptionCleanupEnabled"
@@ -14,7 +25,11 @@ enum BackupImporter {
     private static let keyLowercaseTranscription = "LowercaseTranscription"
 
     @MainActor
-    static func apply(_ backup: BackupFile, categories: Set<BackupCategory>, enhancementService: AIEnhancementService, hotkeyManager: HotkeyManager, menuBarManager: MenuBarManager, mediaController: MediaController, playbackController: PlaybackController, soundManager: SoundManager, recorderUIManager: RecorderUIManager, modelContext: ModelContext, transcriptionModelManager: TranscriptionModelManager) {
+    static func apply(_ backup: BackupFile, categories: Set<BackupCategory>, enhancementService: AIEnhancementService, hotkeyManager: HotkeyManager, menuBarManager: MenuBarManager, mediaController: MediaController, playbackController: PlaybackController, soundManager: SoundManager, recorderUIManager: RecorderUIManager, modelContext: ModelContext, transcriptionModelManager: TranscriptionModelManager) throws {
+        if categories.contains(.dictionary) {
+            try importDictionary(from: backup, modelContext: modelContext)
+        }
+
         if categories.contains(.general) {
             importGeneral(
                 backup.generalSettings,
@@ -53,10 +68,6 @@ enum BackupImporter {
                 }
             }
             print("Successfully imported \(backup.powerModeConfigs.count) Power Mode configurations.")
-        }
-
-        if categories.contains(.dictionary) {
-            importDictionary(from: backup, modelContext: modelContext)
         }
 
         if categories.contains(.customModels) {
@@ -185,28 +196,34 @@ enum BackupImporter {
     }
 
     @MainActor
-    private static func importDictionary(from backup: BackupFile, modelContext: ModelContext) {
+    private static func importDictionary(from backup: BackupFile, modelContext: ModelContext) throws {
+        var insertedWords = 0
+        var insertedReplacements = 0
+        var skippedInvalidReplacements = 0
+
         if let words = backup.vocabularyWords {
             let descriptor = FetchDescriptor<VocabularyWord>()
-            let existingWords = (try? modelContext.fetch(descriptor)) ?? []
+            let existingWords = try modelContext.fetch(descriptor)
             var existingWordsSet = Set(existingWords.map { $0.word.lowercased() })
 
             for item in words {
-                let lowercasedWord = item.word.lowercased()
+                let word = item.word.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !word.isEmpty else { continue }
+
+                let lowercasedWord = word.lowercased()
                 if !existingWordsSet.contains(lowercasedWord) {
-                    modelContext.insert(VocabularyWord(word: item.word))
+                    modelContext.insert(VocabularyWord(word: word))
                     existingWordsSet.insert(lowercasedWord)
+                    insertedWords += 1
                 }
             }
-            try? modelContext.save()
-            print("Successfully imported vocabulary words to SwiftData.")
         } else {
             print("No vocabulary words found in the imported file. Existing items remain unchanged.")
         }
 
         if let replacements = backup.wordReplacements {
             let descriptor = FetchDescriptor<WordReplacement>()
-            let existingReplacements = (try? modelContext.fetch(descriptor)) ?? []
+            let existingReplacements = try modelContext.fetch(descriptor)
 
             var existingKeys = Set<String>()
             for existing in existingReplacements {
@@ -214,18 +231,43 @@ enum BackupImporter {
             }
 
             for (original, replacement) in replacements {
-                let importTokens = tokens(from: original)
+                let trimmedOriginal = original.trimmingCharacters(in: .whitespacesAndNewlines)
+                let trimmedReplacement = replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+                let importTokens = tokens(from: trimmedOriginal)
+                guard !importTokens.isEmpty, !trimmedReplacement.isEmpty else {
+                    skippedInvalidReplacements += 1
+                    continue
+                }
+
                 let hasConflict = importTokens.contains { existingKeys.contains($0) }
 
                 if !hasConflict {
-                    modelContext.insert(WordReplacement(originalText: original, replacementText: replacement))
+                    modelContext.insert(WordReplacement(originalText: trimmedOriginal, replacementText: trimmedReplacement))
                     existingKeys.formUnion(importTokens)
+                    insertedReplacements += 1
                 }
             }
-            try? modelContext.save()
-            print("Successfully imported word replacements to SwiftData.")
         } else {
             print("No word replacements found in the imported file. Existing replacements remain unchanged.")
+        }
+
+        guard insertedWords > 0 || insertedReplacements > 0 else {
+            print("No new dictionary entries were imported.")
+            if skippedInvalidReplacements > 0 {
+                print("Skipped \(skippedInvalidReplacements) invalid word replacements from the imported file.")
+            }
+            return
+        }
+
+        do {
+            try modelContext.save()
+            print("Successfully imported \(insertedWords) vocabulary words and \(insertedReplacements) word replacements to SwiftData.")
+            if skippedInvalidReplacements > 0 {
+                print("Skipped \(skippedInvalidReplacements) invalid word replacements from the imported file.")
+            }
+        } catch {
+            modelContext.rollback()
+            throw BackupImportError.saveFailed("dictionary entries", error)
         }
     }
 
