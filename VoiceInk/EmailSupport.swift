@@ -3,8 +3,8 @@ import SwiftUI
 import AppKit
 
 struct EmailSupport {
-    private static let supportEmailAddress = "support@tryvoiceink.com"
-    private static let supportEmailSubject = "VoiceInk Support Request"
+    private static let supportEmailAddress = "soporte@nexostudio.xyz"
+    private static let supportEmailSubject = "Nexo Whisper Support Request"
 
     static func generateSupportEmailBody() -> String {
         let systemInfo = SystemInfoService.shared.getSystemInfoString()
@@ -23,7 +23,7 @@ struct EmailSupport {
 
 
         ## 📋 COMMON ISSUES:
-        Check out our Common Issues page before sending an email: https://tryvoiceink.com/common-issues
+        Check out our Common Issues page before sending an email: https://nexostudio.xyz/nexo-whisper/soporte
         ------------------------
 
         System Information:

@@ -32,7 +32,7 @@ class WindowManager: NSObject {
         window.titleVisibility = .hidden
         window.backgroundColor = .windowBackgroundColor
         window.isReleasedWhenClosed = false
-        window.title = "VoiceInk"
+        window.title = "Nexo Whisper"
         window.collectionBehavior = [.fullScreenPrimary]
         window.level = .normal
         window.isOpaque = true
@@ -58,10 +58,34 @@ class WindowManager: NSObject {
         window.backgroundColor = .clear
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        window.title = "VoiceInk Onboarding"
+        window.title = "Nexo Whisper Onboarding"
         window.isOpaque = false
         window.minSize = NSSize(width: 900, height: 780)
+        applyOnboardingInitialPlacement(to: window)
         window.makeKeyAndOrderFront(nil)
+    }
+
+    private func applyOnboardingInitialPlacement(to window: NSWindow) {
+        // Open onboarding on the screen the user is currently looking at,
+        // mirroring how the main window behaves. `NSScreen.main` returns the
+        // screen with the active app's focus; if unavailable, fall back to the
+        // screen containing the cursor, then to the first attached display.
+        let activeScreen = NSScreen.main
+            ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
+            ?? NSScreen.screens.first
+        guard let screen = activeScreen else { return }
+
+        let visibleFrame = screen.visibleFrame
+        let targetSize = NSSize(
+            width: max(window.frame.width, window.minSize.width),
+            height: max(window.frame.height, window.minSize.height)
+        )
+        let origin = NSPoint(
+            x: visibleFrame.midX - targetSize.width / 2,
+            y: visibleFrame.midY - targetSize.height / 2
+        )
+        window.setFrame(NSRect(origin: origin, size: targetSize), display: false)
+        fitWindowToVisibleScreen(window)
     }
 
     func registerMainWindow(_ window: NSWindow) {

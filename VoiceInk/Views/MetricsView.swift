@@ -19,21 +19,21 @@ struct MetricsView: View {
                         NotificationCenter.default.post(
                             name: .navigateToDestination,
                             object: nil,
-                            userInfo: ["destination": "VoiceInk Pro"]
+                            userInfo: ["destination": "Nexo Whisper Pro"]
                         )
                     }
                 )
                 .padding()
             } else if case .trialExpired = licenseViewModel.licenseState {
                 TrialMessageView(
-                    message: "Your trial has expired. Upgrade to continue using VoiceInk",
+                    message: "Your trial has expired. Upgrade to continue using Nexo Whisper",
                     type: .expired,
                     onAddLicenseKey: {
                         // Also allow navigation from expired state
                         NotificationCenter.default.post(
                             name: .navigateToDestination,
                             object: nil,
-                            userInfo: ["destination": "VoiceInk Pro"]
+                            userInfo: ["destination": "Nexo Whisper Pro"]
                         )
                     }
                 )

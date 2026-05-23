@@ -269,7 +269,7 @@ struct WordReplacementInfoPopover: View {
                         Text("Original:")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text("Voicing, Voice ink")
+                        Text("Necsho, Necho Whisper")
                             .font(.callout)
                     }
 
@@ -281,7 +281,7 @@ struct WordReplacementInfoPopover: View {
                         Text("Replacement:")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text("VoiceInk")
+                        Text("Nexo Whisper")
                             .font(.callout)
                     }
                 }

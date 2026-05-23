@@ -238,8 +238,8 @@ struct ModelManagementView: View {
                             .buttonStyle(.plain)
 
                             InfoTip(
-                                "Add a custom fine-tuned whisper model to use with VoiceInk. Select the downloaded .bin file.",
-                                learnMoreURL: "https://tryvoiceink.com/docs/custom-local-whisper-models"
+                                "Add a custom fine-tuned whisper model to use with Nexo Whisper. Select the downloaded .bin file.",
+                                learnMoreURL: "https://nexostudio.xyz/nexo-whisper/docs/custom-models"
                             )
                             .help("Read more about custom local models")
                         }
@@ -392,7 +392,7 @@ struct ModelManagementView: View {
         panel.canCreateDirectories = true
         panel.resolvesAliases = true
         panel.title = "Choose Local Model Download Folder"
-        panel.message = "VoiceInk will store WhisperModels and FluidAudio folders inside this location."
+        panel.message = "Nexo Whisper will store WhisperModels and FluidAudio folders inside this location."
         panel.directoryURL = LocalModelStorage.rootDirectory
 
         if panel.runModal() == .OK, let url = panel.url {
@@ -412,7 +412,7 @@ struct ModelManagementView: View {
 
         let alert = NSAlert()
         alert.messageText = "Copy existing Whisper models?"
-        alert.informativeText = "VoiceInk can copy your currently downloaded Whisper models into the new folder so they remain available."
+        alert.informativeText = "Nexo Whisper can copy your currently downloaded Whisper models into the new folder so they remain available."
         alert.addButton(withTitle: "Copy")
         alert.addButton(withTitle: "Don't Copy")
         return alert.runModal() == .alertFirstButtonReturn

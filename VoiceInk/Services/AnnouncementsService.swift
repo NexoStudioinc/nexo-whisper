@@ -9,7 +9,10 @@ final class AnnouncementsService {
 
     // MARK: - Configuration
 
-    // Hosted via GitHub Pages for this repo
+    // FIXME(Nexo): apuntar a endpoint propio cuando esté disponible
+    // (ej: https://nexostudio.xyz/nexo-whisper/announcements.json).
+    // Mientras tanto se mantiene la URL upstream; el usuario puede desactivar
+    // los anuncios desde Settings > General > Show Announcements.
     private let announcementsURL = URL(string: "https://beingpax.github.io/VoiceInk/announcements.json")!
 
     // Fetch every 4 hours

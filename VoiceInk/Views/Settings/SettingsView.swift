@@ -195,7 +195,7 @@ struct SettingsView: View {
                     isExpanded: $isRestoreClipboardExpanded,
                     isEnabled: $restoreClipboardAfterPaste,
                     label: t("Keep Clipboard Content"),
-                    infoMessage: t("VoiceInk temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
+                    infoMessage: t("Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
                 ) {
                     Picker(t("Restore Delay"), selection: $clipboardRestoreDelay) {
                         Text("250ms").tag(0.25)
@@ -283,7 +283,7 @@ struct SettingsView: View {
             } header: {
                 Text(t("Privacy"))
             } footer: {
-                Text(t("Control how VoiceInk handles your transcription data and audio recordings."))
+                Text(t("Control how Nexo Whisper handles your transcription data and audio recordings."))
             }
 
             // MARK: - Backup
@@ -458,7 +458,7 @@ struct PowerModeSection: View {
                 isEnabled: toggleBinding,
                 label: t("Power Mode"),
                 infoMessage: t("Apply custom settings based on active app or website."),
-                infoURL: "https://tryvoiceink.com/docs/power-mode"
+                infoURL: "https://nexostudio.xyz/nexo-whisper/docs/power-mode"
             ) {
                 Toggle(isOn: $powerModePersistSettings) {
                     HStack(spacing: 4) {

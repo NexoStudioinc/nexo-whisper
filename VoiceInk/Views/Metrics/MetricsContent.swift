@@ -174,12 +174,12 @@ struct MetricsContent: View {
         PermissionCard(
             icon: "hand.raised",
             title: "Accessibility Access",
-            description: "VoiceInk needs Accessibility permission to work reliably across your entire Mac",
+            description: "Nexo Whisper needs Accessibility permission to work reliably across your entire Mac",
             isGranted: isAccessibilityEnabled,
             buttonTitle: "Open System Settings",
             buttonAction: openAccessibilitySettings,
             checkPermission: refreshAccessibilityStatus,
-            infoTipMessage: "VoiceInk uses Accessibility to work reliably across apps."
+            infoTipMessage: "Nexo Whisper uses Accessibility to work reliably across apps."
         )
     }
 
@@ -264,14 +264,14 @@ struct MetricsContent: View {
                         .font(.system(size: 36, design: .rounded))
                         .foregroundStyle(.white)
                      +
-                     Text(" with VoiceInk")
+                     Text(" with Nexo Whisper")
                         .fontWeight(.bold)
                         .foregroundColor(.white.opacity(0.85))
                     )
                     .font(.system(size: 30))
                     .multilineTextAlignment(.center)
                 } else {
-                    Text("VoiceInk Insights")
+                    Text("Nexo Whisper Insights")
                         .font(.system(size: 32, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
@@ -308,7 +308,7 @@ struct MetricsContent: View {
                 icon: "mic.fill",
                 title: "Sessions Recorded",
                 value: hasLoadedMetricsSnapshot ? "\(totalCount)" : "–",
-                detail: "VoiceInk sessions completed",
+                detail: "Nexo Whisper sessions completed",
                 color: .purple
             )
 
@@ -326,7 +326,7 @@ struct MetricsContent: View {
                 value: hasLoadedMetricsSnapshot && averageWordsPerMinute > 0
                     ? String(format: "%.1f", averageWordsPerMinute)
                     : "–",
-                detail: "VoiceInk vs. typing by hand",
+                detail: "Nexo Whisper vs. typing by hand",
                 color: .yellow
             )
             
@@ -371,7 +371,7 @@ struct MetricsContent: View {
         }
 
         guard totalCount > 0 else {
-            return "Your VoiceInk journey starts with your first recording."
+            return "Your Nexo Whisper journey starts with your first recording."
         }
 
         let wordsText = Formatters.formattedNumber(totalWords)
