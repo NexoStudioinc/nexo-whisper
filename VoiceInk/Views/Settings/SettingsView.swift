@@ -45,6 +45,11 @@ struct SettingsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .onChange(of: appLanguage) { _, newValue in
+                    if let language = AppLanguage(rawValue: newValue) {
+                        LocalizationManager.shared.setLanguage(language)
+                    }
+                }
             }
 
             // MARK: - Shortcuts
