@@ -37,7 +37,7 @@ class WindowManager: NSObject {
         window.level = .normal
         window.isOpaque = true
         window.isMovableByWindowBackground = false
-        window.minSize = NSSize(width: 0, height: 0)
+        window.minSize = NSSize(width: 760, height: 560)
         window.setFrameAutosaveName(Self.mainWindowAutosaveName)
         applyInitialPlacementIfNeeded(to: window)
         registerMainWindowIfNeeded(window)
@@ -104,7 +104,33 @@ class WindowManager: NSObject {
         if !window.setFrameUsingName(Self.mainWindowAutosaveName) {
             window.center()
         }
+        fitWindowToVisibleScreen(window)
         didApplyInitialPlacement = true
+    }
+
+    private func fitWindowToVisibleScreen(_ window: NSWindow) {
+        guard let screen = window.screen ?? NSScreen.main else { return }
+
+        let visibleFrame = screen.visibleFrame.insetBy(dx: 16, dy: 16)
+        var frame = window.frame
+
+        frame.size.width = min(max(frame.width, window.minSize.width), visibleFrame.width)
+        frame.size.height = min(max(frame.height, window.minSize.height), visibleFrame.height)
+
+        if frame.maxX > visibleFrame.maxX {
+            frame.origin.x = visibleFrame.maxX - frame.width
+        }
+        if frame.minX < visibleFrame.minX {
+            frame.origin.x = visibleFrame.minX
+        }
+        if frame.maxY > visibleFrame.maxY {
+            frame.origin.y = visibleFrame.maxY - frame.height
+        }
+        if frame.minY < visibleFrame.minY {
+            frame.origin.y = visibleFrame.minY
+        }
+
+        window.setFrame(frame, display: true)
     }
     
     private func resolveMainWindow() -> NSWindow? {

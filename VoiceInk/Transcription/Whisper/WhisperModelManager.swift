@@ -3,6 +3,43 @@ import os
 import Zip
 import SwiftUI
 import Atomics
+import FluidAudio
+
+enum LocalModelStorage {
+    static let rootDirectoryKey = "localModelsRootDirectory"
+
+    static var defaultRootDirectory: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("com.prakashjoshipax.VoiceInk")
+    }
+
+    static var rootDirectory: URL {
+        if let path = UserDefaults.standard.string(forKey: rootDirectoryKey),
+           !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return URL(fileURLWithPath: path, isDirectory: true)
+        }
+        return defaultRootDirectory
+    }
+
+    static var whisperModelsDirectory: URL {
+        rootDirectory.appendingPathComponent("WhisperModels", isDirectory: true)
+    }
+
+    static func fluidAudioModelsDirectory(for version: AsrModelVersion) -> URL {
+        let defaultFolderName = AsrModels.defaultCacheDirectory(for: version).lastPathComponent
+        return rootDirectory
+            .appendingPathComponent("FluidAudio", isDirectory: true)
+            .appendingPathComponent(defaultFolderName, isDirectory: true)
+    }
+
+    static func saveRootDirectory(_ url: URL) {
+        UserDefaults.standard.set(url.standardizedFileURL.path, forKey: rootDirectoryKey)
+    }
+
+    static func resetRootDirectory() {
+        UserDefaults.standard.removeObject(forKey: rootDirectoryKey)
+    }
+}
 
 // MARK: - WhisperModelFile
 
@@ -62,7 +99,7 @@ class WhisperModelManager: ObservableObject {
     @Published var loadedWhisperModel: WhisperModelFile?
     @Published var isModelLoading = false
 
-    let modelsDirectory: URL
+    @Published private(set) var modelsDirectory: URL
     let whisperPrompt = WhisperPrompt()
 
     /// Called when a model is deleted, passing the model name.
@@ -91,6 +128,7 @@ class WhisperModelManager: ObservableObject {
 
     func loadAvailableModels() {
         do {
+            createModelsDirectoryIfNeeded()
             let fileURLs = try FileManager.default.contentsOfDirectory(at: modelsDirectory, includingPropertiesForKeys: nil)
             availableModels = fileURLs.compactMap { url in
                 guard url.pathExtension == "bin" else { return nil }
@@ -98,6 +136,41 @@ class WhisperModelManager: ObservableObject {
             }
         } catch {
             logError("Error loading available models", error)
+        }
+    }
+
+    func updateModelsDirectory(_ newDirectory: URL, copyExistingModels: Bool) {
+        let oldDirectory = modelsDirectory
+        let standardizedNewDirectory = newDirectory.standardizedFileURL
+
+        do {
+            try FileManager.default.createDirectory(at: standardizedNewDirectory, withIntermediateDirectories: true)
+
+            if copyExistingModels,
+               oldDirectory.standardizedFileURL != standardizedNewDirectory,
+               FileManager.default.fileExists(atPath: oldDirectory.path) {
+                try copyModels(from: oldDirectory, to: standardizedNewDirectory)
+            }
+
+            modelsDirectory = standardizedNewDirectory
+            LocalModelStorage.saveRootDirectory(standardizedNewDirectory.deletingLastPathComponent())
+            loadAvailableModels()
+            onModelsChanged?()
+        } catch {
+            logError("Failed to update models directory", error)
+        }
+    }
+
+    private func copyModels(from sourceDirectory: URL, to destinationDirectory: URL) throws {
+        let fileManager = FileManager.default
+        let sourceItems = try fileManager.contentsOfDirectory(at: sourceDirectory, includingPropertiesForKeys: nil)
+
+        for sourceURL in sourceItems {
+            let destinationURL = destinationDirectory.appendingPathComponent(sourceURL.lastPathComponent)
+            if fileManager.fileExists(atPath: destinationURL.path) {
+                continue
+            }
+            try fileManager.copyItem(at: sourceURL, to: destinationURL)
         }
     }
 

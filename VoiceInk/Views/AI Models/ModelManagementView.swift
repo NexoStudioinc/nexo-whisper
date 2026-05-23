@@ -25,6 +25,7 @@ struct ModelManagementView: View {
 
     @State private var selectedFilter: ModelFilter = .recommended
     @State private var isShowingSettings = false
+    @State private var localModelsRootPath = LocalModelStorage.rootDirectory.path
 
     private let settingsPanelWidth: CGFloat = 400
 
@@ -166,6 +167,10 @@ struct ModelManagementView: View {
             .padding(.bottom, 12)
             
             VStack(spacing: 12) {
+                    if selectedFilter == .local {
+                        localModelStorageSection
+                    }
+
                     ForEach(filteredModels, id: \.id) { model in
                         let isWarming = (model as? WhisperModel).map { whisperModel in
                             warmupCoordinator.isWarming(modelNamed: whisperModel.name)
@@ -264,6 +269,43 @@ struct ModelManagementView: View {
         .padding()
     }
 
+    private var localModelStorageSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "folder")
+                    .foregroundColor(.secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Local Model Folder")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(localModelsRootPath)
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer()
+
+                Button("Choose…") {
+                    presentModelFolderPanel()
+                }
+
+                Button(action: resetModelFolder) {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                .help("Reset to Application Support")
+            }
+
+            Text("Whisper downloads are saved in a WhisperModels subfolder. Parakeet downloads are saved in a FluidAudio subfolder.")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+        }
+        .padding(14)
+        .background(CardBackground(isSelected: false))
+        .cornerRadius(10)
+    }
+
 
 
     private var intelMacWarningBanner: some View {
@@ -340,5 +382,49 @@ struct ModelManagementView: View {
                 await whisperModelManager.importWhisperModel(from: url)
             }
         }
+    }
+
+    private func presentModelFolderPanel() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.resolvesAliases = true
+        panel.title = "Choose Local Model Download Folder"
+        panel.message = "VoiceInk will store WhisperModels and FluidAudio folders inside this location."
+        panel.directoryURL = LocalModelStorage.rootDirectory
+
+        if panel.runModal() == .OK, let url = panel.url {
+            let shouldCopy = shouldCopyExistingWhisperModels()
+            LocalModelStorage.saveRootDirectory(url)
+            localModelsRootPath = url.standardizedFileURL.path
+            whisperModelManager.updateModelsDirectory(
+                LocalModelStorage.whisperModelsDirectory,
+                copyExistingModels: shouldCopy
+            )
+            transcriptionModelManager.refreshAllAvailableModels()
+        }
+    }
+
+    private func shouldCopyExistingWhisperModels() -> Bool {
+        guard !whisperModelManager.availableModels.isEmpty else { return false }
+
+        let alert = NSAlert()
+        alert.messageText = "Copy existing Whisper models?"
+        alert.informativeText = "VoiceInk can copy your currently downloaded Whisper models into the new folder so they remain available."
+        alert.addButton(withTitle: "Copy")
+        alert.addButton(withTitle: "Don't Copy")
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    private func resetModelFolder() {
+        LocalModelStorage.resetRootDirectory()
+        localModelsRootPath = LocalModelStorage.rootDirectory.path
+        whisperModelManager.updateModelsDirectory(
+            LocalModelStorage.whisperModelsDirectory,
+            copyExistingModels: false
+        )
+        transcriptionModelManager.refreshAllAvailableModels()
     }
 }

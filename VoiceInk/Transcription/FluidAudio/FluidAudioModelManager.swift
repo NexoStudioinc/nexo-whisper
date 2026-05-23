@@ -43,7 +43,7 @@ class FluidAudioModelManager: ObservableObject {
 
     func isFluidAudioModelDownloaded(named modelName: String) -> Bool {
         let version = FluidAudioModelManager.asrVersion(for: modelName)
-        return AsrModels.modelsExist(at: cacheDirectory(for: version), version: version)
+        return AsrModels.modelsExist(at: Self.cacheDirectory(for: version), version: version)
     }
 
     func isFluidAudioModelDownloaded(_ model: FluidAudioModel) -> Bool {
@@ -86,6 +86,7 @@ class FluidAudioModelManager: ObservableObject {
 
         do {
             _ = try await AsrModels.downloadAndLoad(
+                to: Self.cacheDirectory(for: version),
                 version: version,
                 progressHandler: progressHandler
             )
@@ -124,11 +125,11 @@ class FluidAudioModelManager: ObservableObject {
     // MARK: - Private helpers
 
     private func cacheDirectory(for model: FluidAudioModel) -> URL {
-        cacheDirectory(for: FluidAudioModelManager.asrVersion(for: model.name))
+        Self.cacheDirectory(for: FluidAudioModelManager.asrVersion(for: model.name))
     }
 
-    private func cacheDirectory(for version: AsrModelVersion) -> URL {
-        AsrModels.defaultCacheDirectory(for: version)
+    static func cacheDirectory(for version: AsrModelVersion) -> URL {
+        LocalModelStorage.fluidAudioModelsDirectory(for: version)
     }
 
     private func clearDownloadStatus(for modelName: String, downloadID: UUID) {

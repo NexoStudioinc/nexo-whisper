@@ -12,6 +12,8 @@ struct APIKeyManagementView: View {
     @State private var selectedOllamaModel: String = UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "mistral"
     @State private var isCheckingOllama = false
     @State private var isEditingURL = false
+    @State private var selectedLocalCLITemplate: LocalCLITemplate = .pi
+    @State private var selectedLocalCLIModel: String = ""
     @State private var localCLICommandTemplate: String = ""
     @State private var localCLITimeoutSeconds: Double = LocalCLIService.defaultTimeoutSeconds
     @State private var isSyncingLocalCLIState = false
@@ -161,6 +163,29 @@ struct APIKeyManagementView: View {
 
                 } else if aiService.selectedProvider == .localCLI {
                     VStack(alignment: .leading, spacing: 6) {
+                        Picker("Client", selection: $selectedLocalCLITemplate) {
+                            ForEach(LocalCLITemplate.allCases) { template in
+                                Text(template.displayName).tag(template)
+                            }
+                        }
+                        .onChange(of: selectedLocalCLITemplate) { _, newValue in
+                            guard !isSyncingLocalCLIState else { return }
+                            aiService.loadLocalCLITemplate(newValue)
+                            syncLocalCLIStateFromService()
+                        }
+
+                        if !aiService.localCLIAvailableModels.isEmpty {
+                            Picker("Model", selection: $selectedLocalCLIModel) {
+                                ForEach(aiService.localCLIAvailableModels, id: \.self) { model in
+                                    Text(model).tag(model)
+                                }
+                            }
+                            .onChange(of: selectedLocalCLIModel) { _, newValue in
+                                guard !isSyncingLocalCLIState else { return }
+                                aiService.updateLocalCLIModelSelection(newValue)
+                            }
+                        }
+
                         HStack {
                             Text("Command")
                                 .font(.subheadline)
@@ -333,6 +358,8 @@ struct APIKeyManagementView: View {
 
     private func syncLocalCLIStateFromService() {
         isSyncingLocalCLIState = true
+        selectedLocalCLITemplate = aiService.localCLITemplateSelection
+        selectedLocalCLIModel = aiService.localCLIModelSelection
         localCLICommandTemplate = aiService.localCLICommandTemplate
         localCLITimeoutSeconds = aiService.localCLITimeoutSeconds
         DispatchQueue.main.async {

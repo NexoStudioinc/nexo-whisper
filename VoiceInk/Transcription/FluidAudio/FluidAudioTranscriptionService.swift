@@ -55,6 +55,7 @@ class FluidAudioTranscriptionService: TranscriptionService {
 
         let task = Task {
             try await AsrModels.downloadAndLoad(
+                to: FluidAudioModelManager.cacheDirectory(for: version),
                 configuration: nil,
                 version: version
             )

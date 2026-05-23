@@ -21,9 +21,14 @@ struct SettingsView: View {
     @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
     @AppStorage("clipboardRestoreDelay") private var clipboardRestoreDelay = 2.0
     @AppStorage(PasteMethod.userDefaultsKey) private var pasteMethodRawValue = PasteMethod.standard.rawValue
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
     @State private var showResetOnboardingAlert = false
     @State private var hasCancelRecordingShortcut = ShortcutStore.shortcut(for: .cancelRecorder) != nil
     @State private var cancelRecordingShortcutRecorderResetID = 0
+
+    private func t(_ key: String) -> String {
+        AppText.t(key, language: appLanguage)
+    }
 
     // Expansion states - all collapsed by default
     @State private var isMiddleClickExpanded = false
@@ -33,9 +38,18 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section {
+                Picker(t("App Language"), selection: $appLanguage) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
             // MARK: - Shortcuts
             Section {
-                LabeledContent("Primary Shortcut") {
+                LabeledContent(t("Primary Shortcut")) {
                     HStack(spacing: 8) {
                         Spacer()
                         shortcutModePicker(binding: $recordingShortcutManager.primaryRecordingShortcutMode)
@@ -48,7 +62,7 @@ struct SettingsView: View {
                 }
 
                 if recordingShortcutManager.secondaryRecordingShortcut != .none {
-                    LabeledContent("Secondary Shortcut") {
+                    LabeledContent(t("Secondary Shortcut")) {
                         HStack(spacing: 8) {
                             Spacer()
                             shortcutModePicker(binding: $recordingShortcutManager.secondaryRecordingShortcutMode)
@@ -69,38 +83,38 @@ struct SettingsView: View {
                 }
 
                 if recordingShortcutManager.secondaryRecordingShortcut == .none {
-                    Button("Add Second Shortcut") {
+                    Button(t("Add Second Shortcut")) {
                         withAnimation { recordingShortcutManager.secondaryRecordingShortcut = .custom }
                     }
                 }
             } header: {
-                Text("Shortcuts")
+                Text(t("Shortcuts"))
             }
 
             // MARK: - Additional Shortcuts
-            Section("Additional Shortcuts") {
-                LabeledContent("Paste Last Transcription (Original)") {
+            Section(t("Additional Shortcuts")) {
+                LabeledContent(t("Paste Last Transcription (Original)")) {
                     ShortcutRecorder(action: .pasteLastTranscription) {
                         recordingShortcutManager.updateShortcutStatus()
                     }
                         .controlSize(.small)
                 }
 
-                LabeledContent("Paste Last Transcription (Enhanced)") {
+                LabeledContent(t("Paste Last Transcription (Enhanced)")) {
                     ShortcutRecorder(action: .pasteLastEnhancement) {
                         recordingShortcutManager.updateShortcutStatus()
                     }
                         .controlSize(.small)
                 }
 
-                LabeledContent("Retry Last Transcription") {
+                LabeledContent(t("Retry Last Transcription")) {
                     ShortcutRecorder(action: .retryLastTranscription) {
                         recordingShortcutManager.updateShortcutStatus()
                     }
                         .controlSize(.small)
                 }
 
-                LabeledContent("Cancel Recording") {
+                LabeledContent(t("Cancel Recording")) {
                     HStack(spacing: 8) {
                         ShortcutRecorder(
                             action: .cancelRecorder,
@@ -119,7 +133,7 @@ struct SettingsView: View {
                             Image(systemName: "arrow.counterclockwise")
                         }
                         .buttonStyle(.plain)
-                        .help("Reset to default")
+                        .help(t("Reset to default"))
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: ShortcutStore.shortcutDidChange)) { notification in
@@ -131,9 +145,9 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isMiddleClickExpanded,
                     isEnabled: $recordingShortcutManager.isMiddleClickToggleEnabled,
-                    label: "Middle-Click Recording"
+                    label: t("Middle-Click Recording")
                 ) {
-                    LabeledContent("Activation Delay") {
+                    LabeledContent(t("Activation Delay")) {
                         HStack {
                             TextField("", value: $recordingShortcutManager.middleClickActivationDelay, formatter: {
                                 let formatter = NumberFormatter()
@@ -150,12 +164,12 @@ struct SettingsView: View {
             }
 
             // MARK: - Recording Feedback
-            Section("Recording Feedback") {
+            Section(t("Recording Feedback")) {
                 // Sound Feedback
                 ExpandableSettingsRow(
                     isExpanded: $isSoundFeedbackExpanded,
                     isEnabled: $soundManager.isEnabled,
-                    label: "Sound Feedback"
+                    label: t("Sound Feedback")
                 ) {
                     CustomSoundSettingsView()
                 }
@@ -164,9 +178,9 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isMuteSystemExpanded,
                     isEnabled: $mediaController.isSystemMuteEnabled,
-                    label: "Mute Audio While Recording"
+                    label: t("Mute Audio While Recording")
                 ) {
-                    Picker("Resume Delay", selection: $mediaController.audioResumptionDelay) {
+                    Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
                         Text("0s").tag(0.0)
                         Text("1s").tag(1.0)
                         Text("2s").tag(2.0)
@@ -180,10 +194,10 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isRestoreClipboardExpanded,
                     isEnabled: $restoreClipboardAfterPaste,
-                    label: "Keep Clipboard Content",
-                    infoMessage: "VoiceInk temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard."
+                    label: t("Keep Clipboard Content"),
+                    infoMessage: t("VoiceInk temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
                 ) {
-                    Picker("Restore Delay", selection: $clipboardRestoreDelay) {
+                    Picker(t("Restore Delay"), selection: $clipboardRestoreDelay) {
                         Text("250ms").tag(0.25)
                         Text("500ms").tag(0.5)
                         Text("1s").tag(1.0)
@@ -201,8 +215,8 @@ struct SettingsView: View {
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text("Paste Method")
-                        InfoTip("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly.")
+                        Text(t("Paste Method"))
+                        InfoTip(t("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly."))
                     }
                 }
                 .pickerStyle(.menu)
@@ -219,8 +233,8 @@ struct SettingsView: View {
             PowerModeSection()
 
             // MARK: - Interface
-            Section("Interface") {
-                Picker("Recorder Style", selection: $recorderUIManager.recorderType) {
+            Section(t("Interface")) {
+                Picker(t("Recorder Style"), selection: $recorderUIManager.recorderType) {
                     Text("Notch").tag("notch")
                     Text("Mini").tag("mini")
                 }
@@ -232,17 +246,17 @@ struct SettingsView: View {
             ExperimentalSection()
 
             // MARK: - General
-            Section("General") {
-                Toggle("Hide Dock Icon", isOn: $menuBarManager.isMenuBarOnly)
+            Section(t("General")) {
+                Toggle(t("Hide Dock Icon"), isOn: $menuBarManager.isMenuBarOnly)
 
                 LaunchAtLogin.Toggle("Launch at Login")
 
-                Toggle("Auto-check Updates", isOn: Binding(
+                Toggle(t("Auto-check Updates"), isOn: Binding(
                     get: { updaterViewModel.automaticallyChecksForUpdates },
                     set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
                 ))
 
-                Toggle("Show Announcements", isOn: $enableAnnouncements)
+                Toggle(t("Show Announcements"), isOn: $enableAnnouncements)
                     .onChange(of: enableAnnouncements) { _, newValue in
                         if newValue {
                             AnnouncementsService.shared.start()
@@ -252,12 +266,12 @@ struct SettingsView: View {
                     }
 
                 HStack {
-                    Button("Check for Updates") {
+                    Button(t("Check for Updates")) {
                         updaterViewModel.checkForUpdates()
                     }
                     .disabled(!updaterViewModel.canCheckForUpdates)
 
-                    Button("Reset Onboarding") {
+                    Button(t("Reset Onboarding")) {
                         showResetOnboardingAlert = true
                     }
                 }
@@ -267,15 +281,15 @@ struct SettingsView: View {
             Section {
                 AudioCleanupSettingsView()
             } header: {
-                Text("Privacy")
+                Text(t("Privacy"))
             } footer: {
-                Text("Control how VoiceInk handles your transcription data and audio recordings.")
+                Text(t("Control how VoiceInk handles your transcription data and audio recordings."))
             }
 
             // MARK: - Backup
             Section {
-                LabeledContent("Export Settings") {
-                    Button("Export") {
+                LabeledContent(t("Export Settings")) {
+                    Button(t("Export")) {
                         ImportExportService.shared.exportSettings(
                             enhancementService: enhancementService,
                             recordingShortcutManager: recordingShortcutManager,
@@ -289,8 +303,8 @@ struct SettingsView: View {
                     }
                 }
 
-                LabeledContent("Import Settings") {
-                    Button("Import") {
+                LabeledContent(t("Import Settings")) {
+                    Button(t("Import")) {
                         ImportExportService.shared.importSettings(
                             enhancementService: enhancementService,
                             recordingShortcutManager: recordingShortcutManager,
@@ -305,28 +319,30 @@ struct SettingsView: View {
                     }
                 }
             } header: {
-                Text("Backup")
+                Text(t("Backup"))
             } footer: {
-                Text("Export all settings, or choose specific categories when importing a backup.")
+                Text(t("Export all settings, or choose specific categories when importing a backup."))
             }
 
             // MARK: - Diagnostics
-            Section("Diagnostics") {
+            Section(t("Diagnostics")) {
                 DiagnosticsSettingsView()
             }
         }
         .formStyle(.grouped)
+        .controlSize(.small)
+        .environment(\.defaultMinListRowHeight, 28)
         .scrollContentBackground(.hidden)
         .background(Color(NSColor.controlBackgroundColor))
-        .alert("Reset Onboarding", isPresented: $showResetOnboardingAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Reset", role: .destructive) {
+        .alert(t("Reset Onboarding"), isPresented: $showResetOnboardingAlert) {
+            Button(t("Cancel"), role: .cancel) { }
+            Button(t("Reset"), role: .destructive) {
                 DispatchQueue.main.async {
                     hasCompletedOnboarding = false
                 }
             }
         } message: {
-            Text("You'll see the introduction screens again the next time you launch the app.")
+            Text(t("You'll see the introduction screens again the next time you launch the app."))
         }
     }
 
@@ -427,32 +443,37 @@ struct PowerModeSection: View {
     @ObservedObject private var powerModeManager = PowerModeManager.shared
     @AppStorage("powerModeUIFlag") private var powerModeUIFlag = false
     @AppStorage("powerModePersistConfig") private var powerModePersistSettings = false
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
     @State private var showDisableAlert = false
     @State private var isExpanded = false
+
+    private func t(_ key: String) -> String {
+        AppText.t(key, language: appLanguage)
+    }
 
     var body: some View {
         Section {
             ExpandableSettingsRow(
                 isExpanded: $isExpanded,
                 isEnabled: toggleBinding,
-                label: "Power Mode",
-                infoMessage: "Apply custom settings based on active app or website.",
+                label: t("Power Mode"),
+                infoMessage: t("Apply custom settings based on active app or website."),
                 infoURL: "https://tryvoiceink.com/docs/power-mode"
             ) {
                 Toggle(isOn: $powerModePersistSettings) {
                     HStack(spacing: 4) {
-                        Text("Persist Configured Preferences")
-                        InfoTip("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates.")
+                        Text(t("Persist Configured Preferences"))
+                        InfoTip(t("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates."))
                     }
                 }
             }
         } header: {
-            Text("Power Mode")
+            Text(t("Power Mode"))
         }
-        .alert("Power Mode Still Active", isPresented: $showDisableAlert) {
-            Button("Got it", role: .cancel) { }
+        .alert(t("Power Mode Still Active"), isPresented: $showDisableAlert) {
+            Button(t("Got it"), role: .cancel) { }
         } message: {
-            Text("Disable or remove your Power Modes first.")
+            Text(t("Disable or remove your Power Modes first."))
         }
     }
 
@@ -479,17 +500,22 @@ struct PowerModeSection: View {
 struct ExperimentalSection: View {
     @ObservedObject private var playbackController = PlaybackController.shared
     @ObservedObject private var mediaController = MediaController.shared
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
     @State private var isPauseMediaExpanded = false
+
+    private func t(_ key: String) -> String {
+        AppText.t(key, language: appLanguage)
+    }
 
     var body: some View {
         Section {
             ExpandableSettingsRow(
                 isExpanded: $isPauseMediaExpanded,
                 isEnabled: $playbackController.isPauseMediaEnabled,
-                label: "Pause Media While Recording",
-                infoMessage: "Pauses playing media when recording starts and resumes when done."
+                label: t("Pause Media While Recording"),
+                infoMessage: t("Pauses playing media when recording starts and resumes when done.")
             ) {
-                Picker("Resume Delay", selection: $mediaController.audioResumptionDelay) {
+                Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
                     Text("0s").tag(0.0)
                     Text("1s").tag(1.0)
                     Text("2s").tag(2.0)
@@ -499,7 +525,7 @@ struct ExperimentalSection: View {
                 }
             }
         } header: {
-            Text("Experimental")
+            Text(t("Experimental"))
         }
     }
 }

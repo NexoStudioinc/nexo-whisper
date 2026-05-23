@@ -18,6 +18,10 @@ enum ViewType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    func displayName(language: String) -> String {
+        AppText.t(rawValue, language: language)
+    }
+
     var icon: String {
         switch self {
         case .metrics: return "gauge.medium"
@@ -62,6 +66,7 @@ struct ContentView: View {
     @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
     @EnvironmentObject private var recordingShortcutManager: RecordingShortcutManager
     @AppStorage("powerModeUIFlag") private var powerModeUIFlag = false
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
     @State private var selectedView: ViewType? = .metrics
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     @StateObject private var licenseViewModel = LicenseViewModel()
@@ -119,20 +124,19 @@ struct ContentView: View {
             }
             .listStyle(.sidebar)
             .navigationTitle("VoiceInk")
-            .navigationSplitViewColumnWidth(210)
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 220)
         } detail: {
             if let selectedView = selectedView {
                 detailView(for: selectedView)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .navigationTitle(selectedView.rawValue)
+                    .navigationTitle(selectedView.displayName(language: appLanguage))
             } else {
-                Text("Select a view")
+                Text(AppText.t("Select a view", language: appLanguage))
                     .foregroundColor(.secondary)
             }
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(width: 950)
-        .frame(minHeight: 730)
+        .frame(minWidth: 760, idealWidth: 900, minHeight: 560, idealHeight: 640)
         .onAppear {
             logger.notice("ContentView appeared")
         }
@@ -197,6 +201,7 @@ struct ContentView: View {
 
 private struct SidebarItemView: View {
     let viewType: ViewType
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
 
     var body: some View {
         HStack(spacing: 12) {
@@ -204,7 +209,7 @@ private struct SidebarItemView: View {
                 .font(.system(size: 18, weight: .medium))
                 .frame(width: 24, height: 24)
 
-            Text(viewType.rawValue)
+            Text(viewType.displayName(language: appLanguage))
                 .font(.system(size: 14, weight: .medium))
 
             Spacer()

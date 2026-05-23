@@ -4,16 +4,68 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
     case pi
     case claude
     case codex
+    case gemini
     case copilot
+    case antigravity
+
+    static var allCases: [LocalCLITemplate] {
+        [.pi, .claude, .codex, .gemini, .copilot]
+    }
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
         case .pi: return "Pi"
-        case .claude: return "Claude"
-        case .codex: return "Codex"
+        case .claude: return "Claude / Anthropic"
+        case .codex: return "Codex / OpenAI"
+        case .gemini: return "Gemini / Google"
         case .copilot: return "Copilot"
+        case .antigravity: return "Antigravity"
+        }
+    }
+
+    var defaultModel: String {
+        switch self {
+        case .codex:
+            return "gpt-5.4-mini"
+        case .claude:
+            return "sonnet"
+        case .gemini:
+            return "gemini-2.5-flash"
+        case .pi, .copilot, .antigravity:
+            return ""
+        }
+    }
+
+    var availableModels: [String] {
+        switch self {
+        case .codex:
+            return [
+                "gpt-5.4-mini",
+                "gpt-5.4",
+                "gpt-5.5"
+            ]
+        case .claude:
+            return [
+                "sonnet",
+                "haiku",
+                "opus",
+                "claude-sonnet-4-6",
+                "claude-haiku-4-5",
+                "claude-opus-4-6"
+            ]
+        case .gemini:
+            return [
+                "gemini-2.5-flash",
+                "gemini-2.5-flash-lite",
+                "gemini-2.5-pro",
+                "gemini-3-flash-preview",
+                "gemini-3.1-flash-lite",
+                "gemini-3.1-pro-preview"
+            ]
+        case .pi, .copilot, .antigravity:
+            return []
         }
     }
 
@@ -22,11 +74,15 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .pi:
             return "pi -ne -ns -p --no-tools --system-prompt \"$VOICEINK_SYSTEM_PROMPT\" \"$VOICEINK_USER_PROMPT\""
         case .claude:
-            return "claude -p \"$VOICEINK_FULL_PROMPT\""
+            return "claude -p --model \"$VOICEINK_LOCAL_CLI_MODEL\" \"$VOICEINK_FULL_PROMPT\""
         case .codex:
-            return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""
+            return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --model \"$VOICEINK_LOCAL_CLI_MODEL\" --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""
+        case .gemini:
+            return "gemini --skip-trust --model \"$VOICEINK_LOCAL_CLI_MODEL\" --prompt \"$VOICEINK_FULL_PROMPT\" --output-format text"
         case .copilot:
             return "copilot -p \"$VOICEINK_FULL_PROMPT\" -s --no-ask-user --available-tools=__none__ 2>/dev/null"
+        case .antigravity:
+            return "agy --print \"$VOICEINK_FULL_PROMPT\""
         }
     }
 }
@@ -34,6 +90,7 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
 final class LocalCLIService {
     static let commandTemplateKey = "localCLICommandTemplate"
     static let selectedTemplateKey = "localCLISelectedTemplate"
+    static let selectedModelKey = "localCLISelectedModel"
     static let timeoutSecondsKey = "localCLITimeoutSeconds"
     static let defaultTimeoutSeconds: Double = 45
     private static let shellPathQueue = DispatchQueue(label: "com.prakashjoshipax.voiceink.localcli.path")
@@ -48,6 +105,12 @@ final class LocalCLIService {
     var selectedTemplate: LocalCLITemplate {
         didSet {
             UserDefaults.standard.set(selectedTemplate.rawValue, forKey: Self.selectedTemplateKey)
+        }
+    }
+
+    var selectedModel: String {
+        didSet {
+            UserDefaults.standard.set(selectedModel, forKey: Self.selectedModelKey)
         }
     }
 
@@ -68,9 +131,22 @@ final class LocalCLIService {
 
     init() {
         let savedTemplateRaw = UserDefaults.standard.string(forKey: Self.selectedTemplateKey) ?? ""
-        selectedTemplate = LocalCLITemplate(rawValue: savedTemplateRaw) ?? .pi
+        let savedTemplate = LocalCLITemplate(rawValue: savedTemplateRaw) ?? .pi
+        let didFallbackFromUnsupportedTemplate = savedTemplate != Self.validTemplateOrFallback(savedTemplate)
+        selectedTemplate = Self.validTemplateOrFallback(savedTemplate)
+        let savedModel = UserDefaults.standard.string(forKey: Self.selectedModelKey) ?? ""
+        if !savedModel.isEmpty && selectedTemplate.availableModels.contains(savedModel) {
+            selectedModel = savedModel
+        } else {
+            selectedModel = selectedTemplate.defaultModel
+        }
 
         commandTemplate = UserDefaults.standard.string(forKey: Self.commandTemplateKey) ?? ""
+
+        if didFallbackFromUnsupportedTemplate || commandTemplate.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            selectedModel = selectedTemplate.defaultModel
+            commandTemplate = selectedTemplate.commandTemplate
+        }
 
         let savedTimeout = UserDefaults.standard.double(forKey: Self.timeoutSecondsKey)
         timeoutSeconds = savedTimeout > 0 ? savedTimeout : Self.defaultTimeoutSeconds
@@ -78,7 +154,12 @@ final class LocalCLIService {
 
     func loadTemplate(_ template: LocalCLITemplate) {
         selectedTemplate = template
+        selectedModel = template.defaultModel
         commandTemplate = template.commandTemplate
+    }
+
+    func updateSelectedModel(_ model: String) {
+        selectedModel = model
     }
 
     func enhance(systemPrompt: String, userPrompt: String) async throws -> String {
@@ -115,7 +196,9 @@ final class LocalCLIService {
         fullPrompt: String,
         timeout: Double
     ) async throws -> String {
-        try await withCheckedThrowingContinuation { continuation in
+        let localCLIModel = selectedModel
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
             DispatchQueue.global(qos: .userInitiated).async {
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/zsh")
@@ -126,6 +209,7 @@ final class LocalCLIService {
                 environment["VOICEINK_SYSTEM_PROMPT"] = systemPrompt
                 environment["VOICEINK_USER_PROMPT"] = userPrompt
                 environment["VOICEINK_FULL_PROMPT"] = fullPrompt
+                environment["VOICEINK_LOCAL_CLI_MODEL"] = localCLIModel
                 process.environment = environment
 
                 let inputPipe = Pipe()
@@ -187,6 +271,10 @@ final class LocalCLIService {
                 continuation.resume(returning: stdout)
             }
         }
+    }
+
+    private static func validTemplateOrFallback(_ template: LocalCLITemplate) -> LocalCLITemplate {
+        LocalCLITemplate.allCases.contains(template) ? template : .pi
     }
 
     private static func preferredPATH(fallback: String?) -> String {

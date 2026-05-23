@@ -65,7 +65,7 @@ enum AIProvider: String, CaseIterable {
         case .anthropic:
             return "claude-sonnet-4-6"
         case .openAI:
-            return "gpt-5.4"
+            return "gpt-4.1-mini"
         case .mistral:
             return "mistral-large-latest"
         case .elevenLabs:
@@ -125,14 +125,14 @@ enum AIProvider: String, CaseIterable {
             ]
         case .openAI:
             return [
+                "gpt-4.1-mini",
+                "gpt-4.1-nano",
+                "gpt-4.1",
                 "gpt-5.5",
                 "gpt-5.4",
                 "gpt-5.4-mini",
                 "gpt-5.4-nano",
-                "gpt-5.2",
-                "gpt-4.1",
-                "gpt-4.1-mini",
-                "gpt-4.1-nano"
+                "gpt-5.2"
             ]
         case .mistral:
             return [
@@ -250,6 +250,14 @@ class AIService: ObservableObject {
         localCLIService.selectedTemplate
     }
 
+    var localCLIModelSelection: String {
+        localCLIService.selectedModel
+    }
+
+    var localCLIAvailableModels: [String] {
+        localCLIService.selectedTemplate.availableModels
+    }
+
     var localCLITimeoutSeconds: Double {
         localCLIService.timeoutSeconds
     }
@@ -267,6 +275,8 @@ class AIService: ObservableObject {
         if userDefaults.string(forKey: "selectedAIProvider") == "GROQ" {
             userDefaults.set("Groq", forKey: "selectedAIProvider")
         }
+
+        Self.migrateOpenAIDefaultModelToMiniIfNeeded(userDefaults: userDefaults)
 
         if let savedProvider = userDefaults.string(forKey: "selectedAIProvider"),
            let provider = AIProvider(rawValue: savedProvider) {
@@ -286,6 +296,20 @@ class AIService: ObservableObject {
 
         loadSavedModelSelections()
         loadSavedOpenRouterModels()
+    }
+
+    private static func migrateOpenAIDefaultModelToMiniIfNeeded(userDefaults: UserDefaults) {
+        let migrationKey = "didMigrateOpenAIDefaultModelToGPT41Mini"
+        guard !userDefaults.bool(forKey: migrationKey) else { return }
+
+        let openAIModelKey = "\(AIProvider.openAI.rawValue)SelectedModel"
+        let savedModel = userDefaults.string(forKey: openAIModelKey)
+
+        if savedModel == nil || savedModel == "gpt-5.4" {
+            userDefaults.set(AIProvider.openAI.defaultModel, forKey: openAIModelKey)
+        }
+
+        userDefaults.set(true, forKey: migrationKey)
     }
     
     private func loadSavedModelSelections() {
@@ -435,6 +459,11 @@ class AIService: ObservableObject {
 
     func updateLocalCLICommandTemplate(_ command: String) {
         localCLIService.commandTemplate = command
+        refreshLocalCLIConfigurationState()
+    }
+
+    func updateLocalCLIModelSelection(_ model: String) {
+        localCLIService.updateSelectedModel(model)
         refreshLocalCLIConfigurationState()
     }
 
