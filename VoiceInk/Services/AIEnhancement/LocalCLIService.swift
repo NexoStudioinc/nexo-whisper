@@ -377,9 +377,14 @@ final class LocalCLIService {
     /// Usado por CLIDetectionPanel para detectar automáticamente qué CLIs
     /// (claude/codex/gemini/copilot) tiene instalados y ofrecer un setup
     /// con un clic.
+    ///
+    /// IMPORTANTE: NO ejecutar dentro de `shellPathQueue` — `preferredPATH(...)`
+    /// hace `shellPathQueue.sync` internamente y produce un deadlock fatal
+    /// (BUG IN CLIENT OF LIBDISPATCH) si la llamada viene de la misma cola.
+    /// Usamos la global queue de userInitiated en su lugar.
     static func isBinaryAvailable(named binaryName: String) async -> Bool {
         await withCheckedContinuation { continuation in
-            shellPathQueue.async {
+            DispatchQueue.global(qos: .userInitiated).async {
                 let path = preferredPATH(fallback: ProcessInfo.processInfo.environment["PATH"])
                 let dirs = path.split(separator: ":").map(String.init)
                 for dir in dirs {
