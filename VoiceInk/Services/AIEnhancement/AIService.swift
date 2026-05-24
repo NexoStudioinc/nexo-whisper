@@ -455,6 +455,11 @@ class AIService: ObservableObject {
     func loadLocalCLITemplate(_ template: LocalCLITemplate) {
         localCLIService.loadTemplate(template)
         refreshLocalCLIConfigurationState()
+        // Pre-warm del nuevo CLI seleccionado para que la próxima invocación
+        // evite el cold start del binario. NO reinicia la app — corre en
+        // background utility queue y muere en ~1s. Solo se pre-warmea el CLI
+        // recién elegido, nunca todos a la vez.
+        LocalCLIService.prewarm(binaryName: template.binaryName)
     }
 
     func updateLocalCLICommandTemplate(_ command: String) {

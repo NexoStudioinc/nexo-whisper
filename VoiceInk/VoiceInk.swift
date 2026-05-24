@@ -303,14 +303,16 @@ struct VoiceInkApp: App {
                         // endpoint propio (ver AnnouncementsService.swift FIXME) se puede
                         // reactivar aquí + restaurar el toggle en Settings.
 
-                        // Pre-warm de los CLIs comunes en background: la primera
-                        // transcripción con Mejora IA evita el cold start del binario
-                        // (Node/Go boot demora ~300-800ms). Cada warm es 1 proceso que
-                        // vive ~1s y muere — costo despreciable. Se hace en serie en
-                        // utility queue, sin bloquear UI ni startup.
+                        // Pre-warm SOLO del CLI actualmente seleccionado (no de todos).
+                        // 2s después del startup para no demorar el launch.
+                        // Si el provider no es Local CLI, no hace falta — no se warmea.
+                        // El cambio de CLI desde el panel (loadLocalCLITemplate) dispara
+                        // un pre-warm propio del nuevo CLI, así que no se requiere
+                        // reiniciar la app cuando el usuario cambia de cliente.
                         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
-                            for binary in ["claude", "codex", "agy", "copilot"] {
-                                LocalCLIService.prewarm(binaryName: binary)
+                            if aiService.selectedProvider == .localCLI {
+                                let currentCLI = aiService.localCLITemplateSelection
+                                LocalCLIService.prewarm(binaryName: currentCLI.binaryName)
                             }
                         }
 
