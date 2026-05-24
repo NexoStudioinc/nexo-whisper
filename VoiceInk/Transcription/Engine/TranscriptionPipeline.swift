@@ -152,12 +152,16 @@ class TranscriptionPipeline {
                     transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
                     finalPastedText = enhancedText
                 } catch {
+                    // Falla del enhancement: NO sobrescribir transcription.enhancedText
+                    // con el mensaje de error (eso ensucia el historial y se ve raro
+                    // al re-pegar). Dejamos enhancedText en nil — finalPastedText ya
+                    // tiene cleanedText (la transcripción cruda) asignado más arriba,
+                    // así que el usuario igual recibe su texto pegado.
                     let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    transcription.enhancedText = "Enhancement failed: \(errorDescription)"
                     let shortReason = String(errorDescription.prefix(80))
                     await MainActor.run {
                         NotificationManager.shared.showNotification(
-                            title: "Enhancement failed: \(shortReason)",
+                            title: String(localized: "AI enhancement failed — pasted raw transcription") + " (\(shortReason))",
                             type: .warning
                         )
                     }

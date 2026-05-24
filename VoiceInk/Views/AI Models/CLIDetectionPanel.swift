@@ -9,7 +9,9 @@ struct CLIDetectionPanel: View {
     @State private var availability: [LocalCLITemplate: Bool] = [:]
     @State private var isDetecting = true
 
-    private let detectableClients: [LocalCLITemplate] = [.claude, .codex, .gemini, .copilot]
+    // Detectables: los 4 CLIs principales soportados.
+    // .gemini fue reemplazado por .antigravity (agy) a partir de junio 2026.
+    private let detectableClients: [LocalCLITemplate] = [.claude, .codex, .antigravity, .copilot]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

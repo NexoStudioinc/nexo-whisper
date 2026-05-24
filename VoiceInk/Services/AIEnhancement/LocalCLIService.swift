@@ -8,8 +8,12 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
     case copilot
     case antigravity
 
+    // Nota: .gemini removido del default a partir de junio 2026.
+    // Google deprecó gemini-cli a favor de Antigravity (agy). Sigue
+    // disponible como case por compatibilidad con usuarios que aún lo usen,
+    // pero no aparece en el picker ni en el auto-detect.
     static var allCases: [LocalCLITemplate] {
-        [.pi, .claude, .codex, .gemini, .copilot]
+        [.pi, .claude, .codex, .antigravity, .copilot]
     }
 
     var id: String { rawValue }
@@ -19,9 +23,9 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .pi: return "Pi"
         case .claude: return "Claude / Anthropic"
         case .codex: return "Codex / OpenAI"
-        case .gemini: return "Gemini / Google"
+        case .gemini: return "Gemini CLI (deprecated)"
         case .copilot: return "Copilot"
-        case .antigravity: return "Antigravity"
+        case .antigravity: return "Antigravity / Google"
         }
     }
 
@@ -34,6 +38,8 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .gemini:
             return "gemini-2.5-flash"
         case .pi, .copilot, .antigravity:
+            // Antigravity y otros CLIs sin selector de modelo: el modelo se
+            // configura via la cuenta del usuario en el CLI, no por argumento.
             return ""
         }
     }
@@ -82,7 +88,11 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .copilot:
             return "copilot -p \"$VOICEINK_FULL_PROMPT\" -s --no-ask-user --available-tools=__none__ 2>/dev/null"
         case .antigravity:
-            return "agy --print \"$VOICEINK_FULL_PROMPT\""
+            // Antigravity (agy) — reemplazo de gemini-cli a partir de junio 2026.
+            // --print: ejecuta un prompt y devuelve la respuesta (no interactivo).
+            // --dangerously-skip-permissions: evita el prompt de aprobación de tools
+            // (no usamos tools, así que no aplica el riesgo).
+            return "agy --print --dangerously-skip-permissions \"$VOICEINK_FULL_PROMPT\""
         }
     }
 
@@ -319,8 +329,14 @@ final class LocalCLIService {
     private static func discoverPATHFromInteractiveLoginShell() -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        // -lc (login, NOT interactive) en lugar de -ilc para evitar que zsh
+        // cargue .zshrc completo. .zshrc del usuario suele tocar directorios
+        // protegidos (~/Pictures, ~/Music, ~/Documents via oh-my-zsh, plugins,
+        // alias custom) lo que dispara dialogs de TCC pidiéndole a Nexo Whisper
+        // permisos para esas carpetas. Solo necesitamos PATH, que se setea en
+        // .zprofile/.zlogin (login shell) — no hace falta .zshrc.
         process.arguments = [
-            "-ilc",
+            "-lc",
             "echo __VOICEINK_PATH_START__; print -r -- $PATH; echo __VOICEINK_PATH_END__"
         ]
 
@@ -373,27 +389,54 @@ final class LocalCLIService {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Verifica si un binario está disponible en el PATH del usuario.
+    /// Verifica si un binario está disponible para Nexo Whisper.
     /// Usado por CLIDetectionPanel para detectar automáticamente qué CLIs
-    /// (claude/codex/gemini/copilot) tiene instalados y ofrecer un setup
-    /// con un clic.
+    /// (claude/codex/agy/copilot) tiene instalados el usuario.
     ///
-    /// IMPORTANTE: NO ejecutar dentro de `shellPathQueue` — `preferredPATH(...)`
-    /// hace `shellPathQueue.sync` internamente y produce un deadlock fatal
-    /// (BUG IN CLIENT OF LIBDISPATCH) si la llamada viene de la misma cola.
-    /// Usamos la global queue de userInitiated en su lugar.
+    /// Estrategia en 2 fases (cero riesgo de TCC dialogs):
+    /// 1. Chequear paths comunes hardcoded — cubre Homebrew (Apple Silicon
+    ///    e Intel), installs de usuario (~/.local/bin, ~/bin) y sistema.
+    ///    Cero shell, cero acceso a directorios protegidos.
+    /// 2. Si no se encontró, fallback al PATH del proceso (env var) y al
+    ///    PATH descubierto via login shell (solo si está cacheado de un
+    ///    uso anterior).
+    ///
+    /// NO usamos `-ilc` (interactive login shell) porque eso carga .zshrc
+    /// y los plugins/aliases de zsh pueden tocar ~/Pictures, ~/Music, etc.,
+    /// disparando dialogs TCC que confunden al usuario.
     static func isBinaryAvailable(named binaryName: String) async -> Bool {
         await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let path = preferredPATH(fallback: ProcessInfo.processInfo.environment["PATH"])
-                let dirs = path.split(separator: ":").map(String.init)
-                for dir in dirs {
+                let home = NSHomeDirectory()
+                let commonPaths: [String] = [
+                    "/opt/homebrew/bin",                 // Homebrew Apple Silicon
+                    "/usr/local/bin",                    // Homebrew Intel + manual installs
+                    "\(home)/.local/bin",                // Installs de usuario (pipx, agy, etc)
+                    "\(home)/bin",                       // ~/bin clásico
+                    "/usr/bin",
+                    "/bin",
+                    "/usr/sbin",
+                    "/sbin"
+                ]
+                for dir in commonPaths {
                     let candidate = (dir as NSString).appendingPathComponent(binaryName)
                     if FileManager.default.isExecutableFile(atPath: candidate) {
                         continuation.resume(returning: true)
                         return
                     }
                 }
+
+                // Fallback: PATH del proceso (puede no tener custom paths del user)
+                if let envPath = ProcessInfo.processInfo.environment["PATH"] {
+                    for dir in envPath.split(separator: ":").map(String.init) {
+                        let candidate = (dir as NSString).appendingPathComponent(binaryName)
+                        if FileManager.default.isExecutableFile(atPath: candidate) {
+                            continuation.resume(returning: true)
+                            return
+                        }
+                    }
+                }
+
                 continuation.resume(returning: false)
             }
         }

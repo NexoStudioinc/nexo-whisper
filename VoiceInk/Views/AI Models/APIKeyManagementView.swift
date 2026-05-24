@@ -163,22 +163,11 @@ struct APIKeyManagementView: View {
 
                 } else if aiService.selectedProvider == .localCLI {
                     VStack(alignment: .leading, spacing: 12) {
-                        // Detección automática: muestra de un vistazo qué CLIs
-                        // están instalados en el PATH del usuario y permite
-                        // activarlos con un clic. El picker manual y el comando
-                        // custom siguen abajo para power users.
+                        // Vista simple: detección automática + selector de modelo
+                        // (cuando el CLI elegido lo soporta) + timeout. Todo lo
+                        // técnico (picker manual de cliente, comando custom, ENV vars)
+                        // vive en "Configuración avanzada" colapsado.
                         CLIDetectionPanel(aiService: aiService)
-
-                        Picker("Client", selection: $selectedLocalCLITemplate) {
-                            ForEach(LocalCLITemplate.allCases) { template in
-                                Text(template.displayName).tag(template)
-                            }
-                        }
-                        .onChange(of: selectedLocalCLITemplate) { _, newValue in
-                            guard !isSyncingLocalCLIState else { return }
-                            aiService.loadLocalCLITemplate(newValue)
-                            syncLocalCLIStateFromService()
-                        }
 
                         if !aiService.localCLIAvailableModels.isEmpty {
                             Picker("Model", selection: $selectedLocalCLIModel) {
@@ -192,64 +181,81 @@ struct APIKeyManagementView: View {
                             }
                         }
 
-                        HStack {
-                            Text("Command")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Menu("Load Template") {
-                                ForEach(LocalCLITemplate.allCases) { template in
-                                    Button(template.displayName) {
-                                        aiService.loadLocalCLITemplate(template)
-                                        syncLocalCLIStateFromService()
-                                    }
-                                }
-                            }
+                        Picker("Timeout", selection: $localCLITimeoutSeconds) {
+                            Text("15s").tag(15.0)
+                            Text("30s").tag(30.0)
+                            Text("45s").tag(45.0)
+                            Text("60s").tag(60.0)
+                            Text("90s").tag(90.0)
+                            Text("120s").tag(120.0)
+                            Text("180s").tag(180.0)
+                            Text("300s").tag(300.0)
+                        }
+                        .onChange(of: localCLITimeoutSeconds) { _, newValue in
+                            aiService.updateLocalCLITimeoutSeconds(newValue)
                         }
 
-                        TextEditor(text: $localCLICommandTemplate)
-                            .font(.system(.body, design: .monospaced))
-                            .multilineTextAlignment(.leading)
-                            .frame(minHeight: 100)
-                            .padding(4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(NSColor.textBackgroundColor))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
-                            )
-                            .onChange(of: localCLICommandTemplate) { _, newValue in
-                                guard !isSyncingLocalCLIState else { return }
-                                if newValue != aiService.localCLICommandTemplate {
-                                    aiService.updateLocalCLICommandTemplate(newValue)
+                        DisclosureGroup("Advanced configuration") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Picker("Client", selection: $selectedLocalCLITemplate) {
+                                    ForEach(LocalCLITemplate.allCases) { template in
+                                        Text(template.displayName).tag(template)
+                                    }
                                 }
+                                .onChange(of: selectedLocalCLITemplate) { _, newValue in
+                                    guard !isSyncingLocalCLIState else { return }
+                                    aiService.loadLocalCLITemplate(newValue)
+                                    syncLocalCLIStateFromService()
+                                }
+
+                                HStack {
+                                    Text("Custom command")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Menu("Load Template") {
+                                        ForEach(LocalCLITemplate.allCases) { template in
+                                            Button(template.displayName) {
+                                                aiService.loadLocalCLITemplate(template)
+                                                syncLocalCLIStateFromService()
+                                            }
+                                        }
+                                    }
+                                }
+
+                                TextEditor(text: $localCLICommandTemplate)
+                                    .font(.system(.body, design: .monospaced))
+                                    .multilineTextAlignment(.leading)
+                                    .frame(minHeight: 80)
+                                    .padding(4)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(Color(NSColor.textBackgroundColor))
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                                    )
+                                    .onChange(of: localCLICommandTemplate) { _, newValue in
+                                        guard !isSyncingLocalCLIState else { return }
+                                        if newValue != aiService.localCLICommandTemplate {
+                                            aiService.updateLocalCLICommandTemplate(newValue)
+                                        }
+                                    }
+
+                                Text("Environment variables available: VOICEINK_SYSTEM_PROMPT, VOICEINK_USER_PROMPT, VOICEINK_FULL_PROMPT. Nexo Whisper also writes VOICEINK_FULL_PROMPT to stdin for every command.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
-                    }
+                            .padding(.top, 8)
+                        }
+                        .font(.subheadline)
 
-                    Picker("Timeout", selection: $localCLITimeoutSeconds) {
-                        Text("15s").tag(15.0)
-                        Text("30s").tag(30.0)
-                        Text("45s").tag(45.0)
-                        Text("60s").tag(60.0)
-                        Text("90s").tag(90.0)
-                        Text("120s").tag(120.0)
-                        Text("180s").tag(180.0)
-                        Text("300s").tag(300.0)
-                    }
-                    .onChange(of: localCLITimeoutSeconds) { _, newValue in
-                        aiService.updateLocalCLITimeoutSeconds(newValue)
-                    }
-
-                    Text("Environment variables available: VOICEINK_SYSTEM_PROMPT, VOICEINK_USER_PROMPT, VOICEINK_FULL_PROMPT. Nexo Whisper also writes VOICEINK_FULL_PROMPT to stdin for every command.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    if !aiService.isAPIKeyValid {
-                        Text("Load a template or enter a command to enable Local CLI enhancement.")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                        if !aiService.isAPIKeyValid {
+                            Text("Select a detected CLI above to enable AI enhancement.")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
                     }
 
                 } else if aiService.selectedProvider == .custom {
