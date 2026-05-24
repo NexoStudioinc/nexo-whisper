@@ -377,7 +377,7 @@ struct OnboardingPermissionsView: View {
         }
     }
     
-    private func getButtonTitle() -> String {
+    private func getButtonTitle() -> LocalizedStringKey {
         switch permissions[currentPermissionIndex].type {
         case .keyboardShortcut:
             return permissionStates[currentPermissionIndex] ? "Continue" : "Set Shortcut"
