@@ -37,7 +37,12 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
         case .codex:
             return "gpt-5.4-mini"
         case .claude:
-            return "sonnet"
+            // haiku por default en lugar de sonnet: la transcripción mejorada
+            // es una tarea simple de polish, no requiere razonamiento profundo.
+            // Haiku responde en ~1-2s vs ~3-5s de sonnet → mejora notable de
+            // latencia percibida. El usuario puede cambiar a sonnet/opus en
+            // el picker si quiere más calidad a costo de tiempo.
+            return "haiku"
         case .gemini:
             return "gemini-2.5-flash"
         case .pi, .copilot, .antigravity:
@@ -88,7 +93,14 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
             return "pi -ne -ns -p --no-tools --system-prompt \"$VOICEINK_SYSTEM_PROMPT\" \"$VOICEINK_USER_PROMPT\""
         case .claude:
             // claude lee de stdin con -p (sin argumento). El modelo se pasa con --model.
-            return "claude -p --model \"$VOICEINK_LOCAL_CLI_MODEL\""
+            // unset ANTHROPIC_API_KEY: si el usuario tiene una API key vieja exportada
+            // en .zprofile/.zshenv, claude prioriza esa sobre OAuth Claude Code y falla
+            // con "401 Invalid authentication credentials". Removiéndola, claude usa el
+            // OAuth de Claude Code (subscription Pro/Max) que es lo que esperamos.
+            // Si el usuario quiere usar API key, debería conectarse via "Anthropic"
+            // como provider directo (no Local CLI).
+            // Fallback de modelo: si VOICEINK_LOCAL_CLI_MODEL está vacío, sonnet por default.
+            return "unset ANTHROPIC_API_KEY; claude -p --model \"${VOICEINK_LOCAL_CLI_MODEL:-sonnet}\""
         case .codex:
             // codex no soporta stdin: usamos archivo temporal.
             return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --model \"$VOICEINK_LOCAL_CLI_MODEL\" --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""

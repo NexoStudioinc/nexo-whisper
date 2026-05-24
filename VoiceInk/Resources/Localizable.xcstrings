@@ -152,6 +152,7 @@
     "Gemini CLI (deprecated)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Gemini CLI (obsoleto)" } } } },
     "Antigravity / Google" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Antigravity / Google" } } } },
     "AI enhancement failed — pasted raw transcription" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Falló la mejora con IA — se pegó la transcripción original" } } } },
+    "No place to paste — transcription copied to clipboard" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No había dónde pegar — la transcripción se copió al portapapeles" } } } },
     "Buy Nexo Whisper" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Comprar Nexo Whisper" } } } },
     "Formal" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Formal" } } } },
     "Coding" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Coding" } } } },

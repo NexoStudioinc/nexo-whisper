@@ -11,6 +11,10 @@ class CursorPaster {
     enum PasteResult: Equatable {
         case commandPosted
         case commandNotPosted
+        /// No había text field con foco para recibir el paste. El texto
+        /// quedó copiado en el clipboard (persistente) como fallback.
+        /// El usuario puede pegarlo manualmente con Cmd+V donde quiera.
+        case noTextFieldFocused
 
         var didPostPasteCommand: Bool {
             self == .commandPosted
@@ -45,6 +49,15 @@ class CursorPaster {
 
     @MainActor
     private static func performPasteSession(_ text: String) async -> PasteResult {
+        // Fallback: si no hay text field con foco, evitamos el Cmd+V (iría a
+        // la nada o a un botón random) y dejamos el texto en clipboard como
+        // persistente para que el usuario pueda hacerlo manualmente.
+        if !hasFocusedTextInputField() {
+            logger.notice("No text input focused — saving transcription to clipboard as fallback")
+            _ = ClipboardManager.setClipboard(text, transient: false, sessionID: nil)
+            return .noTextFieldFocused
+        }
+
         let pasteboard = NSPasteboard.general
         let shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
         let savedContents = shouldRestoreClipboard ? snapshotClipboard(from: pasteboard) : []
@@ -170,6 +183,66 @@ class CursorPaster {
             logger.error("AppleScript paste failed: \(String(describing: error), privacy: .public)")
         }
         return error == nil
+    }
+
+    // MARK: - Focus detection (fallback to clipboard)
+
+    /// Devuelve true si el sistema reporta un AXUIElement con foco que parece
+    /// ser un campo donde se puede escribir texto. Usado para evitar pegar
+    /// "al vacío" cuando el usuario activa la grabación con un Finder/Desktop
+    /// en primer plano o tras un Cmd+Tab que cambió de app sin focusear input.
+    ///
+    /// Requiere Accessibility permission (que la app ya pide para hacer paste).
+    /// Si Accessibility no está autorizada, devolvemos true para no bloquear el
+    /// flujo normal — el Cmd+V intentará pegar como siempre.
+    @MainActor
+    private static func hasFocusedTextInputField() -> Bool {
+        guard AXIsProcessTrusted() else { return true }
+
+        let systemElement = AXUIElementCreateSystemWide()
+        var focused: AnyObject?
+        let result = AXUIElementCopyAttributeValue(
+            systemElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focused
+        )
+        guard result == .success, let focusedElement = focused else {
+            return false
+        }
+
+        let element = focusedElement as! AXUIElement
+
+        // Chequeo de role: estándar de Apple para inputs de texto.
+        var role: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &role)
+        let roleString = role as? String ?? ""
+
+        let textRoles: Set<String> = [
+            "AXTextField",
+            "AXTextArea",
+            "AXComboBox",
+            "AXSearchField",
+            "AXSecureTextField"
+        ]
+        if textRoles.contains(roleString) {
+            return true
+        }
+
+        // Heurística adicional para web views, editores y custom views:
+        // si el elemento tiene `kAXValueAttribute` editable o reporta
+        // kAXSelectedTextRangeAttribute, es probablemente un input.
+        var settable: DarwinBoolean = false
+        AXUIElementIsAttributeSettable(element, kAXValueAttribute as CFString, &settable)
+        if settable.boolValue {
+            return true
+        }
+
+        var selectedRange: AnyObject?
+        if AXUIElementCopyAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, &selectedRange) == .success {
+            return true
+        }
+
+        return false
     }
 
     // MARK: - CGEvent paste
