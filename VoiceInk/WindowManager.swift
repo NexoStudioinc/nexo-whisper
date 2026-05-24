@@ -60,7 +60,11 @@ class WindowManager: NSObject {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.title = "Nexo Whisper Onboarding"
         window.isOpaque = false
-        window.minSize = NSSize(width: 900, height: 780)
+        // minSize bajado de 900x780 -> 720x520 para que entre cómodo en MacBook
+        // Air 11" (1366x768) y similares. El layout SwiftUI ya usa GeometryReader
+        // y se adapta. El tamaño "ideal" se calcula en applyOnboardingInitialPlacement
+        // según la pantalla activa.
+        window.minSize = NSSize(width: 720, height: 520)
         applyOnboardingInitialPlacement(to: window)
         window.makeKeyAndOrderFront(nil)
     }
@@ -76,10 +80,17 @@ class WindowManager: NSObject {
         guard let screen = activeScreen else { return }
 
         let visibleFrame = screen.visibleFrame
+
+        // Ideal size para pantallas grandes, pero nunca más grande que la
+        // pantalla disponible menos un margin razonable. Esto evita que en
+        // displays chicos (MacBook Air 11"/13") los botones queden cortados.
+        let preferredSize = NSSize(width: 900, height: 780)
+        let margin: CGFloat = 32
         let targetSize = NSSize(
-            width: max(window.frame.width, window.minSize.width),
-            height: max(window.frame.height, window.minSize.height)
+            width: min(preferredSize.width, visibleFrame.width - margin),
+            height: min(preferredSize.height, visibleFrame.height - margin)
         )
+
         let origin = NSPoint(
             x: visibleFrame.midX - targetSize.width / 2,
             y: visibleFrame.midY - targetSize.height / 2

@@ -24,7 +24,6 @@ struct VoiceInkApp: App {
     @StateObject private var enhancementService: AIEnhancementService
     @StateObject private var activeWindowService = ActiveWindowService.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @AppStorage("enableAnnouncements") private var enableAnnouncements = true
     @State private var showMenuBarIcon = true
 
     // Audio cleanup manager for automatic deletion of old audio files
@@ -299,9 +298,10 @@ struct VoiceInkApp: App {
                             return
                         }
 
-                        if enableAnnouncements {
-                            AnnouncementsService.shared.start()
-                        }
+                        // Announcements desactivados en Nexo Whisper:
+                        // la URL upstream apunta a Beingpax/VoiceInk. Cuando se arme un
+                        // endpoint propio (ver AnnouncementsService.swift FIXME) se puede
+                        // reactivar aquí + restaurar el toggle en Settings.
 
                         // Start the automatic audio cleanup process only if transcript cleanup is not enabled
                         if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {

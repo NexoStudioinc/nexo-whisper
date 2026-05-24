@@ -4,8 +4,16 @@
 <dict>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
+	<!-- FIXME(Nexo): cuando se publique la primera release de Nexo Whisper:
+	     1. Generar par EdDSA propio con `generate_keys` de Sparkle.
+	     2. Reemplazar SUPublicEDKey por la clave PÚBLICA generada.
+	     3. Guardar la clave PRIVADA en Keychain de la máquina que firma releases.
+	     4. Hostear appcast.xml en GH Pages del repo nexo-whisper o equivalente.
+	     5. Actualizar SUFeedURL al endpoint propio.
+	     Mientras tanto: el feed apunta a un placeholder que no responde,
+	     por lo que Sparkle falla silenciosamente sin traer updates ajenos. -->
 	<key>SUFeedURL</key>
-	<string>https://beingpax.github.io/VoiceInk/appcast.xml</string>
+	<string>https://nexostudio.xyz/nexo-whisper/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>rLRdZIjK3gHKfqNlAF9nT7FbjwSvwkJ8BVn0v2mD1Mo=</string>
 	<key>LSUIElement</key>
@@ -15,11 +23,11 @@
 	<key>SUScheduledCheckInterval</key>
 	<integer>14400</integer>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>VoiceInk needs access to your microphone to record audio for transcription.</string>
+	<string>Nexo Whisper needs access to your microphone to record audio for transcription.</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>VoiceInk needs to interact with your browser to detect the current website for applying website-specific configurations.</string>
+	<string>Nexo Whisper needs to interact with your browser to detect the current website for applying website-specific configurations.</string>
 	<key>NSScreenCaptureUsageDescription</key>
-	<string>VoiceInk needs screen recording access to understand context from your screen for improved transcription accuracy.</string>
+	<string>Nexo Whisper needs screen recording access to understand context from your screen for improved transcription accuracy.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

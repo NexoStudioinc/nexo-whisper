@@ -14,7 +14,7 @@ enum ViewType: String, CaseIterable, Identifiable {
     case audioInput = "Audio Input"
     case dictionary = "Dictionary"
     case settings = "Settings"
-    case license = "Nexo Whisper Pro"
+    case license = "License"
 
     var id: String { rawValue }
 
@@ -97,16 +97,6 @@ struct ContentView: View {
                         Text("Nexo Whisper")
                             .font(.system(size: 14, weight: .semibold))
 
-                        if case .licensed = licenseViewModel.licenseState {
-                            Text("PRO")
-                                .font(.system(size: 9, weight: .heavy))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 2)
-                                .background(Color.blue)
-                                .cornerRadius(4)
-                        }
-
                         Spacer()
                     }
                     .padding(.vertical, 4)
@@ -151,7 +141,7 @@ struct ContentView: View {
                     selectedView = .settings
                 case "AI Models":
                     selectedView = .models
-                case "Nexo Whisper Pro":
+                case "License":
                     selectedView = .license
                 case "History":
                     selectedView = .history

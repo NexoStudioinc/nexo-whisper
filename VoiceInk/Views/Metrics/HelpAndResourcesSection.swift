@@ -11,21 +11,15 @@ struct HelpAndResourcesSection: View {
                 resourceLink(
                     icon: "sparkles",
                     title: "Recommended Models",
-                    url: "https://tryvoiceink.com/recommended-models"
-                )
-
-                resourceLink(
-                    icon: "video.fill",
-                    title: "YouTube Videos & Guides",
-                    url: "https://www.youtube.com/@tryvoiceink/videos"
+                    url: "https://nexostudio.xyz/nexo-whisper/modelos-recomendados"
                 )
 
                 resourceLink(
                     icon: "book.fill",
                     title: "Documentation",
-                    url: "https://tryvoiceink.com/docs"
+                    url: "https://nexostudio.xyz/nexo-whisper/docs"
                 )
-                
+
                 resourceLink(
                     icon: "exclamationmark.bubble.fill",
                     title: "Feedback or Issues?",

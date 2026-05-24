@@ -261,15 +261,6 @@ struct SettingsView: View {
                     set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
                 ))
 
-                Toggle(t("Show Announcements"), isOn: $enableAnnouncements)
-                    .onChange(of: enableAnnouncements) { _, newValue in
-                        if newValue {
-                            AnnouncementsService.shared.start()
-                        } else {
-                            AnnouncementsService.shared.stop()
-                        }
-                    }
-
                 HStack {
                     Button(t("Check for Updates")) {
                         updaterViewModel.checkForUpdates()

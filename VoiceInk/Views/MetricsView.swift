@@ -19,7 +19,7 @@ struct MetricsView: View {
                         NotificationCenter.default.post(
                             name: .navigateToDestination,
                             object: nil,
-                            userInfo: ["destination": "Nexo Whisper Pro"]
+                            userInfo: ["destination": "License"]
                         )
                     }
                 )
@@ -33,7 +33,7 @@ struct MetricsView: View {
                         NotificationCenter.default.post(
                             name: .navigateToDestination,
                             object: nil,
-                            userInfo: ["destination": "Nexo Whisper Pro"]
+                            userInfo: ["destination": "License"]
                         )
                     }
                 )
