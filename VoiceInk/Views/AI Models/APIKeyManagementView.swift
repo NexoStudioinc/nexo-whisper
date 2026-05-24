@@ -195,61 +195,12 @@ struct APIKeyManagementView: View {
                             aiService.updateLocalCLITimeoutSeconds(newValue)
                         }
 
-                        DisclosureGroup("Advanced configuration") {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Picker("Client", selection: $selectedLocalCLITemplate) {
-                                    ForEach(LocalCLITemplate.allCases) { template in
-                                        Text(template.displayName).tag(template)
-                                    }
-                                }
-                                .onChange(of: selectedLocalCLITemplate) { _, newValue in
-                                    guard !isSyncingLocalCLIState else { return }
-                                    aiService.loadLocalCLITemplate(newValue)
-                                    syncLocalCLIStateFromService()
-                                }
-
-                                HStack {
-                                    Text("Custom command")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                    Menu("Load Template") {
-                                        ForEach(LocalCLITemplate.allCases) { template in
-                                            Button(template.displayName) {
-                                                aiService.loadLocalCLITemplate(template)
-                                                syncLocalCLIStateFromService()
-                                            }
-                                        }
-                                    }
-                                }
-
-                                TextEditor(text: $localCLICommandTemplate)
-                                    .font(.system(.body, design: .monospaced))
-                                    .multilineTextAlignment(.leading)
-                                    .frame(minHeight: 80)
-                                    .padding(4)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color(NSColor.textBackgroundColor))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
-                                    )
-                                    .onChange(of: localCLICommandTemplate) { _, newValue in
-                                        guard !isSyncingLocalCLIState else { return }
-                                        if newValue != aiService.localCLICommandTemplate {
-                                            aiService.updateLocalCLICommandTemplate(newValue)
-                                        }
-                                    }
-
-                                Text("Environment variables available: VOICEINK_SYSTEM_PROMPT, VOICEINK_USER_PROMPT, VOICEINK_FULL_PROMPT. Nexo Whisper also writes VOICEINK_FULL_PROMPT to stdin for every command.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.top, 8)
-                        }
-                        .font(.subheadline)
+                        // Configuración avanzada removida por decisión de producto:
+                        // el usuario común no debe ver el comando bash crudo ni
+                        // ENV vars. El picker manual de cliente queda implícito
+                        // en CLIDetectionPanel (botón "Usar este"). Si en el
+                        // futuro hace falta override custom, se reintroduce
+                        // como botón "Modo experto".
 
                         if !aiService.isAPIKeyValid {
                             Text("Select a detected CLI above to enable AI enhancement.")

@@ -1,4 +1,7 @@
 import Foundation
+import OSLog
+
+private let cliLogger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "LocalCLIService")
 
 enum LocalCLITemplate: String, CaseIterable, Identifiable {
     case pi
@@ -76,12 +79,18 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
     }
 
     var commandTemplate: String {
+        // Patrón claude/agy/gemini: leer prompt desde stdin (que Nexo escribe
+        // automáticamente). Evita problemas de shell escaping con prompts
+        // largos / multilínea / comillas / caracteres especiales que rompían
+        // los call sites con "$VOICEINK_FULL_PROMPT" como argumento.
         switch self {
         case .pi:
             return "pi -ne -ns -p --no-tools --system-prompt \"$VOICEINK_SYSTEM_PROMPT\" \"$VOICEINK_USER_PROMPT\""
         case .claude:
-            return "claude -p --model \"$VOICEINK_LOCAL_CLI_MODEL\" \"$VOICEINK_FULL_PROMPT\""
+            // claude lee de stdin con -p (sin argumento). El modelo se pasa con --model.
+            return "claude -p --model \"$VOICEINK_LOCAL_CLI_MODEL\""
         case .codex:
+            // codex no soporta stdin: usamos archivo temporal.
             return "TMPFILE=$(mktemp) && codex exec --skip-git-repo-check --model \"$VOICEINK_LOCAL_CLI_MODEL\" --output-last-message \"$TMPFILE\" \"$VOICEINK_FULL_PROMPT\" > /dev/null 2>&1 && cat \"$TMPFILE\" && rm \"$TMPFILE\""
         case .gemini:
             return "gemini --skip-trust --model \"$VOICEINK_LOCAL_CLI_MODEL\" --prompt \"$VOICEINK_FULL_PROMPT\" --output-format text"
@@ -89,10 +98,11 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
             return "copilot -p \"$VOICEINK_FULL_PROMPT\" -s --no-ask-user --available-tools=__none__ 2>/dev/null"
         case .antigravity:
             // Antigravity (agy) — reemplazo de gemini-cli a partir de junio 2026.
-            // --print: ejecuta un prompt y devuelve la respuesta (no interactivo).
-            // --dangerously-skip-permissions: evita el prompt de aprobación de tools
-            // (no usamos tools, así que no aplica el riesgo).
-            return "agy --print --dangerously-skip-permissions \"$VOICEINK_FULL_PROMPT\""
+            // --print sin argumento lee de stdin (que Nexo escribe automáticamente
+            // con el VOICEINK_FULL_PROMPT). Eso evita problemas de escaping bash
+            // con prompts largos/multilínea que rompían cuando se pasaba como argv.
+            // --dangerously-skip-permissions evita prompts de tools (no usamos).
+            return "agy --print --dangerously-skip-permissions"
         }
     }
 
@@ -287,6 +297,12 @@ final class LocalCLIService {
                 let stderr = Self.cleanOutput(String(data: stderrData, encoding: .utf8) ?? "")
 
                 if process.terminationStatus != 0 {
+                    // Logging detallado para diagnosticar fallos de CLI.
+                    // Visible en Console.app filtrando por "LocalCLIService".
+                    cliLogger.error("CLI exit=\(process.terminationStatus, privacy: .public) cmd=\(commandTemplate, privacy: .public)")
+                    cliLogger.error("CLI stderr (first 500 chars): \(String(stderr.prefix(500)), privacy: .public)")
+                    cliLogger.error("CLI stdout (first 500 chars): \(String(stdout.prefix(500)), privacy: .public)")
+
                     let looksLikeCommandNotFound = process.terminationStatus == 127 ||
                         stderr.lowercased().contains("command not found")
                     if looksLikeCommandNotFound {
@@ -298,6 +314,7 @@ final class LocalCLIService {
                 }
 
                 guard !stdout.isEmpty else {
+                    cliLogger.error("CLI returned empty stdout. cmd=\(commandTemplate, privacy: .public) stderr=\(String(stderr.prefix(500)), privacy: .public)")
                     continuation.resume(throwing: LocalCLIError.emptyOutput)
                     return
                 }
@@ -387,6 +404,55 @@ final class LocalCLIService {
 
     private static func cleanOutput(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Pre-warm: lanza el binario con --help (o similar) en background para
+    /// que macOS cachee el binario en RAM. La primera invocación real evita
+    /// pagar el cold start del proceso (~300-800ms en CLIs Node/Go).
+    /// Costo: 1 proceso que vive ~1 segundo y muere. Despreciable.
+    static func prewarm(binaryName: String) {
+        DispatchQueue.global(qos: .utility).async {
+            // Buscamos el binario sin shell (mismo approach que isBinaryAvailable)
+            let home = NSHomeDirectory()
+            let commonPaths = [
+                "/opt/homebrew/bin", "/usr/local/bin",
+                "\(home)/.local/bin", "\(home)/bin",
+                "/usr/bin", "/bin", "/usr/sbin", "/sbin"
+            ]
+            var resolvedPath: String?
+            for dir in commonPaths {
+                let candidate = (dir as NSString).appendingPathComponent(binaryName)
+                if FileManager.default.isExecutableFile(atPath: candidate) {
+                    resolvedPath = candidate
+                    break
+                }
+            }
+            guard let binaryPath = resolvedPath else {
+                cliLogger.notice("prewarm: \(binaryName, privacy: .public) not found in common paths, skipping")
+                return
+            }
+
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: binaryPath)
+            process.arguments = ["--help"]
+            process.standardOutput = Pipe()
+            process.standardError = Pipe()
+            do {
+                try process.run()
+                // Esperamos máximo 3 segundos para que termine; si tarda más,
+                // matamos el proceso (no nos importa el output, solo el cache).
+                let waitDeadline = Date().addingTimeInterval(3)
+                while process.isRunning && Date() < waitDeadline {
+                    Thread.sleep(forTimeInterval: 0.1)
+                }
+                if process.isRunning {
+                    process.terminate()
+                }
+                cliLogger.notice("prewarm: \(binaryName, privacy: .public) warmed")
+            } catch {
+                cliLogger.notice("prewarm: \(binaryName, privacy: .public) launch failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
     }
 
     /// Verifica si un binario está disponible para Nexo Whisper.

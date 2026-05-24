@@ -303,6 +303,17 @@ struct VoiceInkApp: App {
                         // endpoint propio (ver AnnouncementsService.swift FIXME) se puede
                         // reactivar aquí + restaurar el toggle en Settings.
 
+                        // Pre-warm de los CLIs comunes en background: la primera
+                        // transcripción con Mejora IA evita el cold start del binario
+                        // (Node/Go boot demora ~300-800ms). Cada warm es 1 proceso que
+                        // vive ~1s y muere — costo despreciable. Se hace en serie en
+                        // utility queue, sin bloquear UI ni startup.
+                        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                            for binary in ["claude", "codex", "agy", "copilot"] {
+                                LocalCLIService.prewarm(binaryName: binary)
+                            }
+                        }
+
                         // Start the automatic audio cleanup process only if transcript cleanup is not enabled
                         if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {
                             audioCleanupManager.startAutomaticCleanup(modelContext: container.mainContext)

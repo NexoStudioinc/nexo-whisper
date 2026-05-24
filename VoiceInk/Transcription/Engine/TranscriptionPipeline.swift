@@ -158,11 +158,14 @@ class TranscriptionPipeline {
                     // tiene cleanedText (la transcripción cruda) asignado más arriba,
                     // así que el usuario igual recibe su texto pegado.
                     let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    let shortReason = String(errorDescription.prefix(80))
+                    // Mostramos hasta 200 chars del error real (no 80) para que el
+                    // usuario vea por qué falló sin truncar info útil.
+                    let reason = String(errorDescription.prefix(200))
                     await MainActor.run {
                         NotificationManager.shared.showNotification(
-                            title: String(localized: "AI enhancement failed — pasted raw transcription") + " (\(shortReason))",
-                            type: .warning
+                            title: String(localized: "AI enhancement failed — pasted raw transcription") + " — \(reason)",
+                            type: .warning,
+                            duration: 8.0
                         )
                     }
                     if shouldCancel() { await finishCanceledTranscription(); return }
