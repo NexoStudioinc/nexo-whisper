@@ -94,21 +94,39 @@ class MenuBarManager: ObservableObject {
         NSApplication.shared.setActivationPolicy(.regular)
         logger.notice("openMainWindowAndNavigate: activation policy set to .regular")
 
-        guard WindowManager.shared.showMainWindow() != nil else {
-            logger.error("openMainWindowAndNavigate: showMainWindow returned nil — cannot navigate to \(destination, privacy: .public)")
+        if WindowManager.shared.showMainWindow() == nil {
+            // Caso: no hay main window ni onboarding window (ambas cerradas).
+            // Forzar a AppKit que recree la ventana del WindowGroup activando
+            // la app + delegando a applicationShouldHandleReopen.
+            logger.notice("openMainWindowAndNavigate: no window to show, requesting AppKit reopen")
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            if let delegate = NSApplication.shared.delegate {
+                _ = delegate.applicationShouldHandleReopen?(NSApplication.shared, hasVisibleWindows: false)
+            }
+
+            // Retry una vez después del reopen
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                if WindowManager.shared.showMainWindow() == nil {
+                    self?.logger.error("openMainWindowAndNavigate: still no window after reopen attempt — aborting navigation to \(destination, privacy: .public)")
+                    return
+                }
+                self?.postNavigation(to: destination)
+            }
             return
         }
 
         logger.notice("openMainWindowAndNavigate: window shown, posting navigation notification for \(destination, privacy: .public)")
+        postNavigation(to: destination)
+    }
 
-        // Post a notification to navigate to the desired destination
+    private func postNavigation(to destination: String) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             NotificationCenter.default.post(
                 name: .navigateToDestination,
                 object: nil,
                 userInfo: ["destination": destination]
             )
-            self?.logger.notice("openMainWindowAndNavigate: navigation notification posted for \(destination, privacy: .public)")
+            self?.logger.notice("postNavigation: notification posted for \(destination, privacy: .public)")
         }
     }
 

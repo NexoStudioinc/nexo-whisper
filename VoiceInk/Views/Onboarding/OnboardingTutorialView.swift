@@ -15,65 +15,60 @@ struct OnboardingTutorialView: View {
             ZStack {
                 // Reusable background
                 OnboardingBackgroundView()
-                
+
                 HStack(spacing: 0) {
                     // Left side - Tutorial instructions
-                    VStack(alignment: .leading, spacing: 40) {
-                        // Title and description
-                        VStack(alignment: .leading, spacing: 16) {
+                    // Layout compacto: padding 28, tipografías reducidas y
+                    // spacing entre bloques recortado para que TODO el flujo
+                    // (titulo + shortcut + 4 pasos + 2 botones) entre en una
+                    // ventana de 900x640 sin que el boton quede cortado.
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("Try It Out!")
-                                .font(.system(size: 44, weight: .bold, design: .rounded))
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
-                            
+
                             Text("Let's test your Nexo Whisper setup.")
-                                .font(.system(size: 24, weight: .medium, design: .rounded))
+                                .font(.system(size: 17, weight: .medium, design: .rounded))
                                 .foregroundColor(.white.opacity(0.7))
-                                .lineSpacing(4)
+                                .lineSpacing(2)
                         }
-                        
-                        // Keyboard shortcut display
-                        VStack(alignment: .leading, spacing: 20) {
-                            HStack {
-                                Text("Your Shortcut")
-                                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white)
-                                
-                                
-                            }
-                            
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Your Shortcut")
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+
                             ShortcutPreviewView(shortcut: ShortcutStore.shortcut(for: .primaryRecording))
-                                .scaleEffect(1.2)
                         }
-                        
-                        // Instructions
-                        VStack(alignment: .leading, spacing: 24) {
+
+                        VStack(alignment: .leading, spacing: 12) {
                             ForEach(1...4, id: \.self) { step in
                                 instructionStep(number: step, text: getInstructionText(for: step))
                             }
                         }
-                        
-                        Spacer()
-                        
-                        // Continue button
+
+                        Spacer(minLength: 0)
+
                         Button(action: {
                             hasCompletedOnboarding = true
                         }) {
                             Text("Complete Setup")
-                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
-                                .frame(width: 200, height: 50)
+                                .frame(width: 180, height: 40)
                                 .background(Color.accentColor)
-                                .cornerRadius(25)
+                                .cornerRadius(20)
                         }
                         .buttonStyle(ScaleButtonStyle())
                         .opacity(transcribedText.isEmpty ? 0.5 : 1)
                         .disabled(transcribedText.isEmpty)
-                        
+
                         SkipButton(text: "Skip for now") {
                             hasCompletedOnboarding = true
                         }
                     }
-                    .padding(60)
+                    .padding(28)
                     .frame(width: geometry.size.width * 0.5)
                     
                     // Right side - Interactive area
@@ -153,7 +148,7 @@ struct OnboardingTutorialView: View {
         }
     }
     
-    private func getInstructionText(for step: Int) -> String {
+    private func getInstructionText(for step: Int) -> LocalizedStringKey {
         switch step {
         case 1: return "Click the text area on the right"
         case 2: return "Press your shortcut key"
@@ -162,23 +157,23 @@ struct OnboardingTutorialView: View {
         default: return ""
         }
     }
-    
-    private func instructionStep(number: Int, text: String) -> some View {
-        HStack(spacing: 20) {
+
+    private func instructionStep(number: Int, text: LocalizedStringKey) -> some View {
+        HStack(spacing: 14) {
             Text("\(number)")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
-                .frame(width: 40, height: 40)
+                .frame(width: 28, height: 28)
                 .background(Circle().fill(Color.accentColor.opacity(0.2)))
                 .overlay(
                     Circle()
                         .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
                 )
-            
+
             Text(text)
-                .font(.system(size: 18, weight: .medium, design: .rounded))
+                .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(.white.opacity(0.9))
-                .lineSpacing(4)
+                .lineSpacing(2)
         }
     }
     

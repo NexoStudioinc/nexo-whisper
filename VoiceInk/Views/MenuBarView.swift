@@ -47,7 +47,7 @@ struct MenuBarView: View {
                 }
             } label: {
                 HStack {
-                    Text("Transcription Model: \(transcriptionModelManager.currentTranscriptionModel?.displayName ?? "None")")
+                    Text("Transcription Model: \(transcriptionModelManager.currentTranscriptionModel?.displayName ?? String(localized: "None"))")
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 10))
                 }
@@ -75,7 +75,7 @@ struct MenuBarView: View {
                 }
             } label: {
                 HStack {
-                    Text("Prompt: \(enhancementService.activePrompt?.title ?? "None")")
+                    Text("Prompt: \(enhancementService.activePrompt?.title ?? String(localized: "None"))")
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 10))
                 }

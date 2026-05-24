@@ -11,6 +11,9 @@ class WindowManager: NSObject {
 
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WindowManager")
     private weak var mainWindow: NSWindow?
+    // Mantener referencia al onboarding mientras esté en uso, para que el
+    // menubar pueda traerlo al frente si el usuario lo cerró sin terminar.
+    private weak var onboardingWindow: NSWindow?
     private var didApplyInitialPlacement = false
 
     private override init() {
@@ -48,6 +51,9 @@ class WindowManager: NSObject {
         if window.identifier == nil || window.identifier != Self.onboardingWindowIdentifier {
             window.identifier = Self.onboardingWindowIdentifier
         }
+        // Trackear la ventana para poder traerla al frente desde el menubar
+        // si el usuario la cerró sin completar el onboarding.
+        onboardingWindow = window
         
         let requiredStyleMask: NSWindow.StyleMask = [.titled, .fullSizeContentView, .resizable]
         window.styleMask.formUnion(requiredStyleMask)
@@ -96,13 +102,27 @@ class WindowManager: NSObject {
     }
     
     func showMainWindow() -> NSWindow? {
-        guard let window = resolveMainWindow() else {
+        // Si el main window no existe (típico cuando el usuario está en
+        // onboarding y no lo completó), fallback al onboarding window.
+        // Sin esto, el menubar item "Configuración" no abre nada cuando
+        // el wizard no terminó.
+        let target = resolveMainWindow() ?? resolveOnboardingWindow()
+        guard let window = target else {
             return nil
         }
-        
+
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
         return window
+    }
+
+    private func resolveOnboardingWindow() -> NSWindow? {
+        if let window = onboardingWindow {
+            return window
+        }
+        // Fallback: buscar por identifier en NSApp.windows en caso de que
+        // la referencia weak se haya perdido pero la ventana siga viva.
+        return NSApplication.shared.windows.first { $0.identifier == Self.onboardingWindowIdentifier }
     }
     
     func hideMainWindow() {
