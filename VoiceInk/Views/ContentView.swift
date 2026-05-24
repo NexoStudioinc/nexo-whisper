@@ -76,6 +76,12 @@ struct ContentView: View {
             if viewType == .powerMode {
                 return powerModeUIFlag
             }
+            // Licencia ya no es item del sidebar: se accede desde Configuración
+            // como una sección al final. La app viene "activada" por defecto
+            // tras la compra, así que no hace falta exponer un slot dedicado.
+            if viewType == .license {
+                return false
+            }
             return true
         }
     }

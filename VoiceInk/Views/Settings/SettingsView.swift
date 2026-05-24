@@ -324,6 +324,13 @@ struct SettingsView: View {
             Section(t("Diagnostics")) {
                 DiagnosticsSettingsView()
             }
+
+            // MARK: - License
+            Section {
+                LicenseSettingsSection()
+            } header: {
+                Text(t("License"))
+            }
         }
         .formStyle(.grouped)
         .controlSize(.small)

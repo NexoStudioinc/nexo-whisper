@@ -162,7 +162,13 @@ struct APIKeyManagementView: View {
                     }
 
                 } else if aiService.selectedProvider == .localCLI {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Detección automática: muestra de un vistazo qué CLIs
+                        // están instalados en el PATH del usuario y permite
+                        // activarlos con un clic. El picker manual y el comando
+                        // custom siguen abajo para power users.
+                        CLIDetectionPanel(aiService: aiService)
+
                         Picker("Client", selection: $selectedLocalCLITemplate) {
                             ForEach(LocalCLITemplate.allCases) { template in
                                 Text(template.displayName).tag(template)

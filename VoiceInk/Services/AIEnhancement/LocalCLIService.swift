@@ -85,6 +85,30 @@ enum LocalCLITemplate: String, CaseIterable, Identifiable {
             return "agy --print \"$VOICEINK_FULL_PROMPT\""
         }
     }
+
+    /// Nombre del binario a buscar en el PATH del usuario para detección automática.
+    var binaryName: String {
+        switch self {
+        case .pi: return "pi"
+        case .claude: return "claude"
+        case .codex: return "codex"
+        case .gemini: return "gemini"
+        case .copilot: return "copilot"
+        case .antigravity: return "agy"
+        }
+    }
+
+    /// URL con instrucciones de instalación oficiales del CLI.
+    var installHelpURL: URL? {
+        switch self {
+        case .claude: return URL(string: "https://docs.anthropic.com/en/docs/claude-code/quickstart")
+        case .codex: return URL(string: "https://github.com/openai/codex-cli")
+        case .gemini: return URL(string: "https://github.com/google-gemini/gemini-cli")
+        case .copilot: return URL(string: "https://docs.github.com/en/copilot/github-copilot-in-the-cli")
+        case .pi: return URL(string: "https://pi.ai")
+        case .antigravity: return nil
+        }
+    }
 }
 
 final class LocalCLIService {
@@ -347,6 +371,27 @@ final class LocalCLIService {
 
     private static func cleanOutput(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Verifica si un binario está disponible en el PATH del usuario.
+    /// Usado por CLIDetectionPanel para detectar automáticamente qué CLIs
+    /// (claude/codex/gemini/copilot) tiene instalados y ofrecer un setup
+    /// con un clic.
+    static func isBinaryAvailable(named binaryName: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            shellPathQueue.async {
+                let path = preferredPATH(fallback: ProcessInfo.processInfo.environment["PATH"])
+                let dirs = path.split(separator: ":").map(String.init)
+                for dir in dirs {
+                    let candidate = (dir as NSString).appendingPathComponent(binaryName)
+                    if FileManager.default.isExecutableFile(atPath: candidate) {
+                        continuation.resume(returning: true)
+                        return
+                    }
+                }
+                continuation.resume(returning: false)
+            }
+        }
     }
 }
 
