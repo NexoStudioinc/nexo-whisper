@@ -276,9 +276,9 @@ struct AddCustomModelCardView: View {
 }
 
 struct FormField: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var text: String
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     var isSecure: Bool = false
     
     var body: some View {

@@ -150,7 +150,7 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isMiddleClickExpanded,
                     isEnabled: $recordingShortcutManager.isMiddleClickToggleEnabled,
-                    label: t("Middle-Click Recording")
+                    label: "Middle-Click Recording"
                 ) {
                     LabeledContent(t("Activation Delay")) {
                         HStack {
@@ -174,7 +174,7 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isSoundFeedbackExpanded,
                     isEnabled: $soundManager.isEnabled,
-                    label: t("Sound Feedback")
+                    label: "Sound Feedback"
                 ) {
                     CustomSoundSettingsView()
                 }
@@ -183,7 +183,7 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isMuteSystemExpanded,
                     isEnabled: $mediaController.isSystemMuteEnabled,
-                    label: t("Mute Audio While Recording")
+                    label: "Mute Audio While Recording"
                 ) {
                     Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
                         Text("0s").tag(0.0)
@@ -199,7 +199,7 @@ struct SettingsView: View {
                 ExpandableSettingsRow(
                     isExpanded: $isRestoreClipboardExpanded,
                     isEnabled: $restoreClipboardAfterPaste,
-                    label: t("Keep Clipboard Content"),
+                    label: "Keep Clipboard Content",
                     infoMessage: t("Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
                 ) {
                     Picker(t("Restore Delay"), selection: $clipboardRestoreDelay) {
@@ -364,7 +364,7 @@ struct SettingsView: View {
 struct ExpandableSettingsRow<Content: View>: View {
     @Binding var isExpanded: Bool
     @Binding var isEnabled: Bool
-    let label: String
+    let label: LocalizedStringKey
     var infoMessage: String? = nil
     var infoURL: String? = nil
     @ViewBuilder let content: () -> Content
@@ -452,7 +452,7 @@ struct PowerModeSection: View {
             ExpandableSettingsRow(
                 isExpanded: $isExpanded,
                 isEnabled: toggleBinding,
-                label: t("Power Mode"),
+                label: "Power Mode",
                 infoMessage: t("Apply custom settings based on active app or website."),
                 infoURL: "https://nexostudio.xyz/nexo-whisper/docs/power-mode"
             ) {
@@ -508,7 +508,7 @@ struct ExperimentalSection: View {
             ExpandableSettingsRow(
                 isExpanded: $isPauseMediaExpanded,
                 isEnabled: $playbackController.isPauseMediaEnabled,
-                label: t("Pause Media While Recording"),
+                label: "Pause Media While Recording",
                 infoMessage: t("Pauses playing media when recording starts and resumes when done.")
             ) {
                 Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {

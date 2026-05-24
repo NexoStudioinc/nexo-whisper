@@ -2,572 +2,434 @@
   "sourceLanguage" : "en",
   "version" : "1.0",
   "strings" : {
-
-    "AI Models" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelos de IA" } }
-      }
-    },
-    "Activation Delay" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora de activación" } }
-      }
-    },
-    "Add Second Shortcut" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar segundo atajo" } }
-      }
-    },
-    "Additional Shortcuts" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos adicionales" } }
-      }
-    },
-    "App Language" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma de la app" } }
-      }
-    },
-    "Apply custom settings based on active app or website." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aplicá configuraciones personalizadas según la app o sitio web activo." } }
-      }
-    },
-    "Audio Input" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Entrada de audio" } }
-      }
-    },
-    "Auto-check Updates" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar actualizaciones automáticamente" } }
-      }
-    },
-    "Auto-delete Audio Files" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar audios automáticamente" } }
-      }
-    },
-    "Auto-delete Transcripts" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar transcripciones automáticamente" } }
-      }
-    },
-    "Available Devices" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivos disponibles" } }
-      }
-    },
-    "Backup" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Respaldo" } }
-      }
-    },
-    "Cancel" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } }
-      }
-    },
-    "Cancel Recording" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar grabación" } }
-      }
-    },
-    "Check for Updates" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar actualizaciones" } }
-      }
-    },
-    "Cleanup complete." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpieza completada." } }
-      }
-    },
-    "Click here and start speaking..." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Hacé clic acá y empezá a hablar..." } }
-      }
-    },
-    "Complete Setup" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Completar configuración" } }
-      }
-    },
-    "Connect an audio input device to get started" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conectá un dispositivo de entrada de audio para empezar" } }
-      }
-    },
-    "Control how Nexo Whisper handles your transcription data and audio recordings." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Controlá cómo Nexo Whisper maneja tus transcripciones y grabaciones de audio." } }
-      }
-    },
-    "Current Device" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivo actual" } }
-      }
-    },
-    "Dashboard" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Panel" } }
-      }
-    },
-    "Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "El método predeterminado simula Cmd+V. AppleScript puede ayudar cuando algunos layouts de teclado no pegan correctamente." } }
-      }
-    },
-    "Devices will be used in order of priority. If a device is unavailable, the next one will be tried. If no prioritized device is available, the built-in microphone will be used." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Los dispositivos se usan según su orden de prioridad. Si uno no está disponible, se prueba el siguiente. Si ninguno priorizado está disponible, se usa el micrófono interno." } }
-      }
-    },
-    "Diagnostics" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Diagnóstico" } }
-      }
-    },
-    "Dictionary" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Diccionario" } }
-      }
-    },
-    "Disable or remove your Power Modes first." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Primero desactivá o eliminá tus modos Power." } }
-      }
-    },
-    "Download AI Model" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Descargar modelo de IA" } }
-      }
-    },
-    "Enhancement" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mejora" } }
-      }
-    },
-    "Experimental" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Experimental" } }
-      }
-    },
-    "Export" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar" } }
-      }
-    },
-    "Export all settings, or choose specific categories when importing a backup." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportá toda la configuración o elegí categorías específicas al importar un respaldo." } }
-      }
-    },
-    "Export Logs" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar logs" } }
-      }
-    },
-    "Export Settings" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar configuración" } }
-      }
-    },
-    "For best results, using your Mac's built-in microphone is recommended." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Para mejores resultados, te recomendamos usar el micrófono interno de tu Mac." } }
-      }
-    },
-    "General" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "General" } }
-      }
-    },
-    "Get Started" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Comenzar" } }
-      }
-    },
-    "Got it" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Entendido" } }
-      }
-    },
-    "Hide Dock Icon" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ocultar icono del Dock" } }
-      }
-    },
-    "History" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } }
-      }
-    },
-    "Immediately" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Inmediatamente" } }
-      }
-    },
-    "Import" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Importar" } }
-      }
-    },
-    "Import Settings" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Importar configuración" } }
-      }
-    },
-    "Input Mode" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo de entrada" } }
-      }
-    },
-    "Interface" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Interfaz" } }
-      }
-    },
-    "Keep Clipboard Content" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conservar portapapeles" } }
-      }
-    },
-    "Later" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Más tarde" } }
-      }
-    },
-    "Launch at Login" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir al iniciar sesión" } }
-      }
-    },
-    "Let's test your Nexo Whisper setup." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Vamos a probar la configuración de Nexo Whisper." } }
-      }
-    },
-    "Middle-Click Recording" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Grabar con clic medio" } }
-      }
-    },
-    "Mute Audio While Recording" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Silenciar audio al grabar" } }
-      }
-    },
-    "Nexo Whisper needs to restart to apply the new language." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nexo Whisper necesita reiniciarse para aplicar el nuevo idioma." } }
-      }
-    },
-    "Nexo Whisper Pro" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nexo Whisper Pro" } }
-      }
-    },
-    "Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nexo Whisper usa temporalmente el portapapeles para pegar la transcripción. Si está activo, restaura el contenido anterior después de la demora seleccionada. Si está apagado, la transcripción pegada queda en el portapapeles." } }
-      }
-    },
-    "No additional devices available" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos adicionales disponibles" } }
-      }
-    },
-    "No Audio Devices" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos de audio" } }
-      }
-    },
-    "No microphones found" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se encontraron micrófonos" } }
-      }
-    },
-    "No prioritized devices" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos priorizados" } }
-      }
-    },
-    "OK" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }
-      }
-    },
-    "Paste Last Transcription (Enhanced)" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pegar última transcripción (mejorada)" } }
-      }
-    },
-    "Paste Last Transcription (Original)" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pegar última transcripción (original)" } }
-      }
-    },
-    "Paste Method" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Método de pegado" } }
-      }
-    },
-    "Pause Media While Recording" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pausar multimedia al grabar" } }
-      }
-    },
-    "Pauses playing media when recording starts and resumes when done." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pausa la reproducción multimedia al empezar a grabar y la reanuda al terminar." } }
-      }
-    },
-    "Permissions" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Permisos" } }
-      }
-    },
-    "Persist Configured Preferences" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mantener preferencias configuradas" } }
-      }
-    },
-    "Power Mode" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo Power" } }
-      }
-    },
-    "Power Mode Still Active" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo Power todavía activo" } }
-      }
-    },
-    "Primary Shortcut" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo principal" } }
-      }
-    },
-    "Prioritized Devices" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivos priorizados" } }
-      }
-    },
-    "Privacy" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Privacidad" } }
-      }
-    },
-    "RAM" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "RAM" } }
-      }
-    },
-    "Recorder Style" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Estilo del grabador" } }
-      }
-    },
-    "Recording Feedback" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Feedback de grabación" } }
-      }
-    },
-    "Refresh" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizar" } }
-      }
-    },
-    "Reset" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar" } }
-      }
-    },
-    "Reset Onboarding" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar introducción" } }
-      }
-    },
-    "Reset to default" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer valor predeterminado" } }
-      }
-    },
-    "Restart now" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar ahora" } }
-      }
-    },
-    "Restart required" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reinicio necesario" } }
-      }
-    },
-    "Restore Delay" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora para restaurar" } }
-      }
-    },
-    "Resume Delay" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora para reanudar" } }
-      }
-    },
-    "Retry Last Transcription" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reintentar última transcripción" } }
-      }
-    },
-    "Run Cleanup Now" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ejecutar limpieza ahora" } }
-      }
-    },
-    "Secondary Shortcut" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo secundario" } }
-      }
-    },
-    "Select a view" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccioná una vista" } }
-      }
-    },
-    "Settings" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración" } }
-      }
-    },
-    "Shortcut:" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo:" } }
-      }
-    },
-    "Shortcuts" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos" } }
-      }
-    },
-    "Show Announcements" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar anuncios" } }
-      }
-    },
-    "Show in Finder" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar en Finder" } }
-      }
-    },
-    "Sound Feedback" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sonidos de feedback" } }
-      }
-    },
-    "Switch Enhancement Prompt" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambiar prompt de mejora" } }
-      }
-    },
-    "Toggle AI Enhancement" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar/desactivar mejora por IA" } }
-      }
-    },
-    "Transcribe Audio" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Transcribir audio" } }
-      }
-    },
-    "Try It Out!" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "¡Probalo!" } }
-      }
-    },
-    "Welcome to Nexo Whisper" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Bienvenido a Nexo Whisper" } }
-      }
-    },
-    "Welcome to the Future of Typing" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Bienvenido al futuro de escribir" } }
-      }
-    },
-    "We'll download the optimized model to get you started." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Vamos a descargar el modelo optimizado para que puedas arrancar." } }
-      }
-    },
-    "A New Way to Type" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Una nueva forma de escribir" } }
-      }
-    },
-    "When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuando está activo, las preferencias del Modo Power siguen aplicadas después de grabar en vez de volver a tus preferencias originales. Solo cambian cuando se activa otro Modo Power." } }
-      }
-    },
-    "You'll see the introduction screens again the next time you launch the app." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Vas a ver las pantallas de introducción otra vez la próxima vez que abras la app." } }
-      }
-    },
-    "Your Shortcut" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu atajo" } }
-      }
-    },
-
-    "Microphone Access" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso al micrófono" } }
-      }
-    },
-    "Microphone Selection" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Selección de micrófono" } }
-      }
-    },
-    "Accessibility Access" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso de accesibilidad" } }
-      }
-    },
-    "Screen Recording" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Grabación de pantalla" } }
-      }
-    },
-    "Keyboard Shortcut" : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo de teclado" } }
-      }
-    },
-    "Enable your microphone to start speaking and converting your voice to text instantly." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Habilitá tu micrófono para empezar a hablar y convertir tu voz en texto al instante." } }
-      }
-    },
-    "Select the audio input device you want to use with Nexo Whisper." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccioná el dispositivo de entrada de audio que querés usar con Nexo Whisper." } }
-      }
-    },
-    "Allow Nexo Whisper to help you type anywhere in your Mac." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Permití que Nexo Whisper te ayude a escribir en cualquier parte de tu Mac." } }
-      }
-    },
-    "This helps to improve the accuracy of transcription." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto ayuda a mejorar la precisión de la transcripción." } }
-      }
-    },
-    "Set up a keyboard shortcut to quickly access Nexo Whisper from anywhere." : {
-      "localizations" : {
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Configurá un atajo de teclado para acceder rápidamente a Nexo Whisper desde cualquier lugar." } }
-      }
-    }
+    "100% offline & private" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "100% local y privado" } } } },
+    "A New Way to Type" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Una nueva forma de escribir" } } } },
+    "Accessibility Access" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso de accesibilidad" } } } },
+    "Accuracy" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Precisión" } } } },
+    "Activate" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar" } } } },
+    "Activate License" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar licencia" } } } },
+    "Activation Delay" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora de activación" } } } },
+    "Active" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activo" } } } },
+    "Add" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar" } } } },
+    "Add Emoji" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar emoji" } } } },
+    "Add New Power Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar nuevo Modo Power" } } } },
+    "Add Power Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar Modo Power" } } } },
+    "Add Second Shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar segundo atajo" } } } },
+    "Add Space After Paste" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar espacio después de pegar" } } } },
+    "Add a trailing space after pasted transcription output." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agrega un espacio al final del texto pegado." } } } },
+    "Add custom emoji" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar emoji personalizado" } } } },
+    "Add customized power modes for different contexts" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregá modos Power personalizados para distintos contextos" } } } },
+    "Add files" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar archivos" } } } },
+    "Add filler word" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar muletilla" } } } },
+    "Add new prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar nuevo prompt" } } } },
+    "Add trigger word" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar palabra disparadora" } } } },
+    "Add word" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar palabra" } } } },
+    "Add word replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar reemplazo de palabra" } } } },
+    "Add word to vocabulary" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar palabra al vocabulario" } } } },
+    "Add words that automatically activate this prompt. For example, 'summarize', 'email', 'translate'." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregá palabras que activen este prompt automáticamente. Por ejemplo: 'resumir', 'email', 'traducir'." } } } },
+    "Add words to help Nexo Whisper recognize them properly. (Requires AI enhancement)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregá palabras para ayudar a Nexo Whisper a reconocerlas correctamente. (Requiere mejora por IA)" } } } },
+    "Additional" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Adicional" } } } },
+    "Additional Shortcuts" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos adicionales" } } } },
+    "Advanced" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Avanzado" } } } },
+    "AI Enhancement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mejora por IA" } } } },
+    "AI Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelo de IA" } } } },
+    "AI Models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelos de IA" } } } },
+    "AI Provider" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Proveedor de IA" } } } },
+    "AI Provider Integration" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Integración con proveedor de IA" } } } },
+    "AI Request" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Solicitud de IA" } } } },
+    "Allow Nexo Whisper to help you type anywhere in your Mac." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Permití que Nexo Whisper te ayude a escribir en cualquier parte de tu Mac." } } } },
+    "Already have a license?" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Ya tenés una licencia?" } } } },
+    "Already purchased?" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Ya la compraste?" } } } },
+    "Analyze" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Analizar" } } } },
+    "API Endpoint URL" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "URL del endpoint API" } } } },
+    "API Key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Clave API" } } } },
+    "API Key Configuration" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración de clave API" } } } },
+    "API Key Set" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Clave API configurada" } } } },
+    "API key verified successfully!" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¡Clave API verificada con éxito!" } } } },
+    "App Language" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma de la app" } } } },
+    "Apple Speech asset management is not available on this system." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "La gestión de assets de Apple Speech no está disponible en este sistema." } } } },
+    "Applications" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Aplicaciones" } } } },
+    "Apply custom settings based on active app or website." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Aplicá configuraciones personalizadas según la app o sitio web activo." } } } },
+    "Apply intelligent text formatting to break large block of text into paragraphs." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Aplica formato inteligente para dividir bloques grandes de texto en párrafos." } } } },
+    "Assign a unique keyboard shortcut to instantly activate this Power Mode and start recording." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Asigná un atajo de teclado único para activar este Modo Power y empezar a grabar al instante." } } } },
+    "Audio Cleanup" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpieza de audio" } } } },
+    "Audio Input" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Entrada de audio" } } } },
+    "Auto Send" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Envío automático" } } } },
+    "Auto-check Updates" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar actualizaciones automáticamente" } } } },
+    "Auto-delete Audio Files" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar audios automáticamente" } } } },
+    "Auto-delete Transcripts" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar transcripciones automáticamente" } } } },
+    "Autodetected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Detección automática" } } } },
+    "Automate your workflows with context-aware configurations." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Automatizá tus flujos con configuraciones que entienden el contexto." } } } },
+    "Automatically delete audio recordings while keeping text transcripts intact." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminá grabaciones de audio automáticamente conservando las transcripciones de texto." } } } },
+    "Automatically delete transcript history based on the retention period you set." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminá automáticamente el historial de transcripciones según el período que configures." } } } },
+    "Automatically presses a key combination after pasting text. Useful for chat applications or forms that use different send shortcuts." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Presiona una combinación de teclas automáticamente después de pegar texto. Útil para chats o formularios con atajos de envío distintos." } } } },
+    "Automatically remove filler words like 'uh', 'um', 'hmm' from transcriptions." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminá automáticamente muletillas como 'eh', 'um', 'hmm' de las transcripciones." } } } },
+    "Available Devices" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivos disponibles" } } } },
+    "Avg. Audio" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Audio promedio" } } } },
+    "Avg. Enhancement Time" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo promedio de mejora" } } } },
+    "Avg. Processing" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Procesamiento promedio" } } } },
+    "Backup" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Respaldo" } } } },
+    "Base URL" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "URL base" } } } },
+    "Brief description" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descripción breve" } } } },
+    "Buy License" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Comprar licencia" } } } },
+    "Buy Once, Own Forever" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Comprala una vez, es tuya para siempre" } } } },
+    "Cancel" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } } } },
+    "Cancel Recording" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar grabación" } } } },
+    "Cancel transcription" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar transcripción" } } } },
+    "Capture on-screen text to understand context for better enhancement." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Capturá el texto en pantalla para entender el contexto y mejorar la transcripción." } } } },
+    "Check for Updates" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar actualizaciones" } } } },
+    "Checking Apple Speech language download status." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Verificando estado de descarga del idioma de Apple Speech." } } } },
+    "Choose" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Elegir" } } } },
+    "Choose Files" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Elegir archivos" } } } },
+    "Choose…" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Elegir…" } } } },
+    "Cleanup Complete" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpieza completada" } } } },
+    "Cleanup complete." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpieza completada." } } } },
+    "Clear" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpiar" } } } },
+    "Clear all items" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpiar todos los items" } } } },
+    "Click here and start speaking..." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Hacé clic acá y empezá a hablar..." } } } },
+    "Client" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cliente" } } } },
+    "Clipboard Context" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Contexto del portapapeles" } } } },
+    "Close" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar" } } } },
+    "Command" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Comando" } } } },
+    "Complete Setup" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Completar configuración" } } } },
+    "Complete the setup to get started" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Completá la configuración para empezar" } } } },
+    "Configure" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configurar" } } } },
+    "Connect an audio input device to get started" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conectá un dispositivo de entrada de audio para empezar" } } } },
+    "Connected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conectado" } } } },
+    "Context" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Contexto" } } } },
+    "Context Awareness" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conciencia de contexto" } } } },
+    "Control how Nexo Whisper handles your transcription data and audio recordings." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Controlá cómo Nexo Whisper maneja tus transcripciones y grabaciones de audio." } } } },
+    "Convert transcription output to lowercase." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Convertí el resultado de la transcripción a minúsculas." } } } },
+    "Copy Last Transcription" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Copiar última transcripción" } } } },
+    "Copy to clipboard" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Copiar al portapapeles" } } } },
+    "Create first power mode to automate your Nexo Whisper workflow based on apps/website you are using" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Creá tu primer Modo Power para automatizar el flujo de Nexo Whisper según las apps o sitios que uses" } } } },
+    "Current Device" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivo actual" } } } },
+    "Custom Provider" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Proveedor personalizado" } } } },
+    "Dashboard" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Panel" } } } },
+    "Deactivate License" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Desactivar licencia" } } } },
+    "Default" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Predeterminado" } } } },
+    "Default Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelo predeterminado" } } } },
+    "Default power mode is used when no specific app or website matches are found." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "El Modo Power predeterminado se usa cuando ninguna app o sitio coincide." } } } },
+    "Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "El método predeterminado simula Cmd+V. AppleScript puede ayudar cuando algunos layouts de teclado no pegan correctamente." } } } },
+    "Define word replacements to automatically replace specific words or phrases" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Definí reemplazos de palabras para sustituir términos o frases automáticamente" } } } },
+    "Delete" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } } } },
+    "Delete After" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar después de" } } } },
+    "Delete Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar modelo" } } } },
+    "Delete Power Mode?" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Eliminar Modo Power?" } } } },
+    "Delete Selected Items?" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Eliminar items seleccionados?" } } } },
+    "Deselect All" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Deseleccionar todo" } } } },
+    "Details" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Detalles" } } } },
+    "Detect speech segments and filter out silence to improve accuracy of local models." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Detecta segmentos de voz y filtra silencio para mejorar la precisión de los modelos locales." } } } },
+    "Diagnostics" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Diagnóstico" } } } },
+    "Dictionary" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Diccionario" } } } },
+    "Dictionary Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración del diccionario" } } } },
+    "Dictionary settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración del diccionario" } } } },
+    "Disable or remove your Power Modes first." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Primero desactivá o eliminá tus Modos Power." } } } },
+    "Disabled" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Desactivado" } } } },
+    "Disconnected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Desconectado" } } } },
+    "Dismiss" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descartar" } } } },
+    "Dismiss this promotion" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descartar esta promoción" } } } },
+    "Displays the live transcript preview in the recorder while speaking. Only applies when using real-time streaming models." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Muestra una vista previa de la transcripción en vivo mientras hablás. Solo aplica con modelos de streaming en tiempo real." } } } },
+    "Double-click to edit • Right-click for more options" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Doble clic para editar • Clic derecho para más opciones" } } } },
+    "Download AI Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descargar modelo de IA" } } } },
+    "Download Apple Speech language" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descargar idioma de Apple Speech" } } } },
+    "Download this Apple Speech language before transcribing." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descargá este idioma de Apple Speech antes de transcribir." } } } },
+    "Downloading Apple Speech language." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Descargando idioma de Apple Speech." } } } },
+    "Drop audio or video files here" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Soltá archivos de audio o video acá" } } } },
+    "Drop files anywhere to add more" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Soltá archivos en cualquier lado para agregar más" } } } },
+    "Drop to add files" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Soltá para agregar archivos" } } } },
+    "Duplicate Word" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Palabra duplicada" } } } },
+    "Edit" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } } } },
+    "Edit Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar modelo" } } } },
+    "Edit Power Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar Modo Power" } } } },
+    "Edit Word Replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar reemplazo de palabra" } } } },
+    "Edit replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar reemplazo" } } } },
+    "Emoji in Use" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Emoji en uso" } } } },
+    "Enable Enhancement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar mejora" } } } },
+    "Enable your microphone to start speaking and converting your voice to text instantly." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Habilitá tu micrófono para empezar a hablar y convertir tu voz en texto al instante." } } } },
+    "Enhancement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mejora" } } } },
+    "Enhancement Models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelos de mejora" } } } },
+    "Enhancement Prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Prompt de mejora" } } } },
+    "Enhancement Prompts" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Prompts de mejora" } } } },
+    "Enhancement Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración de mejora" } } } },
+    "Enhancement settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración de mejora" } } } },
+    "Enter License" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresar licencia" } } } },
+    "Enter License Key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresar clave de licencia" } } } },
+    "Enter website URL" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresá la URL del sitio" } } } },
+    "Enter word or phrase to replace (use commas for multiple)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresá palabra o frase a reemplazar (usá comas para múltiples)" } } } },
+    "Enter your custom prompt instructions here..." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresá tus instrucciones personalizadas acá..." } } } },
+    "Enter your license key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingresá tu clave de licencia" } } } },
+    "Error" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Error" } } } },
+    "Examples" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ejemplos" } } } },
+    "Experimental" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Experimental" } } } },
+    "Export" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar" } } } },
+    "Export Failed" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Falló la exportación" } } } },
+    "Export Logs" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar logs" } } } },
+    "Export Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar configuración" } } } },
+    "Export all settings, or choose specific categories when importing a backup." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportá toda la configuración o elegí categorías específicas al importar un respaldo." } } } },
+    "Fail immediately" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Fallar inmediatamente" } } } },
+    "Faster than Real-time" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Más rápido que tiempo real" } } } },
+    "For best results, using your Mac's built-in microphone is recommended." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Para mejores resultados, te recomendamos usar el micrófono interno de tu Mac." } } } },
+    "General" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "General" } } } },
+    "Get API Key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Obtener clave API" } } } },
+    "Get Nexo Whisper" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Obtener Nexo Whisper" } } } },
+    "Get Started" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Comenzar" } } } },
+    "Got it" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Entendido" } } } },
+    "Help & Resources" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ayuda y recursos" } } } },
+    "Help and Support" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ayuda y soporte" } } } },
+    "Hide Dock Icon" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ocultar icono del Dock" } } } },
+    "History" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } } } },
+    "How to use Word Replacements" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cómo usar reemplazos de palabras" } } } },
+    "Immediately" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Inmediatamente" } } } },
+    "Import" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Importar" } } } },
+    "Import Local Model…" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Importar modelo local…" } } } },
+    "Import Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Importar configuración" } } } },
+    "Imported local model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelo local importado" } } } },
+    "Info" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Info" } } } },
+    "Input Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo de entrada" } } } },
+    "Instructions" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Instrucciones" } } } },
+    "Interface" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Interfaz" } } } },
+    "Keep Audio For" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conservar audio por" } } } },
+    "Keep Clipboard Content" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conservar portapapeles" } } } },
+    "Keep preserves punctuation as transcribed. Remove all strips punctuation marks from the transcribed text. Remove trailing period only removes a final period from the transcribed text." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Conservar mantiene la puntuación como fue transcrita. Quitar todo elimina los signos. Quitar solo punto final elimina únicamente el punto final del texto." } } } },
+    "Keyboard Shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo de teclado" } } } },
+    "Language" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma" } } } },
+    "Language: Autodetected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma: detección automática" } } } },
+    "Language: English" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma: inglés" } } } },
+    "Language: English (only)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma: inglés (solamente)" } } } },
+    "Later" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Más tarde" } } } },
+    "Launch at Login" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir al iniciar sesión" } } } },
+    "Learn more" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saber más" } } } },
+    "Let's test your Nexo Whisper setup." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Vamos a probar la configuración de Nexo Whisper." } } } },
+    "License Active" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Licencia activa" } } } },
+    "License Management" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Gestión de licencia" } } } },
+    "License Management Portal" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Portal de gestión de licencia" } } } },
+    "Load Template" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cargar plantilla" } } } },
+    "Load a template or enter a command to enable Local CLI enhancement." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cargá una plantilla o ingresá un comando para activar la mejora con CLI local." } } } },
+    "Loading..." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cargando..." } } } },
+    "Local Model Folder" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Carpeta de modelos locales" } } } },
+    "Local models don't work reliably on Intel Macs" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Los modelos locales no funcionan de forma confiable en Macs con Intel" } } } },
+    "Lowercase output" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Resultado en minúsculas" } } } },
+    "Manage Models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Gestionar modelos" } } } },
+    "Manage your license and device activations" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Gestioná tu licencia y los dispositivos activados" } } } },
+    "Microphone Access" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso al micrófono" } } } },
+    "Microphone Selection" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Selección de micrófono" } } } },
+    "Middle-Click Recording" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Grabar con clic medio" } } } },
+    "Mini" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mini" } } } },
+    "Minimum words" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Palabras mínimas" } } } },
+    "Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelo" } } } },
+    "Model Name" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Nombre del modelo" } } } },
+    "Model Performance" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Rendimiento del modelo" } } } },
+    "Model Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración del modelo" } } } },
+    "Multilingual Model" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelo multilingüe" } } } },
+    "Mute Audio While Recording" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Silenciar audio al grabar" } } } },
+    "Name" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Nombre" } } } },
+    "Native Apple" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Apple nativo" } } } },
+    "Need help? Check the Help menu for support options" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Necesitás ayuda? Revisá el menú Ayuda para ver opciones de soporte" } } } },
+    "Nexo Whisper Insights" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Estadísticas de Nexo Whisper" } } } },
+    "Nexo Whisper needs to restart to apply the new language." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Nexo Whisper necesita reiniciarse para aplicar el nuevo idioma." } } } },
+    "Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Nexo Whisper usa temporalmente el portapapeles para pegar la transcripción. Si está activo, restaura el contenido anterior después de la demora seleccionada. Si está apagado, la transcripción pegada queda en el portapapeles." } } } },
+    "No Metadata" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin metadatos" } } } },
+    "No Power Modes" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay Modos Power" } } } },
+    "No Power Modes Available" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay Modos Power disponibles" } } } },
+    "No Power Modes Yet" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Todavía no hay Modos Power" } } } },
+    "No Recorder Sessions Yet" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Todavía no hay sesiones de grabación" } } } },
+    "No Selection" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin selección" } } } },
+    "No additional devices available" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos adicionales disponibles" } } } },
+    "No applications added" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay aplicaciones agregadas" } } } },
+    "No Audio Devices" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos de audio" } } } },
+    "No data for this period" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay datos para este período" } } } },
+    "No devices available" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos disponibles" } } } },
+    "No microphones found" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No se encontraron micrófonos" } } } },
+    "No model selected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ningún modelo seleccionado" } } } },
+    "No models available" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay modelos disponibles" } } } },
+    "No models loaded" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay modelos cargados" } } } },
+    "No prioritized devices" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay dispositivos priorizados" } } } },
+    "No prompts available" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay prompts disponibles" } } } },
+    "No providers connected" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay proveedores conectados" } } } },
+    "No transcription models available. Please connect to a cloud service or download a local model in the AI Models tab." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay modelos de transcripción disponibles. Conectá un servicio en la nube o descargá un modelo local desde la pestaña Modelos de IA." } } } },
+    "No transcriptions" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay transcripciones" } } } },
+    "No trigger words added" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay palabras disparadoras agregadas" } } } },
+    "No websites added" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay sitios agregados" } } } },
+    "Notch" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Notch" } } } },
+    "OK" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "OK" } } } },
+    "On timeout" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Al expirar" } } } },
+    "On-Device" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "En el dispositivo" } } } },
+    "Only OpenAI-compatible transcription APIs are supported" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo se soportan APIs de transcripción compatibles con OpenAI" } } } },
+    "Only OpenAI-compatible transcription APIs are supported." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo se soportan APIs de transcripción compatibles con OpenAI." } } } },
+    "Open History Window" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir ventana de historial" } } } },
+    "Open history from anywhere with a global shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrí el historial desde cualquier lado con un atajo global" } } } },
+    "OpenAI Compatible" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Compatible con OpenAI" } } } },
+    "Original" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Original" } } } },
+    "Original Text" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Texto original" } } } },
+    "Original text (use commas for multiple)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Texto original (usá comas para múltiples)" } } } },
+    "Original:" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Original:" } } } },
+    "Output Format" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Formato de salida" } } } },
+    "Paragraph breaks" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saltos de párrafo" } } } },
+    "Paste Last Transcription (Enhanced)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Pegar última transcripción (mejorada)" } } } },
+    "Paste Last Transcription (Original)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Pegar última transcripción (original)" } } } },
+    "Paste Method" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Método de pegado" } } } },
+    "Pause Media While Recording" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Pausar multimedia al grabar" } } } },
+    "Pauses playing media when recording starts and resumes when done." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Pausa la reproducción multimedia al empezar a grabar y la reanuda al terminar." } } } },
+    "Performance Analysis" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Análisis de rendimiento" } } } },
+    "Permissions" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Permisos" } } } },
+    "Persist Configured Preferences" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mantener preferencias configuradas" } } } },
+    "Playback speed" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Velocidad de reproducción" } } } },
+    "Please fix the validation errors before saving." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Corregí los errores de validación antes de guardar." } } } },
+    "Power Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo Power" } } } },
+    "Power Mode Still Active" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo Power todavía activo" } } } },
+    "Power Modes" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modos Power" } } } },
+    "Premium Features Activated" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Funciones premium activadas" } } } },
+    "Prewarm model (Experimental)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Precalentar modelo (Experimental)" } } } },
+    "Primary Shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo principal" } } } },
+    "Prioritized Devices" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Dispositivos priorizados" } } } },
+    "Privacy" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Privacidad" } } } },
+    "Prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Prompt" } } } },
+    "Prompt Name" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Nombre del prompt" } } } },
+    "Provider" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Proveedor" } } } },
+    "Punctuation" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Puntuación" } } } },
+    "Quick Access" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso rápido" } } } },
+    "Quick Add to Dictionary" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Agregar rápido al diccionario" } } } },
+    "Quit Nexo Whisper" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Salir de Nexo Whisper" } } } },
+    "RAM" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "RAM" } } } },
+    "Re-enhance with selected prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Volver a mejorar con el prompt seleccionado" } } } },
+    "Read more about custom local models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saber más sobre modelos locales personalizados" } } } },
+    "Real-time" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tiempo real" } } } },
+    "Recorder Style" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Estilo del grabador" } } } },
+    "Recording Feedback" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Feedback de grabación" } } } },
+    "Refresh" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizar" } } } },
+    "Refresh Models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizar modelos" } } } },
+    "Refresh models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizar modelos" } } } },
+    "Remove" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar" } } } },
+    "Remove API Key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar clave API" } } } },
+    "Remove Key" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar clave" } } } },
+    "Remove License" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar licencia" } } } },
+    "Remove filler words" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar muletillas" } } } },
+    "Remove replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar reemplazo" } } } },
+    "Remove word" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar palabra" } } } },
+    "Reorder" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reordenar" } } } },
+    "Reorder Power Modes" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reordenar Modos Power" } } } },
+    "Replace" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reemplazar" } } } },
+    "Replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reemplazo" } } } },
+    "Replacement Text" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Texto de reemplazo" } } } },
+    "Replacement text" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Texto de reemplazo" } } } },
+    "Replacement:" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reemplazo:" } } } },
+    "Request Permission" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Solicitar permiso" } } } },
+    "Request Timeout" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Timeout de solicitud" } } } },
+    "Required" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Requerido" } } } },
+    "Reset" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar" } } } },
+    "Reset Onboarding" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar introducción" } } } },
+    "Reset to Application Support" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer a Application Support" } } } },
+    "Reset to default" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Restablecer valor predeterminado" } } } },
+    "Restart now" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reiniciar ahora" } } } },
+    "Restart required" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reinicio necesario" } } } },
+    "Restore Delay" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora para restaurar" } } } },
+    "Resume Delay" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Demora para reanudar" } } } },
+    "Retranscribe this audio" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Retranscribir este audio" } } } },
+    "Retry" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reintentar" } } } },
+    "Retry Apple Speech language download" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reintentar descarga del idioma de Apple Speech" } } } },
+    "Retry Last Transcription" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reintentar última transcripción" } } } },
+    "Run Cleanup Now" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ejecutar limpieza ahora" } } } },
+    "Save" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Guardar" } } } },
+    "Save Changes" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Guardar cambios" } } } },
+    "Save as MD" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Guardar como MD" } } } },
+    "Save as TXT" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Guardar como TXT" } } } },
+    "Save to file" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Guardar en archivo" } } } },
+    "Screen Context" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Contexto de pantalla" } } } },
+    "Screen Recording" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Grabación de pantalla" } } } },
+    "Search apps..." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar apps..." } } } },
+    "Search transcriptions" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar transcripciones" } } } },
+    "Search transcriptions..." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Buscar transcripciones..." } } } },
+    "Secondary Shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo secundario" } } } },
+    "Select All" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar todo" } } } },
+    "Select Language" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar idioma" } } } },
+    "Select Power Mode" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar Modo Power" } } } },
+    "Select Section" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar sección" } } } },
+    "Select a transcription to view details" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccioná una transcripción para ver los detalles" } } } },
+    "Select a view" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccioná una vista" } } } },
+    "Select enhancement prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar prompt de mejora" } } } },
+    "Select sound" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccionar sonido" } } } },
+    "Select the audio input device you want to use with Nexo Whisper." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Seleccioná el dispositivo de entrada de audio que querés usar con Nexo Whisper." } } } },
+    "Separate multiple originals with commas:" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Separá múltiples originales con comas:" } } } },
+    "Set as Default" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Establecer como predeterminado" } } } },
+    "Set as default" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Establecer como predeterminado" } } } },
+    "Set how long to wait for the AI provider to respond. If no response is received within this duration, you can either fail immediately and paste the original transcription, or retry the request (up to 3 attempts)." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Definí cuánto esperar al proveedor de IA. Si no responde en ese tiempo, podés fallar inmediatamente y pegar la transcripción original, o reintentar (hasta 3 veces)." } } } },
+    "Set up a keyboard shortcut to quickly access Nexo Whisper from anywhere." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configurá un atajo de teclado para acceder rápidamente a Nexo Whisper desde cualquier lugar." } } } },
+    "Settings" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Configuración" } } } },
+    "Shortcut:" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajo:" } } } },
+    "Shortcuts" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Atajos" } } } },
+    "Show Live Text Preview" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar vista previa de texto en vivo" } } } },
+    "Show in Finder" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar en Finder" } } } },
+    "Skip Tour" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saltar tour" } } } },
+    "Skip for now" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saltar por ahora" } } } },
+    "Skip short transcriptions" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Saltar transcripciones cortas" } } } },
+    "Sort alphabetically" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ordenar alfabéticamente" } } } },
+    "Sort by original" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ordenar por original" } } } },
+    "Sort by replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ordenar por reemplazo" } } } },
+    "Sound" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sonido" } } } },
+    "Sound Feedback" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sonidos de feedback" } } } },
+    "Speed" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Velocidad" } } } },
+    "Start" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Empezar" } } } },
+    "Start Sound" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sonido de inicio" } } } },
+    "Start with Template" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Empezar con plantilla" } } } },
+    "Start your first recording to unlock value insights." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Empezá tu primera grabación para desbloquear estadísticas." } } } },
+    "Stop Sound" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sonido de fin" } } } },
+    "Supports WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Soporta WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP" } } } },
+    "Switch Enhancement Prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cambiar prompt de mejora" } } } },
+    "System Information" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Información del sistema" } } } },
+    "System Prompt" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Prompt del sistema" } } } },
+    "Test" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Probar" } } } },
+    "The transcription language is automatically detected by the model." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "El idioma de la transcripción es detectado automáticamente por el modelo." } } } },
+    "This filler word is already in the list." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta muletilla ya está en la lista." } } } },
+    "This helps to improve the accuracy of transcription." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto ayuda a mejorar la precisión de la transcripción." } } } },
+    "This language is not supported by Apple Speech." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Apple Speech no soporta este idioma." } } } },
+    "Timeout" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Timeout" } } } },
+    "Timeout duration" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Duración del timeout" } } } },
+    "Tip: Use ⌃⌘Space for emoji picker or paste an emoji." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tip: usá ⌃⌘Espacio para el selector de emojis o pegá un emoji." } } } },
+    "Toggle AI Enhancement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar/desactivar mejora por IA" } } } },
+    "Toggle Inspector" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar/ocultar inspector" } } } },
+    "Toggle Recorder" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar/ocultar grabador" } } } },
+    "Toggle Sidebar" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar/ocultar barra lateral" } } } },
+    "Transcribe Audio" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Transcribir audio" } } } },
+    "Transcript Cleanup" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Limpieza de transcripciones" } } } },
+    "Transcript Formatting" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Formato de transcripción" } } } },
+    "Transcription" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Transcripción" } } } },
+    "Transcription Language" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Idioma de la transcripción" } } } },
+    "Transcription Models" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Modelos de transcripción" } } } },
+    "Trigger Scenarios" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Escenarios disparadores" } } } },
+    "Trigger Words" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Palabras disparadoras" } } } },
+    "Try It Out!" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "¡Probalo!" } } } },
+    "Turn this on if transcriptions with local models are taking longer than expected. Runs silent background transcription on app launch and wake to trigger optimization." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activá esto si las transcripciones con modelos locales tardan más de lo esperado. Ejecuta una transcripción silenciosa en segundo plano al iniciar la app y al despertar para optimizar." } } } },
+    "Unavailable" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "No disponible" } } } },
+    "Update the word or phrase that should be automatically replaced." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizá la palabra o frase que debe reemplazarse automáticamente." } } } },
+    "Upgrade to Pro" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Activar licencia" } } } },
+    "Use Cloud" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Usar nube" } } } },
+    "Use System Template" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Usar plantilla del sistema" } } } },
+    "Use clipboard text to understand context for better enhancement." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Usá el texto del portapapeles para entender el contexto y mejorar la transcripción." } } } },
+    "User Message" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Mensaje del usuario" } } } },
+    "Validation Errors" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Errores de validación" } } } },
+    "Verification failed" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Falló la verificación" } } } },
+    "Verify and Save" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Verificar y guardar" } } } },
+    "View details" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ver detalles" } } } },
+    "View transcription and enhancement model performance" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ver rendimiento del modelo de transcripción y mejora" } } } },
+    "Vocabulary" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Vocabulario" } } } },
+    "Voice Activity Detection (VAD)" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Detección de actividad de voz (VAD)" } } } },
+    "Waiting" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Esperando" } } } },
+    "Websites" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Sitios web" } } } },
+    "We'll download the optimized model to get you started." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Vamos a descargar el modelo optimizado para que puedas arrancar." } } } },
+    "Welcome to Nexo Whisper" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Bienvenido a Nexo Whisper" } } } },
+    "Welcome to the Future of Typing" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Bienvenido al futuro de escribir" } } } },
+    "When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuando está activo, las preferencias del Modo Power siguen aplicadas después de grabar en vez de volver a tus preferencias originales. Solo cambian cuando se activa otro Modo Power." } } } },
+    "Whisper downloads are saved in a WhisperModels subfolder. Parakeet downloads are saved in a FluidAudio subfolder." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Las descargas de Whisper se guardan en una subcarpeta WhisperModels. Las de Parakeet en una FluidAudio." } } } },
+    "With" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Con" } } } },
+    "Word Replacement" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Reemplazo de palabra" } } } },
+    "Works Everywhere on Mac with a click" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Funciona en toda tu Mac con un clic" } } } },
+    "You can only customize the trigger words for system prompts." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo podés personalizar las palabras disparadoras para los prompts del sistema." } } } },
+    "You can use Nexo Whisper on all your personal devices" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Podés usar Nexo Whisper en todos tus dispositivos personales" } } } },
+    "You have saved" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Ahorraste" } } } },
+    "You'll see the introduction screens again the next time you launch the app." : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Vas a ver las pantallas de introducción otra vez la próxima vez que abras la app." } } } },
+    "Your Shortcut" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu atajo" } } } },
+    "Your Vibe-Coding Assistant" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu asistente para codear" } } } },
+    "Your Writing Assistant" : { "localizations" : { "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu asistente de escritura" } } } }
   }
 }

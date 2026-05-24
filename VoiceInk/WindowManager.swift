@@ -60,43 +60,33 @@ class WindowManager: NSObject {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.title = "Nexo Whisper Onboarding"
         window.isOpaque = false
-        // minSize bajado de 900x780 -> 720x520 para que entre cómodo en MacBook
-        // Air 11" (1366x768) y similares. El layout SwiftUI ya usa GeometryReader
-        // y se adapta. El tamaño "ideal" se calcula en applyOnboardingInitialPlacement
-        // según la pantalla activa.
-        window.minSize = NSSize(width: 720, height: 520)
-        applyOnboardingInitialPlacement(to: window)
+        // El tamaño del wizard lo controla SwiftUI desde el Scene del WindowGroup
+        // (.defaultSize 900x640 + .frame minWidth/minHeight 760x560 + .windowResizability(.contentSize)).
+        // Acá solo nos encargamos de POSICIONAR la ventana en la pantalla activa
+        // y CLAMPEAR al visibleFrame si la pantalla es chica. Tocar minSize/setFrame
+        // tamaño directo entra en conflicto con windowResizability(.contentSize)
+        // y la pisa SwiftUI inmediatamente.
+        centerOnActiveScreen(window)
+        fitWindowToVisibleScreen(window)
         window.makeKeyAndOrderFront(nil)
     }
 
-    private func applyOnboardingInitialPlacement(to window: NSWindow) {
-        // Open onboarding on the screen the user is currently looking at,
-        // mirroring how the main window behaves. `NSScreen.main` returns the
-        // screen with the active app's focus; if unavailable, fall back to the
-        // screen containing the cursor, then to the first attached display.
+    private func centerOnActiveScreen(_ window: NSWindow) {
+        // Resolver la pantalla con foco actual (donde está el cursor / la barra
+        // de menú activa). Fallback a la pantalla que contiene el cursor, después
+        // a la primera disponible.
         let activeScreen = NSScreen.main
             ?? NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) })
             ?? NSScreen.screens.first
         guard let screen = activeScreen else { return }
 
         let visibleFrame = screen.visibleFrame
-
-        // Ideal size para pantallas grandes, pero nunca más grande que la
-        // pantalla disponible menos un margin razonable. Esto evita que en
-        // displays chicos (MacBook Air 11"/13") los botones queden cortados.
-        let preferredSize = NSSize(width: 900, height: 780)
-        let margin: CGFloat = 32
-        let targetSize = NSSize(
-            width: min(preferredSize.width, visibleFrame.width - margin),
-            height: min(preferredSize.height, visibleFrame.height - margin)
-        )
-
+        let windowSize = window.frame.size
         let origin = NSPoint(
-            x: visibleFrame.midX - targetSize.width / 2,
-            y: visibleFrame.midY - targetSize.height / 2
+            x: visibleFrame.midX - windowSize.width / 2,
+            y: visibleFrame.midY - windowSize.height / 2
         )
-        window.setFrame(NSRect(origin: origin, size: targetSize), display: false)
-        fitWindowToVisibleScreen(window)
+        window.setFrameOrigin(origin)
     }
 
     func registerMainWindow(_ window: NSWindow) {

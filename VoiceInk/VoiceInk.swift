@@ -337,7 +337,13 @@ struct VoiceInkApp: App {
                     .environmentObject(recorderUIManager)
                     .environmentObject(aiService)
                     .environmentObject(enhancementService)
-                    .frame(minWidth: 880, minHeight: 780)
+                    // Alineado con el main window (Settings/Dashboard): 760x560 min,
+                    // 900x640 ideal (ver .defaultSize en este mismo Scene). Crítico:
+                    // con .windowResizability(.contentSize) la ventana adopta este
+                    // tamaño mínimo del contenido, así que valores muy altos (eran
+                    // 880x780) no entran en MacBook Air 11" y cortan los botones
+                    // con el Dock.
+                    .frame(minWidth: 760, minHeight: 560)
                     .background(WindowAccessor { window in
                         if window.identifier == nil || window.identifier != NSUserInterfaceItemIdentifier("com.prakashjoshipax.voiceink.onboardingWindow") {
                             WindowManager.shared.configureOnboardingPanel(window)

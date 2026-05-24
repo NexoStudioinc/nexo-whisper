@@ -23,7 +23,7 @@ enum ConfigurationMode: Hashable {
         return false
     }
     
-    var title: String {
+    var title: LocalizedStringKey {
         switch self {
         case .add: return "Add Power Mode"
         case .edit: return "Edit Power Mode"
@@ -331,7 +331,7 @@ struct ReorderPanelView: View {
 
 
 struct SectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
 
     var body: some View {
         Text(title)

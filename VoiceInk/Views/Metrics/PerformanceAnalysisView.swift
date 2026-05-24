@@ -252,7 +252,7 @@ struct PerformanceAnalysisView: View {
 struct SummaryCard: View {
     let icon: String
     let value: String
-    let label: String
+    let label: LocalizedStringKey
     let color: Color
 
     var body: some View {
@@ -277,7 +277,7 @@ struct SummaryCard: View {
 }
 
 struct InfoRow: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
@@ -294,7 +294,7 @@ struct InfoRow: View {
 }
 
 struct SystemInfoCard: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
@@ -454,7 +454,7 @@ struct MetricCardBackground: View {
 }
 
 struct MetricDisplay: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let color: Color
     

@@ -89,12 +89,12 @@ struct DashboardPromotionsSection: View {
 }
 
 private struct DashboardPromotionCard: View {
-    let badge: String
-    let title: String
-    let message: String
+    let badge: LocalizedStringKey
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
     let accentSymbol: String
     let glowColor: Color
-    let actionTitle: String
+    let actionTitle: LocalizedStringKey
     let actionIcon: String
     let action: () -> Void
     var onDismiss: (() -> Void)? = nil
@@ -111,8 +111,9 @@ private struct DashboardPromotionCard: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 14) {
-                Text(badge.uppercased())
+                Text(badge)
                     .font(.system(size: 11, weight: .heavy))
+                    .textCase(.uppercase)
                     .tracking(0.8)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)

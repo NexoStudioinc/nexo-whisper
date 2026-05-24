@@ -57,8 +57,8 @@ struct TranscriptionDetailView: View {
 }
 
 private struct MessageBubble: View {
-    let label: String
-    let text: String
+    let label: LocalizedStringKey
+    let text: String  // contenido de transcripción del usuario - no localizar
     let isEnhanced: Bool
 
     var body: some View {

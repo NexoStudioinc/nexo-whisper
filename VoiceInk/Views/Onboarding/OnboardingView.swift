@@ -16,72 +16,68 @@ struct OnboardingView: View {
                 ZStack {
                     // Reusable background
                     OnboardingBackgroundView()
-                    
-                    // Content container
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 0) {
-                            // Content Area
-                            VStack(spacing: 60) {
-                                Spacer()
-                                    .frame(height: 40)
-                                
-                                // Title and subtitle
-                                VStack(spacing: 16) {
-                                    Text("Welcome to the Future of Typing")
-                                        .font(.system(size: min(geometry.size.width * 0.055, 42), weight: .bold, design: .rounded))
-                                        .foregroundColor(.white)
-                                        .opacity(textOpacity)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal)
-                                    
-                                    Text("A New Way to Type")
-                                        .font(.system(size: min(geometry.size.width * 0.032, 24), weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.7))
-                                        .opacity(textOpacity)
-                                        .multilineTextAlignment(.center)
-                                }
-                                
-                                if showSecondaryElements {
-                                    // Typewriter roles animation
-                                    TypewriterRoles()
-                                        .frame(height: 160)
-                                        .transition(.scale.combined(with: .opacity))
-                                        .padding(.horizontal, 40)
-                                }
+
+                    // Contenido sin ScrollView: el wizard tiene que entrar en la
+                    // ventana sin barras laterales en MacBook Air 11"/13".
+                    // Layout en 3 zonas verticales: top spacer flexible, contenido,
+                    // bottom nav fija.
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 24)
+
+                        VStack(spacing: 28) {
+                            VStack(spacing: 12) {
+                                Text("Welcome to the Future of Typing")
+                                    .font(.system(size: min(geometry.size.width * 0.045, 36), weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .opacity(textOpacity)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+
+                                Text("A New Way to Type")
+                                    .font(.system(size: min(geometry.size.width * 0.026, 20), weight: .medium, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .opacity(textOpacity)
+                                    .multilineTextAlignment(.center)
                             }
-                            .padding(.top, geometry.size.height * 0.15)
-                            
-                            Spacer(minLength: geometry.size.height * 0.2)
-                            
-                            // Bottom navigation
+
                             if showSecondaryElements {
-                                VStack(spacing: 20) {
-                                    Button(action: {
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                            showPermissions = true
-                                        }
-                                    }) {
-                                        Text("Get Started")
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .foregroundColor(.black)
-                                            .frame(width: min(geometry.size.width * 0.3, 200), height: 50)
-                                            .background(Color.white)
-                                            .cornerRadius(25)
-                                    }
-                                    .buttonStyle(ScaleButtonStyle())
-                                    
-                                    SkipButton(text: "Skip Tour") {
-                                        hasCompletedOnboarding = true
-                                    }
-                                }
-                                .padding(.bottom, 35)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                                TypewriterRoles()
+                                    .frame(height: 120)
+                                    .transition(.scale.combined(with: .opacity))
+                                    .padding(.horizontal, 40)
                             }
                         }
+
+                        Spacer(minLength: 24)
+
+                        if showSecondaryElements {
+                            VStack(spacing: 16) {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                        showPermissions = true
+                                    }
+                                }) {
+                                    Text("Get Started")
+                                        .font(.system(size: 17, weight: .semibold))
+                                        .foregroundColor(.black)
+                                        .frame(width: min(geometry.size.width * 0.3, 200), height: 46)
+                                        .background(Color.white)
+                                        .cornerRadius(23)
+                                }
+                                .buttonStyle(ScaleButtonStyle())
+
+                                SkipButton(text: "Skip Tour") {
+                                    hasCompletedOnboarding = true
+                                }
+                            }
+                            .padding(.bottom, 28)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            
+
             if showPermissions {
                 OnboardingPermissionsView(hasCompletedOnboarding: $hasCompletedOnboarding)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -109,12 +105,13 @@ struct OnboardingView: View {
 
 // MARK: - Supporting Views
 struct TypewriterRoles: View {
+    // Localizadas via NSLocalizedString porque `Text(displayedText)` recibe
+    // un String dinámico (no literal) y SwiftUI no auto-localiza esos.
     private let roles = [
-        "Your Writing Assistant",
-        "Your Vibe-Coding Assistant",
-        "Works Everywhere on Mac with a click",
-        "100% offline & private",
-       
+        NSLocalizedString("Your Writing Assistant", comment: ""),
+        NSLocalizedString("Your Vibe-Coding Assistant", comment: ""),
+        NSLocalizedString("Works Everywhere on Mac with a click", comment: ""),
+        NSLocalizedString("100% offline & private", comment: "")
     ]
     
     @State private var displayedText = ""
@@ -232,9 +229,11 @@ struct TypewriterRoles: View {
 }
 
 struct SkipButton: View {
-    let text: String
+    // LocalizedStringKey para que `Text(text)` aplique localización
+    // automática desde el .xcstrings (un `String` puro no se localiza).
+    let text: LocalizedStringKey
     let action: () -> Void
-    
+
     var body: some View {
         Text(text)
             .font(.system(size: 13, weight: .regular))

@@ -83,10 +83,13 @@ class PermissionManager: ObservableObject {
 
 struct PermissionCard: View {
     let icon: String
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     let isGranted: Bool
-    let buttonTitle: String
+    let buttonTitle: LocalizedStringKey
+    // Nota: cuando agregues una instancia de PermissionCard, pasá los strings
+    // como literales — SwiftUI los convierte a LocalizedStringKey y se localizan
+    // desde Localizable.xcstrings automáticamente.
     let buttonAction: () -> Void
     let checkPermission: () -> Void
     var infoTipMessage: String?
@@ -257,7 +260,7 @@ struct PermissionsView: View {
                             }
                         },
                         checkPermission: { permissionManager.checkAccessibilityPermissions() },
-                        infoTipMessage: "Nexo Whisper uses Accessibility permissions to paste the transcribed text directly into other applications at your cursor's position. This allows for a seamless dictation experience across your Mac."
+                        infoTipMessage: String(localized: "Nexo Whisper uses Accessibility permissions to paste the transcribed text directly into other applications at your cursor's position. This allows for a seamless dictation experience across your Mac.")
                     )
                     
                     // Screen Recording Permission
@@ -275,7 +278,7 @@ struct PermissionsView: View {
                             }
                         },
                         checkPermission: { permissionManager.checkScreenRecordingPermission() },
-                        infoTipMessage: "Nexo Whisper captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored.",
+                        infoTipMessage: String(localized: "Nexo Whisper captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored."),
                         infoTipLink: "https://nexostudio.xyz/nexo-whisper/docs/contexto"
                     )
                 }

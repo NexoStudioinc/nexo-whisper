@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct VoiceInkButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let action: () -> Void
     var isDisabled: Bool = false
     
@@ -70,7 +70,7 @@ struct PowerModeConfigurationsGrid: View {
 
 /// Small, consistent icon-only add button used across Power Mode configuration rows.
 struct AddIconButton: View {
-    let helpText: String
+    let helpText: LocalizedStringKey
     var isDisabled: Bool = false
     let action: () -> Void
 
@@ -341,11 +341,11 @@ struct ConfigurationRow: View {
         }
         Button(role: .destructive, action: {
             let alert = NSAlert()
-            alert.messageText = "Delete Power Mode?"
-            alert.informativeText = "Are you sure you want to delete the '\(config.name)' power mode? This action cannot be undone."
+            alert.messageText = String(localized: "Delete Power Mode?")
+            alert.informativeText = String(localized: "Are you sure you want to delete the '\(config.name)' power mode? This action cannot be undone.")
             alert.alertStyle = .warning
-            alert.addButton(withTitle: "Delete")
-            alert.addButton(withTitle: "Cancel")
+            alert.addButton(withTitle: String(localized: "Delete"))
+            alert.addButton(withTitle: String(localized: "Cancel"))
             alert.buttons[0].hasDestructiveAction = true
             
             if alert.runModal() == .alertFirstButtonReturn {
