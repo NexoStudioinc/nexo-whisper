@@ -1,139 +1,171 @@
-# Building VoiceInk
+# Compilar Nexo Whisper desde fuente
 
-This guide provides detailed instructions for building VoiceInk from source.
-
-## Prerequisites
-
-Before you begin, ensure you have:
-- macOS 14.4 or later
-- Xcode (latest version recommended)
-- Swift (latest version recommended)
-- Git (for cloning repositories)
-
-## Quick Start with Makefile (Recommended)
-
-The easiest way to build VoiceInk is using the included Makefile, which automates the entire build process including building and linking the whisper framework.
-
-### Simple Build Commands
-
-```bash
-# Clone the repository
-git clone https://github.com/Beingpax/VoiceInk.git
-cd VoiceInk
-
-# Build everything (recommended for first-time setup)
-make all
-
-# Or for development (build and run)
-make dev
-```
-
-### Available Makefile Commands
-
-- `make check` or `make healthcheck` - Verify all required tools are installed
-- `make whisper` - Clone and build whisper.cpp XCFramework automatically
-- `make setup` - Prepare the whisper framework for linking
-- `make build` - Build the VoiceInk Xcode project
-- `make local` - Build for local use (no Apple Developer certificate needed)
-- `make run` - Launch the built VoiceInk app
-- `make dev` - Build and run (ideal for development workflow)
-- `make all` - Complete build process (default)
-- `make clean` - Remove build artifacts and dependencies
-- `make help` - Show all available commands
-
-### How the Makefile Helps
-
-The Makefile automatically:
-1. **Manages Dependencies**: Creates a dedicated `~/VoiceInk-Dependencies` directory for all external frameworks
-2. **Builds Whisper Framework**: Clones whisper.cpp and builds the XCFramework with the correct configuration
-3. **Handles Framework Linking**: Sets up the whisper.xcframework in the proper location for Xcode to find
-4. **Verifies Prerequisites**: Checks that git, xcodebuild, and swift are installed before building
-5. **Streamlines Development**: Provides convenient shortcuts for common development tasks
-
-This approach ensures consistent builds across different machines and eliminates manual framework setup errors.
+Esta guía cubre el workflow local para compilar y empaquetar Nexo Whisper sin necesidad de cuenta Apple Developer (ad-hoc signing).
 
 ---
 
-## Building for Local Use (No Apple Developer Certificate)
+## Requisitos
 
-If you don't have an Apple Developer certificate, use `make local`:
+- **macOS 14.4+** (Sequoia o más nuevo recomendado).
+- **Xcode 16+** o **Xcode 26 beta** (necesario si tocás features que usan `ENABLE_NATIVE_SPEECH_ANALYZER`).
+- **Command Line Tools** instaladas (`xcode-select --install`).
+- **git** + **make**.
+- Para empaquetar el `.dmg`: `brew install create-dmg`.
+
+---
+
+## Quick start
 
 ```bash
-git clone https://github.com/Beingpax/VoiceInk.git
-cd VoiceInk
+# 1. Clonar el repo (privado — necesitás invite)
+git clone git@github.com:NexoStudioinc/nexo-whisper.git
+cd nexo-whisper
+
+# 2. (Solo primera vez) Apuntar xcodebuild a Xcode si está fuera de /Applications
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+# O usar la env var DEVELOPER_DIR si Xcode vive en otro lado:
+export DEVELOPER_DIR=/Volumes/Entorno\ Mac/Xcode/Xcode-beta.app/Contents/Developer
+
+# 3. Build local
 make local
-open ~/Downloads/VoiceInk.app
 ```
 
-This builds VoiceInk with ad-hoc signing using a separate build configuration (`LocalBuild.xcconfig`) that requires no Apple Developer account.
-
-### How It Works
-
-The `make local` command uses:
-- `LocalBuild.xcconfig` to override signing and entitlements settings
-- `VoiceInk.local.entitlements` (stripped-down, no CloudKit/keychain groups)
-- `LOCAL_BUILD` Swift compilation flag for conditional code paths
-
-Your normal `make all` / `make build` commands are completely unaffected.
+El resultado queda en `~/Downloads/Nexo Whisper.app` con `LOCAL_BUILD` activado (es decir, en modo **Pro completo** automáticamente — útil para desarrollo).
 
 ---
 
-## Manual Build Process (Alternative)
+## Detalle de `make local`
 
-If you prefer to build manually or need more control over the build process, follow these steps:
+El target hace:
 
-### Building whisper.cpp Framework
+1. Verifica prerequisites (`git`, `xcodebuild`, `swift`).
+2. Clona y compila `whisper.cpp` como XCFramework (solo la primera vez, en `~/VoiceInk-Dependencies/`).
+3. Borra `.local-build/` (cache de DerivedData del repo).
+4. `xcodebuild` con:
+   - `-configuration Debug`
+   - `-xcconfig LocalBuild.xcconfig` (ad-hoc signing, sin team)
+   - `CODE_SIGN_ENTITLEMENTS=VoiceInk.local.entitlements` (sin iCloud / sin aps-environment, para no requerir cert Apple)
+   - `SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) LOCAL_BUILD'` (fuerza `licenseState = .licensed`)
+5. Copia el `.app` a `~/Downloads/Nexo Whisper.app` con `xattr -cr` para limpiar atributos de cuarentena.
 
-1. Clone and build whisper.cpp:
+---
+
+## Otros targets del Makefile
+
 ```bash
-git clone https://github.com/ggerganov/whisper.cpp.git
-cd whisper.cpp
-./build-xcframework.sh
+make check        # Verifica que git/xcodebuild/swift estén instalados
+make whisper      # Clona y compila whisper.cpp si no existe
+make setup        # whisper + apunta al framework
+make build        # Build sin LOCAL_BUILD (igual al CI)
+make run          # Abre Nexo Whisper.app si existe en ~/Downloads/ o DerivedData
+make dev          # build + run
+make clean        # Borra ~/VoiceInk-Dependencies (whisper.cpp incluido)
+make help         # Lista todos los targets
 ```
-This will create the XCFramework at `build-apple/whisper.xcframework`.
 
-### Building VoiceInk
+---
 
-1. Clone the VoiceInk repository:
+## Empaquetar el DMG
+
 ```bash
-git clone https://github.com/Beingpax/VoiceInk.git
-cd VoiceInk
+# 1. Hacer make local primero (genera la .app en ~/Downloads/)
+make local
+
+# 2. Generar el fondo branded (PNG 600x400 con logo + flecha → Applications)
+swift /tmp/generate_dmg_background.swift   # o adaptar el script propio
+
+# 3. create-dmg
+DIST="$HOME/Downloads/NexoWhisper-1.0.0.dmg"
+rm -f "$DIST"
+create-dmg \
+  --volname "Nexo Whisper" \
+  --volicon "$HOME/Downloads/Nexo Whisper.app/Contents/Resources/AppIcon.icns" \
+  --background "/tmp/nexo_dmg_background.png" \
+  --window-pos 200 120 \
+  --window-size 600 400 \
+  --icon-size 100 \
+  --icon "Nexo Whisper.app" 175 190 \
+  --hide-extension "Nexo Whisper.app" \
+  --app-drop-link 425 190 \
+  --no-internet-enable \
+  "$DIST" \
+  "$HOME/Downloads/Nexo Whisper.app"
 ```
 
-2. Add the whisper.xcframework to your project:
-   - Drag and drop `../whisper.cpp/build-apple/whisper.xcframework` into the project navigator, or
-   - Add it manually in the "Frameworks, Libraries, and Embedded Content" section of project settings
+El DMG resultante (~17 MB) tiene fondo branded, ícono custom del volumen y layout "drag to Applications".
 
-3. Build and Run
-   - Build the project using Cmd+B or Product > Build
-   - Run the project using Cmd+R or Product > Run
+---
 
-## Development Setup
+## Firma de updates (Sparkle)
 
-1. **Xcode Configuration**
-   - Ensure you have the latest Xcode version
-   - Install any required Xcode Command Line Tools
+Cada release pública debe firmarse con la clave privada EdDSA guardada en el Keychain.
 
-2. **Dependencies**
-   - The project uses [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for transcription
-   - Ensure the whisper.xcframework is properly linked in your Xcode project
-   - Test the whisper.cpp installation independently before proceeding
+```bash
+SIGN="$(pwd)/.local-build/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+"$SIGN" "$HOME/Downloads/NexoWhisper-1.0.0.dmg"
+```
 
-3. **Building for Development**
-   - Use the Debug configuration for development
-   - Enable relevant debugging options in Xcode
+El output es el `sshSignature` que va al `appcast.xml` enclosure.
 
-4. **Testing**
-   - Run the test suite before making changes
-   - Ensure all tests pass after your modifications
+> ⚠️ **No perder la clave privada**. Backup con `generate_keys -x ~/backup.txt` y guardar fuera del repo (1Password, iCloud Keychain, disco cifrado).
+
+---
 
 ## Troubleshooting
 
-If you encounter any build issues:
-1. Clean the build folder (Cmd+Shift+K)
-2. Clean the build cache (Cmd+Shift+K twice)
-3. Check Xcode and macOS versions
-4. Verify all dependencies are properly installed
-5. Make sure whisper.xcframework is properly built and linked
+### `xcode-select: error: tool 'xcodebuild' requires Xcode`
+Tenés Command Line Tools pero no Xcode completo apuntado.
 
-For more help, please check the [issues](https://github.com/Beingpax/VoiceInk/issues) section or create a new issue. 
+```bash
+# Si Xcode vive en /Applications:
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+# Si vive en otro lado (ej. disco externo):
+export DEVELOPER_DIR="/ruta/a/Xcode.app/Contents/Developer"
+```
+
+### `BUILD FAILED` con errores en `ENABLE_NATIVE_SPEECH_ANALYZER`
+Necesitás **Xcode 26 beta** con SDK macOS 26. Si tenés Xcode estable, comentá el flag en `project.pbxproj` (4 ocurrencias: Debug + Release × 2 configs).
+
+### `make local` reporta exit 0 pero la app no aparece
+Bash pipefail: `make | tail` siempre da exit 0 aunque make falle. Validá siempre con:
+
+```bash
+make local > /tmp/build.log 2>&1
+echo "Exit: $?"
+grep -E "error:" /tmp/build.log
+```
+
+### TCC permisos se resetean a cada build
+Solucionado en la versión actual: el Makefile NO re-codesigna entre builds, así los permisos TCC (Mic, Accesibilidad, Input Monitoring) sobreviven.
+
+---
+
+## Estructura del repo
+
+```
+.
+├── VoiceInk/                    Código Swift de la app
+│   ├── Models/                  CustomPrompt, LicenseViewModel, TranscriptionModel...
+│   ├── Services/                LemonSqueezyService, FeatureGate, AIService...
+│   ├── Views/                   SwiftUI views
+│   ├── Transcription/           Whisper + Parakeet + Cloud providers + Streaming
+│   ├── Paste/                   ClipboardManager + CursorPaster
+│   ├── PowerMode/               App Profiles (Pro feature)
+│   ├── Notifications/           AnnouncementManager + AppNotifications
+│   ├── Shortcuts/               Hotkey + middle-click handling
+│   ├── Resources/               Localizable.xcstrings (ES/EN)
+│   ├── Info.plist               + entitlements (full y local)
+├── VoiceInk.xcodeproj/          Project + scheme
+├── VoiceInkTests/               Tests vacíos (placeholders del template Xcode)
+├── VoiceInkUITests/             UI tests vacíos
+├── LocalBuild.xcconfig          Ad-hoc signing config
+├── Makefile                     Sistema de build
+├── appcast.xml                  Sparkle feed (a hostear)
+├── announcements.json           In-app announcements (servicio desactivado por ahora)
+└── README.md / BUILDING.md / CONTRIBUTING.md / LICENSE
+```
+
+---
+
+Cualquier duda: [soporte@nexostudio.xyz](mailto:soporte@nexostudio.xyz)

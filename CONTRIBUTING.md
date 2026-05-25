@@ -1,78 +1,64 @@
-# Contributing to VoiceInk
+# Contribuir a Nexo Whisper
 
-First off, thank you for considering contributing to VoiceInk! It's people like you that make VoiceInk such a great tool.
+Gracias por interesarte. Esta nota aclara cómo funciona el desarrollo de Nexo Whisper.
 
-## ⚠️ Pull Requests Not Accepted
+---
 
-**As of now, this project is not accepting pull requests.** While VoiceInk is open source and you're welcome to fork and modify it for your own use.
+## ⚠️ No aceptamos Pull Requests externos
 
-**You can still contribute by:**
-- 🐛 **Reporting bugs** - Open an issue with detailed information
-- 💡 **Suggesting features** - Share your ideas via issues or discussions
-- 🍴 **Forking the project** - Feel free to create your own version
-- 📖 **Improving documentation** - Suggest clarifications or corrections via issues
+Nexo Whisper es un producto comercial mantenido por [Nexo Studio](https://nexostudio.xyz). Este repositorio es **privado** y se comparte con compradores como cumplimiento de la licencia GPL v3 (acceso al código fuente del binario que recibieron).
 
-Thank you for understanding!
+**No aceptamos PRs externos** porque:
 
-## Code of Conduct
+- El roadmap del producto lo decide el equipo según prioridades comerciales.
+- Mantener compatibilidad entre features y minimizar bugs requiere un proceso de review interno.
+- Aceptar PRs externos crea zonas grises de licencia respecto a quién es dueño de qué.
 
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
+---
 
-## How Can I Contribute?
+## ¿Encontraste un bug o tenés una idea?
 
-### Reporting Bugs
+**Por favor escribinos** a [soporte@nexostudio.xyz](mailto:soporte@nexostudio.xyz) con:
 
-- Before submitting a bug report, please check if the issue has already been reported
-- Use the bug report template when creating an issue
-- Include as much relevant information as possible
-- Include steps to reproduce the issue
+- **Bug**: pasos para reproducir, versión de macOS, versión de Nexo Whisper (Settings → Licencia → versión arriba a la derecha), logs si los tenés (Console.app filtrando por `subsystem:com.prakashjoshipax.voiceink`).
+- **Feature request**: qué necesitás resolver, qué intentaste, qué resultado esperás.
 
-### Suggesting Enhancements
+Leemos todos los emails. Si tu reporte es accionable y se alinea con el roadmap, lo agregamos. Si no, te decimos por qué.
 
-- Open an issue using the feature request template
-- Clearly describe the feature and its benefits
-- Discuss potential implementation approaches
-- Consider the feature's impact on existing functionality
+---
 
-### Development Process
+## Forks libres
 
-1. Ensure you have all the requirements installed:
-   - macOS 14.4 or later
-   - Latest version of Xcode
-   - Latest version of Swift
-   - whisper.cpp properly set up
+GPL v3 te permite hacer un **fork público** del código y desarrollarlo por tu cuenta. Algunas reglas:
 
-2. Follow our coding standards:
-   - Use Swift style guidelines
-   - Write meaningful commit messages
-   - Include comments where necessary
-   - Add tests for new features
+- El fork debe mantener la licencia GPL v3 (no podés cerrarlo).
+- Tenés que mantener el aviso de copyright original (Beingpax + Nexo Studio).
+- Si distribuís binarios del fork, los receptores tienen derecho al código fuente.
+- **No podés usar la marca "Nexo Whisper"** ni branding visual de Nexo en tu fork. El nombre y el logo son nuestros, no parte de la licencia GPL.
 
-3. Testing:
-   - Run existing tests
-   - Add new tests for new functionality
-   - Ensure all tests pass before submitting PR
+Si querés colaborar a la comunidad open source, te recomendamos contribuir al [proyecto upstream original (Beingpax/VoiceInk)](https://github.com/Beingpax/VoiceInk).
 
-## Style Guidelines
+---
 
-- Follow Swift style guidelines
-- Use meaningful variable and function names
-- Keep functions focused and concise
-- Comment complex logic
-- Write self-documenting code where possible
+## Para compradores Pro
 
-## Community
+Si compraste Nexo Whisper Pro y querés:
 
-- Join our discussions
-- Help other contributors
-- Share your ideas
-- Be respectful and constructive
+- **Reportar un bug crítico**: mail con asunto `[BUG-PRO]` para priority routing.
+- **Sugerir una feature**: mail con asunto `[FEATURE-PRO]`.
+- **Pedir reembolso**: 30 días sin preguntas — desde tu customer portal de Lemon Squeezy o respondiendo el email de la compra.
+- **Liberar slots de devices**: customer portal → Manage activations.
 
-## Questions?
+---
 
-If you have any questions or need clarification, feel free to:
-1. Open an issue
-2. Start a discussion
-3. Reach out to the maintainers
+## Quién hace qué
 
-Thank you for contributing to VoiceInk! 🎉 
+- **Producto + arquitectura**: Maxi (Nexo).
+- **Codebase upstream original**: Prakash Joshi ([Beingpax/VoiceInk](https://github.com/Beingpax/VoiceInk)) — agradecimientos eternos.
+- **Maintenance del fork Nexo**: equipo Nexo Studio.
+
+---
+
+Cualquier pregunta sobre la licencia GPL v3 o cómo se aplica a tu uso: [soporte@nexostudio.xyz](mailto:soporte@nexostudio.xyz).
+
+Hecho en Argentina 🇦🇷
