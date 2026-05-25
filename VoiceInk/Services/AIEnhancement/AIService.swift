@@ -17,6 +17,32 @@ enum AIProvider: String, CaseIterable {
     case ollama = "Ollama"
     case localCLI = "Local CLI"
     case custom = "Custom"
+
+    /// ¿Este provider requiere licencia Pro para usarse?
+    ///
+    /// Lógica freemium (post 2026-05): Free permite SOLO providers locales:
+    /// - `ollama`: corre en el Mac del usuario, sin internet, sin API keys
+    /// - `localCLI`: gateado por separado (FeatureGate.cliEnhancement)
+    ///
+    /// Todo lo demás (Anthropic, OpenAI, Gemini, Groq, etc.) usa internet
+    /// — aunque la API key sea del usuario (BYOK). Pasa a requerir Pro.
+    /// Ver `FeatureGate.byokEnhancement` para el racional completo.
+    ///
+    /// `custom` se considera BYOK también: aunque la URL la pone el user,
+    /// es típicamente una API OpenAI-compatible hosteada en algún lado
+    /// (LM Studio en remoto, LocalAI, etc.). Si es 100% local sin internet,
+    /// el user puede setear la URL a `http://localhost` y NO requeriría
+    /// internet, pero por seguridad lo gateamos igual.
+    var requiresBYOKLicense: Bool {
+        switch self {
+        case .ollama:
+            return false  // 100% local
+        case .localCLI:
+            return false  // gateado por cliEnhancement, no por byok
+        default:
+            return true   // todos los cloud + custom
+        }
+    }
     
     
     var baseURL: String {

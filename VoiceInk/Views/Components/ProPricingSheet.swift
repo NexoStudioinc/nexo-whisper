@@ -29,9 +29,9 @@ struct ProPricingSheet: View {
     @ObservedObject private var licenseViewModel = LicenseViewModel.shared
     @State private var showActivationForm = false
 
-    /// Precio sugerido (placeholder; reemplazar por el real de LS).
-    private let priceDisplay = "$7"
-    private let priceCaption = "One-time payment · Lifetime updates"
+    /// Precio del producto en LS (Nexo Whisper Pro).
+    private let priceDisplay = "$7.99"
+    private let priceCaption = "One-time payment · Lifetime updates · 3 Macs"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -120,7 +120,7 @@ struct ProPricingSheet: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 featureRow(included: true, "Transcripción local (Whisper + Parakeet)")
-                featureRow(included: true, "Mejora con IA usando tu API key (BYOK)")
+                featureRow(included: true, "Mejora con IA via Ollama local (sin internet, sin API key)")
                 featureRow(included: true, "Diccionario + reemplazos de palabras")
                 featureRow(included: true, "Atajos globales personalizables")
                 featureRow(included: true, "Historial + exportar CSV")
@@ -188,6 +188,7 @@ struct ProPricingSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 featureRow(included: true, "Todo lo de Free, más:")
                     .fontWeight(.semibold)
+                featureRow(included: true, "Mejora con IA usando tu API key (Anthropic, OpenAI, Gemini, Groq, Mistral)")
                 featureRow(included: true, "Transcripción cloud (Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics, Mistral)")
                 featureRow(included: true, "Modos por App (Power Mode)")
                 featureRow(included: true, "Transcribir archivos de audio y video")

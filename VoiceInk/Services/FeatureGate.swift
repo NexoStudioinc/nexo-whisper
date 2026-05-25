@@ -45,9 +45,20 @@ enum FeatureGate {
         case fileTranscription
 
         /// Mejora con IA usando una CLI local del sistema (Claude Code, Codex,
-        /// Antigravity, Copilot, Pi). La Mejora vía BYOK con API key del user
-        /// NO está gateada — ese es el camino freemium.
+        /// Antigravity, Copilot, Pi).
         case cliEnhancement
+
+        /// Mejora con IA usando providers cloud con API key del usuario
+        /// (BYOK): Anthropic, OpenAI, Gemini, Groq, Mistral, etc.
+        ///
+        /// Nota importante (cambio de modelo 2026-05): originalmente BYOK
+        /// era Free con la lógica "no te cobro 2 veces". Pero como Pro es
+        /// one-time $7.99 (no suscripción), ese argumento no aplica — no
+        /// hay cobro recurrente que se duplique. Pasó a Pro alineando con
+        /// el resto del mercado (MacWhisper, Superwhisper). El escape válido
+        /// para "IA gratis sin pagar nada" sigue siendo Ollama local, que
+        /// queda fuera del gating.
+        case byokEnhancement
 
         /// Acceso a los 7 prompts predefinidos extras (Chat, Email, Rewrite,
         /// Formal, Coding, Summary, Fun). El "System Default" queda libre.
@@ -64,6 +75,7 @@ enum FeatureGate {
             case .appProfiles:        return "App Profiles"
             case .fileTranscription:  return "Audio file transcription"
             case .cliEnhancement:     return "Local CLI enhancement"
+            case .byokEnhancement:    return "AI Enhancement (BYOK)"
             case .extendedPrompts:    return "Extended prompts"
             case .customPrompts:      return "Custom prompts"
             }

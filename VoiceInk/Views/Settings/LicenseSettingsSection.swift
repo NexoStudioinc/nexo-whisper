@@ -125,7 +125,7 @@ struct LicenseSettingsSection: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Free Plan")
                     .font(.headline)
-                Text("Transcripción local + BYOK + System Default prompt")
+                Text("Transcripción local + Ollama local + System Default prompt")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }

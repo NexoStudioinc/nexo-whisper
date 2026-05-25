@@ -221,7 +221,7 @@ struct LicenseManagementView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 freeFeatureRow(icon: "checkmark.circle.fill", text: "Transcripción local (Whisper + Parakeet), todos los modelos")
-                freeFeatureRow(icon: "checkmark.circle.fill", text: "Mejora con IA usando tu propia API key (BYOK)")
+                freeFeatureRow(icon: "checkmark.circle.fill", text: "Mejora con IA via Ollama local (sin internet, sin API key)")
                 freeFeatureRow(icon: "checkmark.circle.fill", text: "Diccionario + reemplazos de palabras")
                 freeFeatureRow(icon: "checkmark.circle.fill", text: "Atajos globales personalizables")
             }
@@ -233,6 +233,7 @@ struct LicenseManagementView: View {
                 .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 8) {
+                proFeatureRow(text: "Mejora con IA usando tu API key (Anthropic, OpenAI, Gemini, Groq, Mistral)")
                 proFeatureRow(text: "Transcripción cloud (Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics, Mistral)")
                 proFeatureRow(text: "Modos por App (Power Mode) — auto-configurar por aplicación")
                 proFeatureRow(text: "Transcribir Audio (archivos .mp3, .wav, .m4a)")

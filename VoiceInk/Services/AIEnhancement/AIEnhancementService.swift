@@ -384,6 +384,15 @@ class AIEnhancementService: ObservableObject {
         let enhancementPrompt: EnhancementPrompt = .transcriptionEnhancement
         let promptName = activePrompt?.title
 
+        // Gating de provider BYOK Pro: free solo permite providers locales
+        // (Ollama, localCLI). Cualquier provider cloud con API key del user
+        // requiere Pro. Es el doble check defensivo — la UI debería filtrar
+        // antes, pero blindamos acá por si alguien parchea la View.
+        let currentProvider = aiService.selectedProvider
+        if currentProvider.requiresBYOKLicense, !FeatureGate.isAvailable(.byokEnhancement) {
+            throw EnhancementError.proBYOKRequired
+        }
+
         // Gating de prompts Pro: el user free solo puede usar el System
         // Default. Si seleccionó cualquier otro predefinido o un custom,
         // abortamos antes de gastar tokens. La UI del selector debería
@@ -536,6 +545,10 @@ enum EnhancementError: Error {
     /// extras (Chat, Email, Rewrite, Formal, Coding, Summary, Fun) o un
     /// custom prompt creado por él. El "System Default" sigue libre.
     case proPromptRequired
+    /// Lanzado cuando el user free intenta usar Mejora con IA con un
+    /// provider que requiere conexión a internet (Anthropic, OpenAI, Gemini,
+    /// Groq, etc.). El escape válido en Free es Ollama local.
+    case proBYOKRequired
 }
 
 extension EnhancementError: LocalizedError {
@@ -559,6 +572,8 @@ extension EnhancementError: LocalizedError {
             return message
         case .proPromptRequired:
             return "This prompt requires a Pro license. The free tier includes the System Default prompt — upgrade to Pro to unlock Chat, Email, Rewrite, Formal, Coding, Summary, Fun and custom prompts."
+        case .proBYOKRequired:
+            return "AI Enhancement with cloud providers (Anthropic, OpenAI, Gemini, Groq, etc.) requires a Pro license. The free tier includes Ollama local — install Ollama and pull a model to use AI Enhancement for free without any API key."
         }
     }
 }
