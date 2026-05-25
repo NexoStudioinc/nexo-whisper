@@ -4,7 +4,7 @@ WHISPER_CPP_DIR := $(DEPS_DIR)/whisper.cpp
 FRAMEWORK_PATH := $(WHISPER_CPP_DIR)/build-apple/whisper.xcframework
 LOCAL_DERIVED_DATA := $(CURDIR)/.local-build
 
-.PHONY: all clean whisper setup build local check healthcheck help dev run
+.PHONY: all clean whisper setup build local local-release check healthcheck help dev run
 
 # Default target
 all: check build
@@ -44,9 +44,11 @@ setup: whisper
 build: setup
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug CODE_SIGN_IDENTITY="" build
 
-# Build for local use without Apple Developer certificate
+# Build for local DEV use without Apple Developer certificate.
+# Incluye `LOCAL_BUILD` flag → arranca en estado .licensed (Pro) automáticamente.
+# Útil para desarrollo y QA del lado dev. NO usar este DMG para distribución pública.
 local: check setup
-	@echo "Building VoiceInk for local use (no Apple Developer certificate required)..."
+	@echo "Building VoiceInk for local DEV use (LOCAL_BUILD enabled → Pro by default)..."
 	@rm -rf "$(LOCAL_DERIVED_DATA)"
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
 		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
@@ -58,6 +60,43 @@ local: check setup
 		CODE_SIGN_ENTITLEMENTS="$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
 		SWIFT_ACTIVE_COMPILATION_CONDITIONS='$$(inherited) LOCAL_BUILD' \
 		build
+
+# Build PARA DISTRIBUCIÓN PÚBLICA — sin LOCAL_BUILD flag.
+# Resultado: app arranca en estado .free por default. Para activar Pro
+# requiere license key real de Lemon Squeezy. Este es el DMG que va a
+# GitHub Releases para que descarguen los usuarios.
+#
+# Misma config que `make local` excepto el `LOCAL_BUILD` flag y el destino
+# del .app (con sufijo "-release" para no pisar el build dev).
+local-release: check setup
+	@echo "Building VoiceInk for PUBLIC release (no LOCAL_BUILD → .free by default)..."
+	@rm -rf "$(LOCAL_DERIVED_DATA)"
+	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
+		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
+		-xcconfig LocalBuild.xcconfig \
+		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGNING_REQUIRED=NO \
+		CODE_SIGNING_ALLOWED=YES \
+		DEVELOPMENT_TEAM="" \
+		CODE_SIGN_ENTITLEMENTS="$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
+		build
+	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
+	DEST="$$HOME/Downloads/Nexo Whisper Release.app" && \
+	if [ -d "$$APP_PATH" ]; then \
+		echo "Copying Nexo Whisper Release.app to ~/Downloads..."; \
+		rm -rf "$$DEST"; \
+		ditto "$$APP_PATH" "$$DEST"; \
+		xattr -cr "$$DEST"; \
+		echo ""; \
+		echo "✅ Release build saved to: ~/Downloads/Nexo Whisper Release.app"; \
+		echo "   Arranca en .free — para Pro requiere license key de LS."; \
+		echo "   Empaquetar DMG con: create-dmg (ver BUILDING.md)"; \
+	else \
+		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
+		exit 1; \
+	fi
+	@# NOTA: este target NO altera ~/Downloads/Nexo Whisper.app (build dev)
+	@# para que puedas tener ambas versiones lado a lado.
 	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
 	DEST="$$HOME/Downloads/Nexo Whisper.app" && \
 	if [ -d "$$APP_PATH" ]; then \

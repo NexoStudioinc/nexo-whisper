@@ -67,10 +67,54 @@ final class LicenseViewModel: ObservableObject {
         // Los builds locales (sin firma Apple, vía `make local`) son siempre
         // .licensed para que el desarrollador pueda usar todas las features
         // sin activar nada. Esto NO compila en builds Release/Distribución.
-        licenseState = .licensed
-        logger.notice("🔑 LOCAL_BUILD: licenseState forzado a .licensed")
+        //
+        // EXCEPCIÓN — Debug override de QA:
+        // Si el dev seteó `NexoDebugForceFreeState = true` en UserDefaults,
+        // forzamos `.free` aunque LOCAL_BUILD esté activo. Útil para validar
+        // que el gating de features Pro funciona bien antes del lanzamiento,
+        // sin tener que hacer un build separado sin LOCAL_BUILD.
+        //
+        // Toggle del flag: desde Settings → sección Licencia hay un control
+        // de debug visible solo en builds LOCAL_BUILD que alterna este flag.
+        // O manual: `defaults write com.prakashjoshipax.VoiceInk NexoDebugForceFreeState -bool true`
+        if UserDefaults.standard.bool(forKey: "NexoDebugForceFreeState") {
+            licenseState = .free
+            logger.notice("🔑 LOCAL_BUILD + debug override: licenseState forzado a .free (QA mode)")
+        } else {
+            licenseState = .licensed
+            logger.notice("🔑 LOCAL_BUILD: licenseState forzado a .licensed")
+        }
         #else
         loadInitialState()
+        #endif
+    }
+
+    /// Solo visible/funcional en LOCAL_BUILD. Alterna el flag de debug que
+    /// fuerza `.free` aunque sea build local. Útil para QA del gating Pro
+    /// antes del release. En builds Release es noop.
+    func toggleDebugForceFreeState() {
+        #if LOCAL_BUILD
+        let current = UserDefaults.standard.bool(forKey: "NexoDebugForceFreeState")
+        let new = !current
+        UserDefaults.standard.set(new, forKey: "NexoDebugForceFreeState")
+        licenseState = new ? .free : .licensed
+        logger.notice("🔑 Debug toggle: licenseState ahora \(self.licenseState == .free ? "FREE" : "LICENSED", privacy: .public)")
+        NotificationCenter.default.post(name: .licenseStatusChanged, object: nil)
+        #endif
+    }
+
+    /// Lee el estado actual del flag de debug (sin alternar).
+    var debugForceFreeState: Bool {
+        UserDefaults.standard.bool(forKey: "NexoDebugForceFreeState")
+    }
+
+    /// `true` solo si la app se compiló con LOCAL_BUILD. La UI usa esto
+    /// para mostrar/ocultar la sección de debug en Settings.
+    var isDebugBuild: Bool {
+        #if LOCAL_BUILD
+        return true
+        #else
+        return false
         #endif
     }
 

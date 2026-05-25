@@ -30,10 +30,65 @@ struct LicenseSettingsSection: View {
                 Divider()
                 freeActions
             }
+
+            // Debug section: solo visible en builds LOCAL_BUILD (make local).
+            // En builds Release/Distribución `isDebugBuild` retorna false y
+            // todo el bloque se omite. Útil para QA del freemium sin recompilar.
+            if licenseViewModel.isDebugBuild {
+                Divider()
+                debugSection
+            }
         }
         .sheet(isPresented: $showPricingSheet) {
             ProPricingSheet(isPresented: $showPricingSheet)
         }
+    }
+
+    /// Sección de debug para developers — solo aparece en builds LOCAL_BUILD.
+    /// Permite alternar entre estado `.free` y `.licensed` para validar el
+    /// gating de features Pro sin necesidad de hacer dos builds separados.
+    private var debugSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "hammer.circle.fill")
+                    .foregroundStyle(.orange)
+                Text("Debug · QA Mode")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
+                Spacer()
+                Text("LOCAL_BUILD")
+                    .font(.system(size: 9, weight: .heavy))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.2))
+                    .foregroundStyle(.orange)
+                    .clipShape(Capsule())
+            }
+
+            Text("Build local — alterná entre Free y Licensed para validar el gating sin recompilar.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            Toggle(isOn: Binding(
+                get: { licenseViewModel.debugForceFreeState },
+                set: { _ in licenseViewModel.toggleDebugForceFreeState() }
+            )) {
+                Text("Forzar estado Free (override LOCAL_BUILD)")
+                    .font(.callout)
+            }
+            .toggleStyle(.switch)
+            .controlSize(.small)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.orange.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 
     // MARK: - Licensed
