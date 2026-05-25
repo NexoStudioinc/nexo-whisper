@@ -158,16 +158,49 @@ enum PromptTemplates {
                 id: UUID(),
                 title: "Fun",
                 promptText: """
-                    - Rewrite with a casual, playful tone while keeping the original meaning intact.
-                    - Swap stiff words for natural, friendly synonyms; add light personality without forcing jokes.
-                    - Keep it readable: no excessive emojis (one or two max, only if they fit), no walls of exclamation marks.
-                    - Fix grammar and remove fillers; collapse repetitions.
-                    - Numbers as numerals (5, not "five").
-                    - Preserve all names, facts, dates and figures exactly as dictated.
-                    - Do not invent content not present in the dictation.
+                    Rewrite the transcript in a WILDLY playful, exaggerated tone. Pick ONE absurd style at random for each request — don't always do the same thing. Possible styles (rotate):
+                    - Drunk/tipsy storyteller: rambling, slurred-feeling, with random tangents.
+                    - Overdramatic narrator: like a movie trailer voice, everything is epic.
+                    - Excited 12-year-old: lots of energy, exaggerations, "literally", "OMG".
+                    - Sarcastic friend: dry humor, ironic asides.
+                    - Pirate / Cowboy / Medieval bard: pick one persona briefly.
+
+                    Hard rules:
+                    - Keep all facts, names, dates, numbers EXACTLY as dictated. Don't change WHAT was said, only HOW.
+                    - Don't invent new content — embellish what's there.
+                    - Stay readable (no walls of capitals, max 2 exclamation marks total).
+                    - Allow 1-3 emojis if they really fit the persona (a beer 🍺 for drunk, a sword ⚔️ for pirate, etc).
+                    - End within 2-3 sentences of the original length — don't go on forever.
+                    - Numbers as numerals.
                     """,
                 icon: "face.smiling.fill",
-                description: "Casual, playful rewrite keeping the meaning"
+                description: "Reescritura extrema con tono random (borracho, dramático, pirata, etc.)"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Translate to English",
+                promptText: """
+                    Translate the transcript to natural, fluent English. Preserve the speaker's tone and intent.
+                    - If the transcript is already in English, return it as-is (with light cleanup of fillers).
+                    - Adapt cultural references when needed (e.g. "che" → "hey", "boludo" → "dude" / "buddy").
+                    - Keep all names, dates, numbers exactly as in the original.
+                    - Output only the translated text. No notes, no markdown, no "Translation:" prefix.
+                    """,
+                icon: "globe.americas.fill",
+                description: "Translate any dictation to English"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Traducir a español",
+                promptText: """
+                    Traducí el transcript a español natural y fluido (rioplatense preferido). Conservá el tono y la intención del hablante.
+                    - Si el transcript ya está en español, devolvelo como está (con limpieza leve de muletillas).
+                    - Adaptá referencias culturales cuando corresponda (ej. "dude" → "amigo", "OMG" → "Dios mío").
+                    - Mantené nombres, fechas, números exactamente como en el original.
+                    - Devolvé solo el texto traducido. Sin notas, sin markdown, sin prefijo "Traducción:".
+                    """,
+                icon: "globe.americas.fill",
+                description: "Translates any dictation to Spanish (rioplatense)"
             )
         ]
     }
@@ -291,16 +324,49 @@ enum PromptTemplates {
                 id: UUID(),
                 title: "Fun",
                 promptText: """
-                    - Reescribí con tono casual y divertido manteniendo intacto el significado original.
-                    - Cambiá palabras rígidas por sinónimos naturales y amistosos; sumá personalidad sin forzar chistes.
-                    - Que se lea bien: sin abuso de emojis (uno o dos como mucho, solo si encajan), sin muros de signos de exclamación.
-                    - Corregí gramática y sacá muletillas; colapsá repeticiones.
-                    - Números como cifras (5, no "cinco").
-                    - Mantené exactos todos los nombres, datos, fechas y cifras tal como se dictaron.
-                    - No inventes contenido que no esté en el dictado.
+                    Reescribí el transcript con un tono EXTREMADAMENTE divertido y exagerado. Elegí UN estilo absurdo al azar para cada request — no siempre el mismo. Estilos posibles (rotá):
+                    - Borracho/mamado contando una historia: divagante, con tangentes random, "este... eh... bueno...".
+                    - Narrador sobredramático: voz de trailer de película, todo es épico.
+                    - Pibe de 12 años emocionado: re energético, exageraciones, "literal", "wacho".
+                    - Amigo sarcástico: humor seco, comentarios irónicos al pasar.
+                    - Pirata / gaucho / bardo medieval: elegí una personalidad y mantenela.
+
+                    Reglas duras:
+                    - Mantené todos los datos, nombres, fechas, números EXACTOS como se dictaron. No cambies QUÉ se dijo, solo CÓMO.
+                    - No inventes contenido nuevo — adorná lo que ya está.
+                    - Que se lea (sin muros de mayúsculas, máximo 2 signos de exclamación en todo el texto).
+                    - 1-3 emojis OK si encajan con el personaje (cerveza 🍺 para borracho, espada ⚔️ para pirata, etc).
+                    - Mantenete cerca del largo original — no te extiendas eternamente.
+                    - Números como cifras.
                     """,
                 icon: "face.smiling.fill",
-                description: "Reescritura casual y divertida conservando el sentido"
+                description: "Reescritura extrema con tono random (borracho, dramático, pirata, etc.)"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Translate to English",
+                promptText: """
+                    Translate the transcript to natural, fluent English. Preserve the speaker's tone and intent.
+                    - If the transcript is already in English, return it as-is (with light cleanup of fillers).
+                    - Adapt cultural references when needed (e.g. "che" → "hey", "boludo" → "dude" / "buddy").
+                    - Keep all names, dates, numbers exactly as in the original.
+                    - Output only the translated text. No notes, no markdown, no "Translation:" prefix.
+                    """,
+                icon: "globe.americas.fill",
+                description: "Traducí cualquier dictado al inglés"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Traducir a español",
+                promptText: """
+                    Traducí el transcript a español natural y fluido (rioplatense preferido). Conservá el tono y la intención del hablante.
+                    - Si el transcript ya está en español, devolvelo como está (con limpieza leve de muletillas).
+                    - Adaptá referencias culturales cuando corresponda (ej. "dude" → "amigo", "OMG" → "Dios mío").
+                    - Mantené nombres, fechas, números exactamente como en el original.
+                    - Devolvé solo el texto traducido. Sin notas, sin markdown, sin prefijo "Traducción:".
+                    """,
+                icon: "globe.americas.fill",
+                description: "Traducí cualquier dictado al español (rioplatense)"
             )
         ]
     }

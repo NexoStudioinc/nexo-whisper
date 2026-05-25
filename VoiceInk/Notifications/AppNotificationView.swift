@@ -16,6 +16,11 @@ struct AppNotificationView: View {
         case warning
         case info
         case success
+        /// Notification visual para features gateadas por licencia Pro.
+        /// Tono cordial (no de error) con ícono sparkles + color accent.
+        /// Cuando se muestra este tipo, el caller debería pasar `onTap` que
+        /// abre la pantalla de Licencia / ProPricingSheet.
+        case pro
 
         var iconName: String {
             switch self {
@@ -23,6 +28,7 @@ struct AppNotificationView: View {
             case .warning: return "exclamationmark.triangle.fill"
             case .info: return "info.circle.fill"
             case .success: return "checkmark.circle.fill"
+            case .pro: return "sparkles"
             }
         }
 
@@ -32,6 +38,7 @@ struct AppNotificationView: View {
             case .warning: return .yellow
             case .info: return .blue
             case .success: return .green
+            case .pro: return Color(red: 0.42, green: 0.36, blue: 0.91) // violet accent
             }
         }
     }

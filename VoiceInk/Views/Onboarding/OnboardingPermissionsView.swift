@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import AppKit
+import IOKit.hid
 
 struct OnboardingPermission: Identifiable {
     let id = UUID()
@@ -13,14 +14,16 @@ struct OnboardingPermission: Identifiable {
         case microphone
         case audioDeviceSelection
         case accessibility
+        case inputMonitoring
         case screenRecording
         case keyboardShortcut
-        
+
         var systemName: String {
             switch self {
             case .microphone: return "mic"
             case .audioDeviceSelection: return "headphones"
             case .accessibility: return "accessibility"
+            case .inputMonitoring: return "keyboard.badge.eye"
             case .screenRecording: return "rectangle.inset.filled.and.person.filled"
             case .keyboardShortcut: return "keyboard"
             }
@@ -33,7 +36,9 @@ struct OnboardingPermissionsView: View {
     @EnvironmentObject private var recordingShortcutManager: RecordingShortcutManager
     @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
     @State private var currentPermissionIndex = 0
-    @State private var permissionStates: [Bool] = [false, false, false, false, false]
+    // Un bool por cada permiso del array `permissions`. Si agregás un permiso
+    // nuevo acordate de agregar el `false` correspondiente acá.
+    @State private var permissionStates: [Bool] = [false, false, false, false, false, false]
     @State private var showAnimation = false
     @State private var scale: CGFloat = 0.8
     @State private var opacity: CGFloat = 0
@@ -57,6 +62,12 @@ struct OnboardingPermissionsView: View {
             description: "Allow Nexo Whisper to help you type anywhere in your Mac.",
             icon: "accessibility",
             type: .accessibility
+        ),
+        OnboardingPermission(
+            title: "Input Monitoring",
+            description: "Required for the global keyboard shortcut to work. Without this, pressing your hotkey will do nothing.",
+            icon: "keyboard.badge.eye",
+            type: .inputMonitoring
         ),
         OnboardingPermission(
             title: "Screen Recording",
@@ -266,18 +277,23 @@ struct OnboardingPermissionsView: View {
     private func checkExistingPermissions() {
         // Check microphone permission
         permissionStates[0] = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        
+
         // Check if device is selected
         permissionStates[1] = audioDeviceManager.selectedDeviceID != nil
-        
+
         // Check accessibility permission
         permissionStates[2] = AXIsProcessTrusted()
-        
+
+        // Check input monitoring permission (necesario para que el hotkey
+        // global reciba keystrokes via CGEvent). Sin esto el atajo no dispara
+        // y el user no entiende por qué la app "no funciona".
+        permissionStates[3] = IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
+
         // Check screen recording permission
-        permissionStates[3] = CGPreflightScreenCaptureAccess()
-        
+        permissionStates[4] = CGPreflightScreenCaptureAccess()
+
         // Check keyboard shortcut
-        permissionStates[4] = recordingShortcutManager.isShortcutConfigured
+        permissionStates[5] = recordingShortcutManager.isShortcutConfigured
     }
     
     private func requestPermission() {
@@ -326,7 +342,7 @@ struct OnboardingPermissionsView: View {
         case .accessibility:
             let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
             AXIsProcessTrustedWithOptions(options)
-            
+
             // Start checking for permission status
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
                 if AXIsProcessTrusted() {
@@ -337,7 +353,26 @@ struct OnboardingPermissionsView: View {
                     }
                 }
             }
-            
+
+        case .inputMonitoring:
+            // 1. Disparamos el prompt nativo (agrega Nexo Whisper a la lista
+            //    de Privacy & Security → Input Monitoring).
+            _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
+            // 2. Abrimos directamente el panel exacto en System Settings.
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+                NSWorkspace.shared.open(url)
+            }
+            // 3. Poll status hasta que el user lo active.
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+                if IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted {
+                    timer.invalidate()
+                    permissionStates[currentPermissionIndex] = true
+                    withAnimation {
+                        showAnimation = true
+                    }
+                }
+            }
+
         case .screenRecording:
             // First try to request permission programmatically
             CGRequestScreenCaptureAccess()

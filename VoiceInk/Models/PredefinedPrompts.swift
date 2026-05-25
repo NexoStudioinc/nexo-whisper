@@ -7,14 +7,17 @@ enum PredefinedPrompts {
     // UUIDs estables por prompt — necesarios para que `useSystemInstructions`
     // y otras settings persistan al cambiar de idioma.
     private static let uuidByTitle: [String: UUID] = [
-        "System Default":    UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
-        "Chat":              UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
-        "Email":             UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
-        "Rewrite":           UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
-        "Formal":            UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
-        "Coding":            UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
-        "Summary":           UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,
-        "Fun":               UUID(uuidString: "00000000-0000-0000-0000-000000000009")!
+        "System Default":        UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+        "Chat":                  UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+        "Email":                 UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
+        "Rewrite":               UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
+        "Formal":                UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
+        "Coding":                UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
+        "Summary":               UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,
+        "Fun":                   UUID(uuidString: "00000000-0000-0000-0000-000000000009")!,
+        // Traducción (Pro). UUIDs nuevos para no chocar con existentes.
+        "Translate to English":  UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!,
+        "Traducir a español":    UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
     ]
 
     /// Compatibilidad con código existente que referencia el ID del prompt

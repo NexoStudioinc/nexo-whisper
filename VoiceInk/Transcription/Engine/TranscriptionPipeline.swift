@@ -160,16 +160,55 @@ class TranscriptionPipeline {
                     // al re-pegar). Dejamos enhancedText en nil — finalPastedText ya
                     // tiene cleanedText (la transcripción cruda) asignado más arriba,
                     // así que el usuario igual recibe su texto pegado.
-                    let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    // Mostramos hasta 200 chars del error real (no 80) para que el
-                    // usuario vea por qué falló sin truncar info útil.
-                    let reason = String(errorDescription.prefix(200))
+
+                    // Detectamos específicamente los errores de licensing Pro y
+                    // mostramos un toast distinto, más sutil, con badge sparkles
+                    // y action button para abrir el Pricing Sheet. Para el resto
+                    // de errores (timeout, server, etc.) mantenemos el toast
+                    // técnico de error.
+                    // EnhancementError no es Equatable (tiene case con
+                    // associated value `customError(String)`), por eso usamos
+                    // `if case` para los gating cases específicos.
+                    let isProGate: Bool = {
+                        if let e = error as? EnhancementError {
+                            if case .proBYOKRequired = e { return true }
+                            if case .proPromptRequired = e { return true }
+                        }
+                        if let e = error as? LocalCLIError, case .proLicenseRequired = e {
+                            return true
+                        }
+                        return false
+                    }()
+
                     await MainActor.run {
-                        NotificationManager.shared.showNotification(
-                            title: String(localized: "AI enhancement failed — pasted raw transcription") + " — \(reason)",
-                            type: .warning,
-                            duration: 8.0
-                        )
+                        if isProGate {
+                            // Toast Pro sutil. Tap abre la pantalla de licencia.
+                            // Action button "Ver" hace lo mismo (más explícito).
+                            let openPricing: () -> Void = {
+                                NotificationCenter.default.post(
+                                    name: .navigateToDestination,
+                                    object: nil,
+                                    userInfo: ["destination": "License"]
+                                )
+                            }
+                            NotificationManager.shared.showNotification(
+                                title: String(localized: "Función Pro · Mejora con IA requiere licencia"),
+                                type: .pro,
+                                duration: 6.0,
+                                onTap: openPricing,
+                                actionButton: (label: String(localized: "Ver"), action: openPricing)
+                            )
+                        } else {
+                            // Error real (no licensing) — usar el toast técnico
+                            // de warning para que el user vea por qué falló.
+                            let errorDescription = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                            let reason = String(errorDescription.prefix(200))
+                            NotificationManager.shared.showNotification(
+                                title: String(localized: "AI enhancement failed — pasted raw transcription") + " — \(reason)",
+                                type: .warning,
+                                duration: 8.0
+                            )
+                        }
                     }
                     if shouldCancel() { await finishCanceledTranscription(); return }
                 }
