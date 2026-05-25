@@ -44,8 +44,60 @@ class TranscriptionAutoCleanupService {
         NotificationCenter.default.removeObserver(self, name: .transcriptionCompleted, object: nil)
     }
 
-    func runManualCleanup(modelContext: ModelContext) async {
-        await sweepOldTranscriptions(modelContext: modelContext)
+    /// Cleanup invocado manualmente desde el botón "Run Cleanup Now" en
+    /// Settings. A diferencia del barrido automático periódico, este corre
+    /// directo sobre el modelContext de la vista (no en background context)
+    /// para que el `@Query` de la Historia se entere del borrado y la UI
+    /// se actualice inmediatamente.
+    ///
+    /// Devuelve cuántas transcripciones se borraron para que la UI pueda
+    /// mostrar feedback real al user ("Deleted 5 transcriptions") en vez
+    /// del genérico "Cleanup complete" que confunde.
+    @MainActor
+    @discardableResult
+    func runManualCleanup(modelContext: ModelContext) async -> Int {
+        guard UserDefaults.standard.bool(forKey: keyIsEnabled) else {
+            return 0
+        }
+
+        let retentionMinutes = UserDefaults.standard.integer(forKey: keyRetentionMinutes)
+        let effectiveMinutes = max(retentionMinutes, 0)
+
+        // Margen de 1 segundo en "Immediately" (retention=0). Sin esto,
+        // las transcripciones recién creadas (timestamp ≈ ahora con diff
+        // de microsegundos) no entraban al `timestamp < cutoffDate`.
+        let secondsBack: TimeInterval = effectiveMinutes == 0 ? 1 : TimeInterval(effectiveMinutes * 60)
+        let cutoffDate = Date().addingTimeInterval(-secondsBack)
+
+        do {
+            let descriptor = FetchDescriptor<Transcription>(
+                predicate: #Predicate<Transcription> { transcription in
+                    transcription.timestamp < cutoffDate
+                }
+            )
+            let items = try modelContext.fetch(descriptor)
+            var deletedCount = 0
+            for transcription in items {
+                if let urlString = transcription.audioFileURL,
+                   let url = URL(string: urlString),
+                   FileManager.default.fileExists(atPath: url.path) {
+                    try? FileManager.default.removeItem(at: url)
+                }
+                modelContext.delete(transcription)
+                deletedCount += 1
+            }
+            if deletedCount > 0 {
+                try modelContext.save()
+                logger.notice("Manual cleanup: deleted \(deletedCount, privacy: .public) transcription(s)")
+                NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
+            } else {
+                logger.notice("Manual cleanup: nothing to delete (cutoff=\(cutoffDate, privacy: .public))")
+            }
+            return deletedCount
+        } catch {
+            logger.error("Manual cleanup failed: \(error.localizedDescription, privacy: .public)")
+            return 0
+        }
     }
 
     @objc private func handleTranscriptionCompleted(_ notification: Notification) {

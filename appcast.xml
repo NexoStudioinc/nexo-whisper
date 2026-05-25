@@ -1,21 +1,33 @@
 <?xml version="1.0" standalone="yes"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-    <channel>
-        <title>VoiceInk</title>
-        <item>
-            <title>1.79</title>
-            <description><![CDATA[
-                <h3>What's New in v1.79</h3>
-                <ul>
-                    <li>🛠️ Fixed AppleScript paste crash</li>
-                    <li>⌨️ Fixed accidental Fn shortcut triggers</li>
-                </ul>
-            ]]></description>
-            <pubDate>Sat, 23 May 2026 20:23:30 +0545</pubDate>
-            <sparkle:version>179</sparkle:version>
-            <sparkle:shortVersionString>1.79</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.4</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.79/VoiceInk.dmg" length="14406786" type="application/octet-stream" sparkle:edSignature="TI2RXCaX+lx8Dp7fERw9B4Ef+xHwJQxsshBnDClUAKsyafQjfM4DYOCm3Iz9dF7VaajUZccafIktBDsbtuRzCA=="/>
-        </item>
-    </channel>
+  <channel>
+    <title>Nexo Whisper</title>
+    <link>https://nexostudio.xyz/nexo-whisper/appcast.xml</link>
+    <description>Updates de Nexo Whisper para macOS.</description>
+    <language>es</language>
+
+    <item>
+      <title>Version 1.0.0</title>
+      <link>https://nexowhisper.com/changelog</link>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <description><![CDATA[
+        <h3>Primera versión pública de Nexo Whisper</h3>
+        <ul>
+          <li>Transcripción local con Whisper (Base / Small / Medium / Large v3 Turbo) y Parakeet V2/V3.</li>
+          <li>Mejora con IA usando tu propia API key (BYOK) o providers cloud (Pro).</li>
+          <li>Modos por App (Pro).</li>
+          <li>Diccionario + reemplazos de palabras + sugerencias automáticas.</li>
+          <li>Soporte español rioplatense + inglés.</li>
+        </ul>
+      ]]></description>
+      <pubDate>Mon, 25 May 2026 18:12:00 -0300</pubDate>
+      <enclosure
+        url="https://github.com/NexoStudioinc/nexo-whisper-releases/releases/download/v1.0.0/NexoWhisper-1.0.0.dmg"
+        sparkle:edSignature="y079B6OHo7bcYVQP3AlBmRa2seec3zvjQ6aPmBWWud/bRZRe6agC1exFfhnkkPbNZF8FnKBeq6kwZXuN2La0Cg=="
+        length="17805799"
+        type="application/octet-stream" />
+      <sparkle:minimumSystemVersion>14.4</sparkle:minimumSystemVersion>
+    </item>
+  </channel>
 </rss>

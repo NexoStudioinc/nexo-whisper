@@ -15,6 +15,7 @@ struct AudioCleanupSettingsView: View {
     @State private var showResultAlert = false
     @State private var cleanupResult: (deletedCount: Int, errorCount: Int) = (0, 0)
     @State private var showTranscriptCleanupResult = false
+    @State private var transcriptDeletedCount = 0
 
     // Expansion states - collapsed by default
     @State private var isTranscriptExpanded = false
@@ -64,10 +65,13 @@ struct AudioCleanupSettingsView: View {
 
                         Button("Run Cleanup Now") {
                             Task {
-                                await TranscriptionAutoCleanupService.shared.runManualCleanup(modelContext: modelContext)
-                                await MainActor.run {
-                                    showTranscriptCleanupResult = true
-                                }
+                                // El servicio ahora corre en @MainActor con el
+                                // modelContext de la vista, así el @Query de
+                                // History se entera del borrado y la UI se
+                                // refresca inmediatamente.
+                                let count = await TranscriptionAutoCleanupService.shared.runManualCleanup(modelContext: modelContext)
+                                transcriptDeletedCount = count
+                                showTranscriptCleanupResult = true
                             }
                         }
                     }
@@ -80,7 +84,13 @@ struct AudioCleanupSettingsView: View {
             .alert("Transcript Cleanup", isPresented: $showTranscriptCleanupResult) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Cleanup complete.")
+                if transcriptDeletedCount == 0 {
+                    Text("No transcriptions older than the selected retention period were found.")
+                } else if transcriptDeletedCount == 1 {
+                    Text("Deleted 1 transcription.")
+                } else {
+                    Text("Deleted \(transcriptDeletedCount) transcriptions.")
+                }
             }
             .onChange(of: isTranscriptionCleanupEnabled) { _, newValue in
                 isHandlingTranscriptToggle = true
