@@ -36,8 +36,49 @@ struct SettingsView: View {
     @State private var isMuteSystemExpanded = false
     @State private var isRestoreClipboardExpanded = false
 
+    // (Las @AppStorage de expansión del acordeón se removieron porque el
+    // patrón ahora es Form simple con todas las secciones visibles y
+    // scrolleables, estilo Settings clásico de macOS.)
+
     var body: some View {
         Form {
+            // MARK: - Entrada de audio (atajo a vista completa)
+            Section {
+                LabeledContent(t("Current Device")) {
+                    Text(deviceManager.getDeviceName(deviceID: deviceManager.getCurrentDevice()) ?? AppText.t("System Default", language: appLanguage))
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Spacer()
+                    Button(t("Open Audio Input settings")) {
+                        NotificationCenter.default.post(
+                            name: .navigateToDestination,
+                            object: nil,
+                            userInfo: ["destination": "Audio Input"]
+                        )
+                    }
+                }
+            } header: {
+                Label(t("Audio Input"), systemImage: "mic.fill")
+            }
+
+            // MARK: - Permisos (atajo a vista completa)
+            Section {
+                HStack {
+                    Spacer()
+                    Button(t("Open Permissions")) {
+                        NotificationCenter.default.post(
+                            name: .navigateToDestination,
+                            object: nil,
+                            userInfo: ["destination": "Permissions"]
+                        )
+                    }
+                }
+            } header: {
+                Label(t("Permissions"), systemImage: "shield.lefthalf.filled")
+            }
+
+            // MARK: - Idioma
             Section {
                 Picker(t("App Language"), selection: $appLanguage) {
                     ForEach(AppLanguage.allCases) { language in
@@ -50,6 +91,8 @@ struct SettingsView: View {
                         LocalizationManager.shared.setLanguage(language)
                     }
                 }
+            } header: {
+                Label(t("Language"), systemImage: "globe")
             }
 
             // MARK: - Shortcuts
@@ -93,11 +136,11 @@ struct SettingsView: View {
                     }
                 }
             } header: {
-                Text(t("Shortcuts"))
+                Label(t("Shortcuts"), systemImage: "keyboard")
             }
 
             // MARK: - Additional Shortcuts
-            Section(t("Additional Shortcuts")) {
+            Section {
                 LabeledContent(t("Paste Last Transcription (Original)")) {
                     ShortcutRecorder(action: .pasteLastTranscription) {
                         recordingShortcutManager.updateShortcutStatus()
@@ -166,10 +209,12 @@ struct SettingsView: View {
                         }
                     }
                 }
+            } header: {
+                Label(t("Additional Shortcuts"), systemImage: "command")
             }
 
             // MARK: - Recording Feedback
-            Section(t("Recording Feedback")) {
+            Section {
                 // Sound Feedback
                 ExpandableSettingsRow(
                     isExpanded: $isSoundFeedbackExpanded,
@@ -221,7 +266,7 @@ struct SettingsView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Text(t("Paste Method"))
-                        InfoTip(t("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly."))
+                        InfoTip("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly.")
                     }
                 }
                 .pickerStyle(.menu)
@@ -232,26 +277,30 @@ struct SettingsView: View {
                     }
                     PasteMethod.setCurrent(method)
                 }
+            } header: {
+                Label(t("Recording Feedback"), systemImage: "speaker.wave.2.fill")
             }
 
-            // MARK: - Power Mode
+            // MARK: - Power Mode (mantiene su Section interno propio)
             PowerModeSection()
 
             // MARK: - Interface
-            Section(t("Interface")) {
+            Section {
                 Picker(t("Recorder Style"), selection: $recorderUIManager.recorderType) {
                     Text("Notch").tag("notch")
                     Text("Mini").tag("mini")
                 }
                 .pickerStyle(.segmented)
 
+            } header: {
+                Label(t("Interface"), systemImage: "rectangle.on.rectangle")
             }
 
-            // MARK: - Experimental
+            // MARK: - Experimental (mantiene su Section interno propio)
             ExperimentalSection()
 
             // MARK: - General
-            Section(t("General")) {
+            Section {
                 Toggle(t("Hide Dock Icon"), isOn: $menuBarManager.isMenuBarOnly)
 
                 LaunchAtLogin.Toggle("Launch at Login")
@@ -271,15 +320,20 @@ struct SettingsView: View {
                         showResetOnboardingAlert = true
                     }
                 }
+            } header: {
+                Label(t("General"), systemImage: "gearshape.fill")
             }
 
             // MARK: - Privacy
+            // Nota: Section(isExpanded:content:header:) no soporta footer.
+            // El texto del footer original se renderiza ahora dentro del content.
             Section {
                 AudioCleanupSettingsView()
-            } header: {
-                Text(t("Privacy"))
-            } footer: {
                 Text(t("Control how Nexo Whisper handles your transcription data and audio recordings."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Label(t("Privacy"), systemImage: "lock.fill")
             }
 
             // MARK: - Backup
@@ -314,22 +368,25 @@ struct SettingsView: View {
                         )
                     }
                 }
-            } header: {
-                Text(t("Backup"))
-            } footer: {
                 Text(t("Export all settings, or choose specific categories when importing a backup."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Label(t("Backup"), systemImage: "arrow.down.doc.fill")
             }
 
             // MARK: - Diagnostics
-            Section(t("Diagnostics")) {
+            Section {
                 DiagnosticsSettingsView()
+            } header: {
+                Label(t("Diagnostics"), systemImage: "wrench.and.screwdriver.fill")
             }
 
             // MARK: - License
             Section {
                 LicenseSettingsSection()
             } header: {
-                Text(t("License"))
+                Label(t("License"), systemImage: "checkmark.seal.fill")
             }
         }
         .formStyle(.grouped)
@@ -387,9 +444,9 @@ struct ExpandableSettingsRow<Content: View>: View {
                         Text(label)
                         if let message = infoMessage {
                             if let url = infoURL {
-                                InfoTip(message, learnMoreURL: url)
+                                InfoTip(resolved: message, learnMoreURL: url)
                             } else {
-                                InfoTip(message)
+                                InfoTip(resolved: message)
                             }
                         }
                     }
@@ -461,12 +518,12 @@ struct PowerModeSection: View {
                 isEnabled: toggleBinding,
                 label: "Power Mode",
                 infoMessage: t("Apply custom settings based on active app or website."),
-                infoURL: "https://nexostudio.xyz/nexo-whisper/docs/power-mode"
+                infoURL: NexoURLs.docsAppProfiles
             ) {
                 Toggle(isOn: $powerModePersistSettings) {
                     HStack(spacing: 4) {
                         Text(t("Persist Configured Preferences"))
-                        InfoTip(t("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates."))
+                        InfoTip("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates.")
                     }
                 }
             }

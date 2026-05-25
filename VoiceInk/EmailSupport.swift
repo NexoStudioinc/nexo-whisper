@@ -23,7 +23,7 @@ struct EmailSupport {
 
 
         ## 📋 COMMON ISSUES:
-        Check out our Common Issues page before sending an email: https://nexostudio.xyz/nexo-whisper/soporte
+        Check out our Common Issues page before sending an email: https://nexowhisper.com/soporte
         ------------------------
 
         System Information:

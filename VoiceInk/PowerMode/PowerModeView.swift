@@ -63,12 +63,36 @@ struct PowerModeView: View {
     @StateObject private var powerModeManager = PowerModeManager.shared
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @EnvironmentObject private var aiService: AIService
+    @ObservedObject private var licenseViewModel = LicenseViewModel.shared
     @State private var configurationMode: ConfigurationMode?
     @State private var isPanelOpen = false
     @State private var panelID = UUID()
     @State private var isReorderPanelOpen = false
-    
+
     var body: some View {
+        // Modos por App es feature Pro. Bloqueamos la vista completa para
+        // users free — el overlay explica qué hace la feature y ofrece el
+        // upgrade. Defensa adicional: PowerModeManager también chequea
+        // FeatureGate antes de aplicar un profile a la app activa.
+        if !licenseViewModel.isPro {
+            ProUpsellOverlay(
+                feature: .appProfiles,
+                icon: "app.badge.checkmark.fill",
+                title: "Modos por App",
+                description: "Auto-configurá Nexo Whisper según la app o sitio web que estés usando. Cambiá modelo, prompt y comportamiento en automático.",
+                bullets: [
+                    "Triggers por bundle ID o URL de browser",
+                    "Cambio automático de prompt + modelo",
+                    "Diferentes diccionarios y vocabularios por contexto",
+                    "Útil para Slack, Cursor, Gmail, Notion y cualquier app"
+                ]
+            )
+        } else {
+            realBody
+        }
+    }
+
+    private var realBody: some View {
             VStack(spacing: 0) {
                 // Header Section
                 VStack(spacing: 12) {
@@ -81,7 +105,7 @@ struct PowerModeView: View {
                                 
                                 InfoTip(
                                     "Automatically apply custom configurations based on the app/website you are using.",
-                                    learnMoreURL: "https://tryvoiceink.com/docs/power-mode"
+                                    learnMoreURL: NexoURLs.docsAppProfiles
                                 )
                             }
                             

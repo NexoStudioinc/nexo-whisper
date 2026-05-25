@@ -69,7 +69,9 @@ struct ContentView: View {
     @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
     @State private var selectedView: ViewType? = .metrics
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-    @StateObject private var licenseViewModel = LicenseViewModel()
+    // Usa el singleton para que cualquier vista que escuche `LicenseViewModel.shared`
+    // (o que pase por `FeatureGate`) vea el mismo estado consistente.
+    @ObservedObject private var licenseViewModel = LicenseViewModel.shared
 
     private var visibleViewTypes: [ViewType] {
         ViewType.allCases.filter { viewType in
@@ -82,6 +84,12 @@ struct ContentView: View {
             if viewType == .license {
                 return false
             }
+            // Entrada de Audio y Permisos se acceden desde Configuración
+            // (acordeón vertical estilo iOS). Las views completas siguen
+            // disponibles vía .navigateToDestination para abrir desde botón.
+            if viewType == .audioInput || viewType == .permissions {
+                return false
+            }
             return true
         }
     }
@@ -90,22 +98,26 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $selectedView) {
                 Section {
-                    // App Header
-                    HStack(spacing: 6) {
-                        if let appIcon = NSImage(named: "AppIcon") {
-                            Image(nsImage: appIcon)
+                    // App Header — el SidebarLogo ya trae el icono + texto
+                    // "Nexo Whisper" embebidos como banner horizontal, con
+                    // variantes light y dark del asset catalog.
+                    //
+                    // Indicador visible del plan actual (Free / PRO) debajo
+                    // del logo. Si el user está en Pro, mostramos el ProBadge
+                    // como confirmación visual ("estoy usando lo pago, no la
+                    // free"). Si está en Free, mostramos un mini-CTA discreto
+                    // que abre el sheet de pricing.
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image("SidebarLogo")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 28, height: 28)
-                                .cornerRadius(8)
+                                .frame(maxWidth: 170, maxHeight: 60)
+                            Spacer(minLength: 0)
                         }
-
-                        Text("Nexo Whisper")
-                            .font(.system(size: 14, weight: .semibold))
-
-                        Spacer()
+                        sidebarPlanIndicator
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 6)
                 }
 
                 ForEach(visibleViewTypes) { viewType in
@@ -153,6 +165,8 @@ struct ContentView: View {
                     selectedView = .history
                 case "Permissions":
                     selectedView = .permissions
+                case "Audio Input":
+                    selectedView = .audioInput
                 case "Enhancement":
                     selectedView = .enhancement
                 case "Transcribe Audio":
@@ -191,6 +205,49 @@ struct ContentView: View {
             LicenseManagementView()
         case .permissions:
             PermissionsView()
+        }
+    }
+
+    /// Indicador visual del plan actual debajo del logo en el sidebar.
+    /// - Pro → ProBadge prominente (confirma al user que está usando el
+    ///   plan pago, especialmente útil en LOCAL_BUILD para no dudar).
+    /// - Free → mini-CTA "Upgrade" discreto que navega a la pantalla
+    ///   de Licencia donde se abre el ProPricingSheet.
+    @ViewBuilder
+    private var sidebarPlanIndicator: some View {
+        if licenseViewModel.isPro {
+            HStack(spacing: 6) {
+                ProBadge()
+                Text("Active")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 4)
+        } else {
+            Button {
+                NotificationCenter.default.post(
+                    name: .navigateToDestination,
+                    object: nil,
+                    userInfo: ["destination": "License"]
+                )
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 10))
+                    Text("Free · Upgrade")
+                        .font(.system(size: 10, weight: .medium))
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(.blue)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue.opacity(0.1))
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 }

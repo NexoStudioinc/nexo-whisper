@@ -54,7 +54,17 @@ class CursorPaster {
         // persistente para que el usuario pueda hacerlo manualmente.
         if !hasFocusedTextInputField() {
             logger.notice("No text input focused — saving transcription to clipboard as fallback")
+            // Fix defensivo (reporte usuario: a veces la primera escritura
+            // del clipboard se pierde y solo aparece tras la segunda grabación).
+            // Causa raíz no confirmada — sospechas: apps de clipboard manager
+            // (Maccy, Paste, Raycast) interceptando markers; o un race con el
+            // restore de la sesión anterior. Solución: escribimos dos veces
+            // con un pequeño delay para sobrevivir a cualquiera de esos casos.
             _ = ClipboardManager.setClipboard(text, transient: false, sessionID: nil)
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                _ = ClipboardManager.setClipboard(text, transient: false, sessionID: nil)
+            }
             return .noTextFieldFocused
         }
 
@@ -187,62 +197,70 @@ class CursorPaster {
 
     // MARK: - Focus detection (fallback to clipboard)
 
-    /// Devuelve true si el sistema reporta un AXUIElement con foco que parece
-    /// ser un campo donde se puede escribir texto. Usado para evitar pegar
-    /// "al vacío" cuando el usuario activa la grabación con un Finder/Desktop
-    /// en primer plano o tras un Cmd+Tab que cambió de app sin focusear input.
+    /// Devuelve true si tiene sentido pegar acá. Por default es PERMISIVO:
+    /// asume que sí (como hace el VoiceInk original), porque la detección
+    /// vía Accessibility falla en muchas apps modernas (Notion, Cursor,
+    /// web views, ChatGPT, Slack, etc.) que no exponen role estándar.
     ///
-    /// Requiere Accessibility permission (que la app ya pide para hacer paste).
-    /// Si Accessibility no está autorizada, devolvemos true para no bloquear el
-    /// flujo normal — el Cmd+V intentará pegar como siempre.
+    /// Solo bloquea cuando está 100% seguro que el foco está en algo que NO
+    /// es text input — específicamente cuando el role es explícitamente un
+    /// elemento no-editable como `AXButton`, `AXMenuItem`, `AXStaticText`,
+    /// `AXImage`, etc.
     @MainActor
     private static func hasFocusedTextInputField() -> Bool {
         guard AXIsProcessTrusted() else { return true }
 
         let systemElement = AXUIElementCreateSystemWide()
+        // CRÍTICO: cap el tiempo de las queries AX a 0.5s para que si la app
+        // target está colgada no freezeemos el main thread (lo que se siente
+        // como la Mac "trabada" al apretar el shortcut). 500ms es generoso
+        // para una query AX normal (típicamente <50ms).
+        AXUIElementSetMessagingTimeout(systemElement, 0.5)
         var focused: AnyObject?
         let result = AXUIElementCopyAttributeValue(
             systemElement,
             kAXFocusedUIElementAttribute as CFString,
             &focused
         )
+        // Si el sistema no nos puede decir qué está focuseado, asumimos
+        // que sí hay input — mejor pegar y que el usuario haga Cmd+Z si
+        // se equivocó, que dejar el texto en clipboard sin avisar.
         guard result == .success, let focusedElement = focused else {
-            return false
+            return true
         }
 
         let element = focusedElement as! AXUIElement
+        // Mismo timeout para queries sobre el elemento focuseado.
+        AXUIElementSetMessagingTimeout(element, 0.5)
 
-        // Chequeo de role: estándar de Apple para inputs de texto.
         var role: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &role)
         let roleString = role as? String ?? ""
 
-        let textRoles: Set<String> = [
-            "AXTextField",
-            "AXTextArea",
-            "AXComboBox",
-            "AXSearchField",
-            "AXSecureTextField"
+        // Lista negra: solo cuando estamos 100% seguros que no es input.
+        let nonTextRoles: Set<String> = [
+            "AXButton",
+            "AXMenuButton",
+            "AXMenuItem",
+            "AXMenu",
+            "AXMenuBar",
+            "AXMenuBarItem",
+            "AXImage",
+            "AXStaticText",
+            "AXCheckBox",
+            "AXRadioButton",
+            "AXSlider",
+            "AXPopUpButton",
+            "AXTabGroup",
+            "AXToolbar",
+            "AXDockItem"
         ]
-        if textRoles.contains(roleString) {
-            return true
+        if nonTextRoles.contains(roleString) {
+            return false
         }
 
-        // Heurística adicional para web views, editores y custom views:
-        // si el elemento tiene `kAXValueAttribute` editable o reporta
-        // kAXSelectedTextRangeAttribute, es probablemente un input.
-        var settable: DarwinBoolean = false
-        AXUIElementIsAttributeSettable(element, kAXValueAttribute as CFString, &settable)
-        if settable.boolValue {
-            return true
-        }
-
-        var selectedRange: AnyObject?
-        if AXUIElementCopyAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, &selectedRange) == .success {
-            return true
-        }
-
-        return false
+        // Cualquier otro role (incluido vacío o desconocido) → asumimos input.
+        return true
     }
 
     // MARK: - CGEvent paste

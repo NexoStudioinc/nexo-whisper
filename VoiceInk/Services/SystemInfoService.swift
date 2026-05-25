@@ -211,16 +211,15 @@ class SystemInfoService {
     }
 
     private func getLicenseStatus() -> String {
+        // Tras la migración de Polar.sh → Lemon Squeezy, una licencia es
+        // válida cuando hay licenseKey + instanceId en Keychain. El
+        // `LicenseViewModel` se encarga de re-validar contra LS según el
+        // TTL del cache, así que para reporting basta con mirar Keychain.
         let licenseManager = LicenseManager.shared
-
-        // Check for existing license key and activation
-        if licenseManager.licenseKey != nil {
-            if licenseManager.activationId != nil || !UserDefaults.standard.bool(forKey: "VoiceInkLicenseRequiresActivation") {
-                return "Licensed (Pro)"
-            }
+        if licenseManager.licenseKey != nil && licenseManager.instanceId != nil {
+            return "Licensed (Pro)"
         }
-
-        return "Not Licensed"
+        return "Free"
     }
 
     private func getCurrentLanguage() -> String {

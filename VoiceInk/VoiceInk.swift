@@ -53,6 +53,8 @@ struct VoiceInkApp: App {
             VocabularyWord.self,
             WordReplacement.self,
             SessionMetric.self
+            // TokenUsageRecord no va acá: se persiste en UserDefaults vía
+            // TokenUsageStore para evitar crashes de migración SwiftData.
         ])
         var initializationFailed = false
         let resolvedContainer: ModelContainer
@@ -175,6 +177,12 @@ struct VoiceInkApp: App {
         Task {
             await migrationTask?.value
             TranscriptionAutoCleanupService.shared.startMonitoring(modelContext: mainContext)
+        }
+
+        // Refresh de precios de OpenRouter al inicio (cacheado 24h en
+        // UserDefaults). No bloqueante, errores silenciosos.
+        Task { @MainActor in
+            OpenRouterPricing.shared.refreshIfNeeded()
         }
     }
 
@@ -388,14 +396,9 @@ struct VoiceInkApp: App {
                 .environmentObject(aiService)
                 .environmentObject(enhancementService)
         } label: {
-            let image: NSImage = {
-                let ratio = $0.size.height / $0.size.width
-                $0.size.height = 22
-                $0.size.width = 22 / ratio
-                return $0
-            }(NSImage(named: "menuBarIcon")!)
-
-            Image(nsImage: image)
+            // Icono SF Symbol `waveform` — auto-adapta al dark/light mode y
+            // al tint del menubar de macOS.
+            Image(systemName: "waveform")
         }
         .menuBarExtraStyle(.menu)
 

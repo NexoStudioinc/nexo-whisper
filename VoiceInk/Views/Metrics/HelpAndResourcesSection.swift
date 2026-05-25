@@ -11,13 +11,13 @@ struct HelpAndResourcesSection: View {
                 resourceLink(
                     icon: "sparkles",
                     title: "Recommended Models",
-                    url: "https://nexostudio.xyz/nexo-whisper/modelos-recomendados"
+                    url: NexoURLs.docsRecommendedModels
                 )
 
                 resourceLink(
                     icon: "book.fill",
                     title: "Documentation",
-                    url: "https://nexostudio.xyz/nexo-whisper/docs"
+                    url: NexoURLs.docsHome
                 )
 
                 resourceLink(
@@ -40,7 +40,7 @@ struct HelpAndResourcesSection: View {
         )
     }
     
-    private func resourceLink(icon: String, title: String, url: String? = nil, action: (() -> Void)? = nil) -> some View {
+    private func resourceLink(icon: String, title: LocalizedStringKey, url: String? = nil, action: (() -> Void)? = nil) -> some View {
         Button(action: {
             if let action = action {
                 action()
@@ -53,7 +53,7 @@ struct HelpAndResourcesSection: View {
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.accentColor)
                     .frame(width: 20)
-                
+
                 Text(title)
                     .font(.system(size: 13))
                     .fontWeight(.semibold)

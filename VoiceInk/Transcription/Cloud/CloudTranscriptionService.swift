@@ -11,6 +11,10 @@ enum CloudTranscriptionError: Error, LocalizedError {
     case networkError(Error)
     case noTranscriptionReturned
     case dataEncodingError
+    /// Lanzado cuando el user free intenta usar un provider cloud
+    /// (Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics,
+    /// Mistral). Free tier solo permite Whisper local + Parakeet local.
+    case proLicenseRequired
 
     var errorDescription: String? {
         switch self {
@@ -30,6 +34,8 @@ enum CloudTranscriptionError: Error, LocalizedError {
             return "The API returned an empty or invalid response."
         case .dataEncodingError:
             return "Failed to encode the request body."
+        case .proLicenseRequired:
+            return "Cloud transcription providers require a Pro license. The free tier includes Whisper and Parakeet local models. Upgrade to use Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics, or Mistral."
         }
     }
 }
@@ -43,6 +49,15 @@ class CloudTranscriptionService: TranscriptionService {
     }
 
     func transcribe(audioURL: URL, model: any TranscriptionModel) async throws -> String {
+        // Gating: cualquier provider cloud (incluido .custom OpenAI-compatible)
+        // requiere licencia Pro. Free tier solo permite Whisper + Parakeet
+        // locales. Defensa en profundidad: aunque la UI esconda/disable los
+        // pickers cloud para users free, este check evita ejecución directa
+        // (ej. user pirateado que patcheó la vista pero no este service).
+        guard FeatureGate.isAvailable(.cloudTranscription) else {
+            throw CloudTranscriptionError.proLicenseRequired
+        }
+
         let audioData = try loadAudioData(from: audioURL)
         let fileName = audioURL.lastPathComponent
         let language = selectedLanguage()

@@ -11,10 +11,12 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
 
     // MARK: - Layout Constants
 
-    private let controlBarHeight: CGFloat = 40
-    private let compactWidth: CGFloat = 184
-    private let expandedWidth: CGFloat = 300
-    private let compactCornerRadius: CGFloat = 20
+    private let controlBarHeight: CGFloat = 34
+    // Sin los selectors laterales, el pill puede achicarse para ajustarse
+    // mejor al waveform + indicador. Antes era 184pt; ahora 140pt.
+    private let compactWidth: CGFloat = 140
+    private let expandedWidth: CGFloat = 280
+    private let compactCornerRadius: CGFloat = 17
     private let expandedCornerRadius: CGFloat = 14
 
     // true when live transcript is streaming in during recording
@@ -24,15 +26,12 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
             && !stateProvider.partialTranscript.isEmpty
     }
 
+    // Pill simplificada: solo onda + indicador. Los selectors de prompt
+    // de mejora y App Profile se sacaron del pill (ahora se manejan vía
+    // hotkeys configurables + menubar). El widget queda minimalista para
+    // no distraer durante la grabación.
     private var controlBar: some View {
         HStack(spacing: 0) {
-            RecorderPromptButton(
-                activePopover: $activePopover,
-                buttonSize: 22,
-                padding: EdgeInsets()
-            )
-            .padding(.leading, 12)
-
             Spacer(minLength: 0)
 
             RecorderStatusDisplay(
@@ -41,15 +40,9 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
             )
 
             Spacer(minLength: 0)
-
-            RecorderPowerModeButton(
-                activePopover: $activePopover,
-                buttonSize: 22,
-                padding: EdgeInsets()
-            )
-            .padding(.trailing, 12)
         }
         .frame(height: controlBarHeight)
+        .padding(.horizontal, 8)
     }
 
     private var transcriptSection: some View {
@@ -68,8 +61,12 @@ struct MiniRecorderView<S: RecorderStateProvider & ObservableObject>: View {
                 controlBar
             }
             .frame(width: hasLiveTranscript ? expandedWidth : compactWidth)
-            .background(Color.black)
+            // Negro casi sólido con un toque de transparencia. Antes era
+            // glassmorphism (muy transparente), pero molestaba la legibilidad.
+            // Mantiene look minimalista pero deja ver el fondo apenas.
+            .background(Color.black.opacity(0.88))
             .clipShape(RoundedRectangle(cornerRadius: hasLiveTranscript ? expandedCornerRadius : compactCornerRadius, style: .continuous))
+            .shadow(color: .black.opacity(0.35), radius: 16, x: 0, y: 8)
             .animation(.easeInOut(duration: 0.3), value: hasLiveTranscript)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }

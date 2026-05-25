@@ -59,14 +59,16 @@ local: check setup
 		SWIFT_ACTIVE_COMPILATION_CONDITIONS='$$(inherited) LOCAL_BUILD' \
 		build
 	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
+	DEST="$$HOME/Downloads/Nexo Whisper.app" && \
 	if [ -d "$$APP_PATH" ]; then \
-		echo "Copying VoiceInk.app to ~/Downloads..."; \
+		echo "Copying Nexo Whisper.app to ~/Downloads..."; \
+		rm -rf "$$DEST"; \
 		rm -rf "$$HOME/Downloads/VoiceInk.app"; \
-		ditto "$$APP_PATH" "$$HOME/Downloads/VoiceInk.app"; \
-		xattr -cr "$$HOME/Downloads/VoiceInk.app"; \
+		ditto "$$APP_PATH" "$$DEST"; \
+		xattr -cr "$$DEST"; \
 		echo ""; \
-		echo "Build complete! App saved to: ~/Downloads/VoiceInk.app"; \
-		echo "Run with: open ~/Downloads/VoiceInk.app"; \
+		echo "Build complete! App saved to: ~/Downloads/Nexo Whisper.app"; \
+		echo "Run with: open \"$$HOME/Downloads/Nexo Whisper.app\""; \
 		echo ""; \
 		echo "Limitations of local builds:"; \
 		echo "  - No iCloud dictionary sync"; \
@@ -77,9 +79,15 @@ local: check setup
 	fi
 
 # Run application
+# Prioriza el binario que produce `make local` (~/Downloads/Nexo Whisper.app).
+# Fallbacks: el .app viejo con nombre VoiceInk.app por si quedó de un build
+# anterior, y por último DerivedData de Xcode.
 run:
-	@if [ -d "$$HOME/Downloads/VoiceInk.app" ]; then \
-		echo "Opening ~/Downloads/VoiceInk.app..."; \
+	@if [ -d "$$HOME/Downloads/Nexo Whisper.app" ]; then \
+		echo "Opening ~/Downloads/Nexo Whisper.app..."; \
+		open "$$HOME/Downloads/Nexo Whisper.app"; \
+	elif [ -d "$$HOME/Downloads/VoiceInk.app" ]; then \
+		echo "Opening ~/Downloads/VoiceInk.app (legacy name)..."; \
 		open "$$HOME/Downloads/VoiceInk.app"; \
 	else \
 		echo "Looking for VoiceInk.app in DerivedData..."; \
@@ -88,7 +96,7 @@ run:
 			echo "Found app at: $$APP_PATH"; \
 			open "$$APP_PATH"; \
 		else \
-			echo "VoiceInk.app not found. Please run 'make build' or 'make local' first."; \
+			echo "Nexo Whisper.app not found. Please run 'make local' first."; \
 			exit 1; \
 		fi; \
 	fi

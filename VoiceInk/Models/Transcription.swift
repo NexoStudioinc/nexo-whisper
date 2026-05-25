@@ -8,6 +8,15 @@ enum TranscriptionStatus: String, Codable {
     case canceled
 }
 
+/// Tabs disponibles al ver una transcripción (original vs versión mejorada por IA).
+/// Usado por la UI de historial y por `AudioFileRow`. Vivía en
+/// `Views/TranscriptionResultView.swift`, que era un archivo fantasma cuya
+/// vista original ya no existía: lo movimos acá porque es modelo, no vista.
+enum TranscriptionTab: String, CaseIterable {
+    case original = "Original"
+    case enhanced = "Enhanced"
+}
+
 @Model
 final class Transcription {
     static let canceledTranscriptionText = "The transcription was canceled."

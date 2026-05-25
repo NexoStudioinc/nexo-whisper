@@ -12,7 +12,40 @@ struct AudioTranscribeView: View {
     @State private var selectedPromptId: UUID?
     @State private var expandedItemId: UUID?
 
+    /// Picker de modelo para esta vista. Si está en `nil`, usa el modelo
+    /// global por defecto del usuario (`transcriptionModelManager.currentTranscriptionModel`).
+    /// Si está seteado, cambia el modelo activo antes de procesar.
+    private var transcriptionModelManager: TranscriptionModelManager {
+        engine.transcriptionModelManager
+    }
+
+    @ObservedObject private var licenseViewModel = LicenseViewModel.shared
+
     var body: some View {
+        // Gating: Transcribir Audio es feature Pro. Si el user está en free,
+        // mostrar el overlay de upgrade en lugar del contenido completo.
+        // Eso bloquea drag & drop, picker, processing — todo desde la capa
+        // visual. Adicionalmente, el backend (TranscriptionPipeline) chequea
+        // FeatureGate antes de procesar para defensa en profundidad.
+        if !licenseViewModel.isPro {
+            ProUpsellOverlay(
+                feature: .fileTranscription,
+                icon: "waveform.badge.mic",
+                title: "Transcribe Audio Files",
+                description: "Procesá archivos .mp3, .wav, .m4a, .flac, .mp4 y más con Whisper local o transcripción cloud.",
+                bullets: [
+                    "Drag & drop de múltiples archivos",
+                    "Picker de modelo por sesión",
+                    "Mejora con IA opcional",
+                    "Soporta WAV, MP3, M4A, MP4, MOV, AAC, FLAC y más"
+                ]
+            )
+        } else {
+            realBody
+        }
+    }
+
+    private var realBody: some View {
         Group {
             if transcriptionManager.queue.isEmpty {
                 emptyStateView
@@ -48,9 +81,24 @@ struct AudioTranscribeView: View {
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        VStack(spacing: 24) {
+            // Hero / descripción del módulo
+            VStack(spacing: 8) {
+                Image(systemName: "waveform.badge.mic")
+                    .font(.system(size: 36, weight: .light))
+                    .foregroundStyle(.tint)
+                Text("Transcribe Audio")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Text("Convert audio or video files into text. Drop the files here, pick a model, and get the transcription with optional AI enhancement.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 520)
+            }
+            .padding(.top, 24)
 
+            // Drop zone
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color(.windowBackgroundColor).opacity(0.4))
@@ -83,14 +131,56 @@ struct AudioTranscribeView: View {
             }
             .frame(maxWidth: 480, maxHeight: 200)
 
+            // Model picker + Enhancement toggle (visible incluso sin
+            // archivos para que el usuario decida antes de soltar).
+            HStack(spacing: 12) {
+                modelPickerInline
+                enhancementControls
+            }
+
             Text("Supports WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP")
                 .font(.caption)
                 .foregroundColor(.secondary)
-                .padding(.top, 12)
 
             Spacer()
         }
         .padding()
+    }
+
+    // MARK: - Model Picker
+
+    @ViewBuilder
+    private var modelPickerInline: some View {
+        let models = transcriptionModelManager.usableModels
+        if models.count > 1 {
+            HStack(spacing: 8) {
+                Image(systemName: "brain.head.profile")
+                    .foregroundStyle(.secondary)
+                Text("Model:")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Picker("", selection: Binding(
+                    get: { transcriptionModelManager.currentTranscriptionModel?.name ?? "" },
+                    set: { newName in
+                        if let model = models.first(where: { $0.name == newName }) {
+                            transcriptionModelManager.currentTranscriptionModel = model
+                        }
+                    }
+                )) {
+                    ForEach(models, id: \.name) { model in
+                        Text(model.displayName).tag(model.name)
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: 260)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color.secondary.opacity(0.1))
+            )
+        }
     }
 
     // MARK: - Queue Form View
@@ -168,6 +258,8 @@ struct AudioTranscribeView: View {
             .help("Add files")
 
             Spacer()
+
+            modelPickerInline
 
             enhancementControls
 

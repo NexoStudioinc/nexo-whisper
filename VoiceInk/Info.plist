@@ -4,18 +4,25 @@
 <dict>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
-	<!-- FIXME(Nexo): cuando se publique la primera release de Nexo Whisper:
-	     1. Generar par EdDSA propio con `generate_keys` de Sparkle.
-	     2. Reemplazar SUPublicEDKey por la clave PÚBLICA generada.
-	     3. Guardar la clave PRIVADA en Keychain de la máquina que firma releases.
-	     4. Hostear appcast.xml en GH Pages del repo nexo-whisper o equivalente.
-	     5. Actualizar SUFeedURL al endpoint propio.
-	     Mientras tanto: el feed apunta a un placeholder que no responde,
-	     por lo que Sparkle falla silenciosamente sin traer updates ajenos. -->
+	<!-- Sparkle (auto-updates):
+	     - SUPublicEDKey: clave pública EdDSA propia de Nexo Whisper (no de
+	       Beingpax). La clave PRIVADA está en el Keychain de Maxi (cuenta
+	       maximobetko@gmail.com). Para firmar una release nueva:
+	         sign_update path/to/NexoWhisper-X.Y.Z.dmg
+	       El comando vive en .local-build/SourcePackages/artifacts/sparkle/Sparkle/bin/
+	       y usa automáticamente la key del Keychain.
+	     - SUFeedURL: actualmente apunta a un appcast que NO existe todavía
+	       (nexostudio.xyz/nexo-whisper/appcast.xml). Sparkle falla silencioso
+	       y no trae updates hasta que hostemos el feed. Antes de la primera
+	       release con sistema de updates hay que:
+	         1. Hostear appcast.xml (GH Pages de nexo-whisper-releases o Vercel).
+	         2. Subir cada DMG firmado al feed.
+	     - Para exportar la clave privada (backup): generate_keys -x backup.txt
+	       Guardar el backup en lugar seguro (NO commitear). -->
 	<key>SUFeedURL</key>
 	<string>https://nexostudio.xyz/nexo-whisper/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>rLRdZIjK3gHKfqNlAF9nT7FbjwSvwkJ8BVn0v2mD1Mo=</string>
+	<string>mOUFe0IN3Reas7/gBKIv0u4EPO7iitLFarn1VBtRAds=</string>
 	<key>LSUIElement</key>
 	<false/>
 	<key>SUEnableAutomaticChecks</key>

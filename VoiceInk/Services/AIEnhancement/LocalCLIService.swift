@@ -219,6 +219,15 @@ final class LocalCLIService {
     }
 
     func enhance(systemPrompt: String, userPrompt: String) async throws -> String {
+        // Gating: Mejora via CLI local (Claude Code / Codex / Antigravity /
+        // Copilot / Pi) es feature Pro. Free puede usar Mejora via BYOK
+        // (API key del user en AIService), pero no via CLI auto-detectada
+        // del sistema. Razonamiento: BYOK ya es el camino "no te cobro 2
+        // veces"; la CLI local es una conveniencia extra que justifica Pro.
+        guard FeatureGate.isAvailable(.cliEnhancement) else {
+            throw LocalCLIError.proLicenseRequired
+        }
+
         guard isConfigured else {
             throw LocalCLIError.commandNotConfigured
         }
@@ -287,6 +296,40 @@ final class LocalCLIService {
                 }
                 try? inputPipe.fileHandleForWriting.close()
 
+                // Lectura asíncrona de los pipes mientras el proceso corre.
+                //
+                // Antes leíamos con readDataToEndOfFile() DESPUÉS de esperar
+                // el semáforo de terminación. Eso provoca deadlock si el CLI
+                // produce salida > ~64KB (tamaño del buffer del pipe en macOS):
+                // el subproceso queda bloqueado en write(), y nuestro hilo
+                // bloqueado en semaphore.wait() — los dos esperándose. La app
+                // solo se destrababa al hit de timeout, perdiendo la mejora.
+                //
+                // Ahora drenamos stdout y stderr en background mientras el
+                // proceso corre, así el buffer del pipe nunca se llena.
+                let readGroup = DispatchGroup()
+                var stdoutData = Data()
+                var stderrData = Data()
+                let outputLock = NSLock()
+
+                readGroup.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                    outputLock.lock()
+                    stdoutData = data
+                    outputLock.unlock()
+                    readGroup.leave()
+                }
+
+                readGroup.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    outputLock.lock()
+                    stderrData = data
+                    outputLock.unlock()
+                    readGroup.leave()
+                }
+
                 let semaphore = DispatchSemaphore(value: 0)
                 process.terminationHandler = { _ in
                     semaphore.signal()
@@ -298,12 +341,16 @@ final class LocalCLIService {
                         process.terminate()
                         _ = semaphore.wait(timeout: .now() + 2)
                     }
+                    // Esperamos a que los lectores en background terminen
+                    // (cierran al recibir EOF cuando el proceso es terminado)
+                    // para no dejar hilos colgados.
+                    _ = readGroup.wait(timeout: .now() + 2)
                     continuation.resume(throwing: LocalCLIError.timeout(seconds: timeout))
                     return
                 }
 
-                let stdoutData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                let stderrData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                // Drenar el resto de los buffers después de que el proceso terminó.
+                readGroup.wait()
 
                 let stdout = Self.cleanOutput(String(data: stdoutData, encoding: .utf8) ?? "")
                 let stderr = Self.cleanOutput(String(data: stderrData, encoding: .utf8) ?? "")
@@ -418,11 +465,28 @@ final class LocalCLIService {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Cache de timestamps de pre-warm por binario, para debounce.
+    /// Si el usuario clickea "Usar este" varias veces seguidas no queremos
+    /// lanzar N procesos. 30s es suficiente: el binario sigue caliente en RAM.
+    private static var lastPrewarmTimestamps: [String: Date] = [:]
+    private static let prewarmLock = NSLock()
+    private static let prewarmDebounceInterval: TimeInterval = 30
+
     /// Pre-warm: lanza el binario con --help (o similar) en background para
     /// que macOS cachee el binario en RAM. La primera invocación real evita
     /// pagar el cold start del proceso (~300-800ms en CLIs Node/Go).
     /// Costo: 1 proceso que vive ~1 segundo y muere. Despreciable.
     static func prewarm(binaryName: String) {
+        prewarmLock.lock()
+        if let last = lastPrewarmTimestamps[binaryName],
+           Date().timeIntervalSince(last) < prewarmDebounceInterval {
+            prewarmLock.unlock()
+            cliLogger.notice("prewarm: \(binaryName, privacy: .public) skipped (debounced)")
+            return
+        }
+        lastPrewarmTimestamps[binaryName] = Date()
+        prewarmLock.unlock()
+
         DispatchQueue.global(qos: .utility).async {
             // Buscamos el binario sin shell (mismo approach que isBinaryAvailable)
             let home = NSHomeDirectory()
@@ -528,6 +592,10 @@ enum LocalCLIError: Error, LocalizedError {
     case nonZeroExit(status: Int, stderr: String)
     case emptyOutput
     case executionFailed(String)
+    /// Lanzado cuando se intenta usar CLI enhancement sin licencia Pro.
+    /// El user free puede usar Mejora via BYOK (API key), pero la
+    /// auto-detección de CLIs del sistema requiere upgrade.
+    case proLicenseRequired
 
     var errorDescription: String? {
         switch self {
@@ -546,6 +614,8 @@ enum LocalCLIError: Error, LocalizedError {
             return "Local CLI command returned empty output."
         case .executionFailed(let message):
             return "Failed to execute Local CLI command: \(message)"
+        case .proLicenseRequired:
+            return "Local CLI enhancement requires a Pro license. You can still use AI Enhancement with your own API key (BYOK) in the free tier."
         }
     }
 }

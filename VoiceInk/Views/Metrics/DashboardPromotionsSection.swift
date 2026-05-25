@@ -5,11 +5,12 @@ struct DashboardPromotionsSection: View {
     let licenseState: LicenseViewModel.LicenseState
     @State private var isAffiliatePromotionDismissed: Bool = UserDefaults.standard.affiliatePromotionDismissed
 
+    /// Tras la migración a freemium (sin trial), el promo de upgrade se
+    /// muestra cuando el user está en `.free`. Antes dependía del día del
+    /// trial (3 últimos días o expirado).
     private var shouldShowUpgradePromotion: Bool {
         switch licenseState {
-        case .trial(let daysRemaining):
-            return daysRemaining <= 3
-        case .trialExpired:
+        case .free:
             return true
         case .licensed:
             return false
@@ -66,7 +67,7 @@ struct DashboardPromotionsSection: View {
     }
     
     private func openSocialShare() {
-        if let url = URL(string: "https://nexostudio.xyz/nexo-whisper/compartir") {
+        if let url = URL(string: "\(NexoURLs.landing)/compartir") {
             NSWorkspace.shared.open(url)
         }
     }
@@ -75,7 +76,7 @@ struct DashboardPromotionsSection: View {
         // Lemon Squeezy ofrece programa de afiliados nativo por producto.
         // Cuando el producto esté publicado, reemplazar por la URL del programa
         // (típicamente https://nexostudio.lemonsqueezy.com/affiliates).
-        if let url = URL(string: "https://nexostudio.xyz/nexo-whisper/afiliados") {
+        if let url = URL(string: NexoURLs.affiliates) {
             NSWorkspace.shared.open(url)
         }
     }

@@ -10,11 +10,23 @@ class WhisperPrompt: ObservableObject {
     // Store user-customized prompts
     private var customPrompts: [String: String] = [:]
     
-    // Language-specific base prompts
+    // Language-specific base prompts.
+    //
+    // El `initial_prompt` de Whisper sirve como "calibración" del modelo:
+    // una frase corta que le indica el idioma esperado y el vocabulario
+    // común. Para idiomas donde los hablantes mezclan inglés tech (código,
+    // productos, herramientas) — ES, PT, FR, DE, IT — incluimos ejemplos
+    // del code-switching más típico para que Whisper no malinterprete
+    // palabras como "download", "meeting", "deploy", "frontend" como
+    // intentos fonéticos de palabras locales.
+    //
+    // Notar: Whisper detecta idioma por audio, no por este prompt. Pero
+    // cuando el chunk es ambiguo o tiene jerga técnica, el prompt baja
+    // la perplejidad y mejora la elección de tokens.
     private let languagePrompts: [String: String] = [
-        // English
-        "en": "Hello, how are you doing? Nice to meet you.",
-        
+        // English — sample con vocabulario tech común
+        "en": "Hello, how are you doing? Let me download the file and deploy the frontend.",
+
         // Asian Languages
         "hi": "नमस्ते, कैसे हैं आप? आपसे मिलकर अच्छा लगा।",
         "bn": "নমস্কার, কেমন আছেন? আপনার সাথে দেখা হয়ে ভালো লাগলো।",
@@ -24,13 +36,13 @@ class WhisperPrompt: ObservableObject {
         "th": "สวัสดีครับ/ค่ะ, สบายดีไหม? ยินดีที่ได้พบคุณ",
         "vi": "Xin chào, bạn khỏe không? Rất vui được gặp bạn.",
         "yue": "你好，最近點呀？見到你好開心。",
-        
-        // European Languages
-        "es": "¡Hola, ¿cómo estás? Encantado de conocerte.",
-        "fr": "Bonjour, comment allez-vous? Ravi de vous rencontrer.",
-        "de": "Hallo, wie geht es dir? Schön dich kennenzulernen.",
-        "it": "Ciao, come stai? Piacere di conoscerti.",
-        "pt": "Olá, como você está? Prazer em conhecê-lo.",
+
+        // European Languages — code-switching ES/PT/FR/DE/IT con inglés tech
+        "es": "Hola, ¿cómo estás? Tengo un meeting a las 3 con el team sobre el bug del frontend. Voy a hacer el deploy después del download.",
+        "fr": "Bonjour, comment allez-vous? J'ai un meeting à 3 heures avec le team sur le bug du frontend.",
+        "de": "Hallo, wie geht es dir? Ich habe ein Meeting um 3 mit dem Team über den Bug im Frontend.",
+        "it": "Ciao, come stai? Ho un meeting alle 3 con il team sul bug del frontend.",
+        "pt": "Olá, como você está? Tenho um meeting às 3 com o team sobre o bug do frontend. Vou fazer o deploy depois do download.",
         "ru": "Здравствуйте, как ваши дела? Приятно познакомиться.",
         "pl": "Cześć, jak się masz? Miło cię poznać.",
         "nl": "Hallo, hoe gaat het? Aangenaam kennis te maken.",

@@ -104,8 +104,10 @@ struct MetricsContent: View {
                                 accessibilityPermissionCallout
                             }
 
+                            brandCard
                             heroSection
                             metricsSection
+                            APISpendCard()
                             HStack(alignment: .top, spacing: 18) {
                                 HelpAndResourcesSection()
                                 DashboardPromotionsSection(licenseState: licenseState)
@@ -248,7 +250,41 @@ struct MetricsContent: View {
     }
     
     // MARK: - Sections
-    
+
+    /// Card de presentación con el logo grande de Nexo Whisper.
+    /// Usa AppIcon (solo la N) en vez de SidebarLogo porque éste ya trae
+    /// el texto "Nexo Whisper" embebido y duplicaría el título.
+    private var brandCard: some View {
+        HStack(spacing: 18) {
+            if let appIcon = NSImage(named: "AppIcon") {
+                Image(nsImage: appIcon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 72, height: 72)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Nexo Whisper")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                Text("Dictá. Soltá. Listo.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.thinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+        )
+    }
+
     private var heroSection: some View {
         VStack(spacing: 10) {
             HStack {
@@ -367,17 +403,21 @@ struct MetricsContent: View {
     
     private var heroSubtitle: String {
         guard hasLoadedMetricsSnapshot else {
-            return "Your usage summary will appear here."
+            return String(localized: "Your usage summary will appear here.")
         }
 
         guard totalCount > 0 else {
-            return "Your Nexo Whisper journey starts with your first recording."
+            return String(localized: "Your Nexo Whisper journey starts with your first recording.")
         }
 
         let wordsText = Formatters.formattedNumber(totalWords)
-        let sessionText = totalCount == 1 ? "session" : "sessions"
-
-        return "Dictated \(wordsText) words across \(totalCount) \(sessionText)."
+        if totalCount == 1 {
+            let format = String(localized: "Dictated %@ words across 1 session.")
+            return String(format: format, wordsText)
+        } else {
+            let format = String(localized: "Dictated %@ words across %lld sessions.")
+            return String(format: format, wordsText, totalCount)
+        }
     }
     
     private var heroGradient: LinearGradient {

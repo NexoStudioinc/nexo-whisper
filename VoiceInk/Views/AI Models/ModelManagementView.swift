@@ -134,7 +134,7 @@ struct ModelManagementView: View {
                                 isShowingSettings = false
                             }
                         }) {
-                            Text(filter.rawValue)
+                            Text(LocalizedStringKey(filter.rawValue))
                                 .font(.system(size: 14, weight: selectedFilter == filter ? .semibold : .medium))
                                 .foregroundColor(selectedFilter == filter ? .primary : .primary.opacity(0.7))
                                 .padding(.horizontal, 16)
@@ -239,7 +239,7 @@ struct ModelManagementView: View {
 
                             InfoTip(
                                 "Add a custom fine-tuned whisper model to use with Nexo Whisper. Select the downloaded .bin file.",
-                                learnMoreURL: "https://nexostudio.xyz/nexo-whisper/docs/custom-models"
+                                learnMoreURL: "\(NexoURLs.docs)/custom-models"
                             )
                             .help("Read more about custom local models")
                         }

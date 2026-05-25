@@ -75,7 +75,9 @@ struct ProcessingStatusDisplay: View {
     let mode: Mode
     let color: Color
 
-    private var label: String {
+    // LocalizedStringKey en vez de String para que SwiftUI auto-localice
+    // los literales contra xcstrings (el pill y el notch comparten este label).
+    private var label: LocalizedStringKey {
         switch mode {
         case .transcribing: return "Transcribing"
         case .enhancing:    return "Enhancing"

@@ -3,37 +3,41 @@ import SwiftUI    // Import to ensure we have access to SwiftUI types if needed
 
 enum PredefinedPrompts {
     private static let predefinedPromptsKey = "PredefinedPrompts"
-    
-    // Static UUIDs for predefined prompts
-    static let defaultPromptId = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-    static let assistantPromptId = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
-    
+
+    // UUIDs estables por prompt — necesarios para que `useSystemInstructions`
+    // y otras settings persistan al cambiar de idioma.
+    private static let uuidByTitle: [String: UUID] = [
+        "System Default":    UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+        "Chat":              UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+        "Email":             UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
+        "Rewrite":           UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
+        "Formal":            UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
+        "Coding":            UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
+        "Summary":           UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,
+        "Fun":               UUID(uuidString: "00000000-0000-0000-0000-000000000009")!
+    ]
+
+    /// Compatibilidad con código existente que referencia el ID del prompt
+    /// "Default" — sigue mapeando al System Default.
+    static let defaultPromptId = uuidByTitle["System Default"]!
+
     static var all: [CustomPrompt] {
-        // Always return the latest predefined prompts from source code
-        createDefaultPrompts()
-    }
-    
-    static func createDefaultPrompts() -> [CustomPrompt] {
-        [
+        // Devolvemos todos los templates como predefinidos, con UUID estable.
+        // Esto reemplaza el viejo "Default" + "Assistant" por los 8 templates
+        // pulidos (System Default + Chat + Email + Rewrite + Formal + Coding +
+        // Executive Summary + Fun), cada uno con su icono propio.
+        PromptTemplates.all.map { template in
             CustomPrompt(
-                id: defaultPromptId,
-                title: "Default",
-                promptText: PromptTemplates.all.first { $0.title == "System Default" }?.promptText ?? "",
-                icon: "checkmark.seal.fill",
-                description: "Default mode to improved clarity and accuracy of the transcription",
+                id: uuidByTitle[template.title] ?? UUID(),
+                title: template.title,
+                promptText: template.promptText,
+                icon: template.icon,
+                description: template.description,
                 isPredefined: true,
                 useSystemInstructions: true
-            ),
-            
-            CustomPrompt(
-                id: assistantPromptId,
-                title: "Assistant",
-                promptText: AIPrompts.assistantMode,
-                icon: "bubble.left.and.bubble.right.fill",
-                description: "AI assistant that provides direct answers to queries",
-                isPredefined: true,
-                useSystemInstructions: false
             )
-        ]
+        }
     }
+
+    static func createDefaultPrompts() -> [CustomPrompt] { all }
 }

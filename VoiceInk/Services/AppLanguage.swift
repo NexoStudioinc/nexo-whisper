@@ -38,6 +38,10 @@ final class LocalizationManager {
 
     private let appleLanguagesKey = "AppleLanguages"
     private let appLanguageKey = "appLanguage"
+    /// Última lengua aplicada efectivamente. Necesario porque `@AppStorage`
+    /// en SettingsView escribe `appLanguage` ANTES de que setLanguage corra,
+    /// así que no se puede usar `appLanguage` para detectar cambio real.
+    private let lastAppliedKey = "appLanguageLastApplied"
 
     private init() {}
 
@@ -51,17 +55,27 @@ final class LocalizationManager {
     /// Cambia el idioma activo. Persiste la elección y muestra una alerta
     /// pidiendo reiniciar la app para que el cambio tome efecto.
     func setLanguage(_ language: AppLanguage) {
-        let previous = UserDefaults.standard.string(forKey: appLanguageKey)
-        guard previous != language.rawValue else { return }
+        let lastApplied = UserDefaults.standard.string(forKey: lastAppliedKey)
+        guard lastApplied != language.rawValue else { return }
 
         UserDefaults.standard.set(language.rawValue, forKey: appLanguageKey)
         UserDefaults.standard.set([language.rawValue], forKey: appleLanguagesKey)
+        UserDefaults.standard.set(language.rawValue, forKey: lastAppliedKey)
         UserDefaults.standard.synchronize()
 
-        presentRestartAlert(for: language)
+        // Diferimos la alerta para salir del callback de `.onChange` de
+        // SwiftUI. Si corriéramos `runModal()` directo desde el .onChange,
+        // SwiftUI suprime el modal porque está en medio de un body update.
+        // Además forzamos la app al frente para que la alerta sea visible
+        // sí o sí (no quede tapada por otras apps en primer plano).
+        DispatchQueue.main.async { [weak self] in
+            self?.presentRestartAlert(for: language)
+        }
     }
 
     private func presentRestartAlert(for language: AppLanguage) {
+        NSApp.activate(ignoringOtherApps: true)
+
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("Restart required", comment: "")
         alert.informativeText = NSLocalizedString(

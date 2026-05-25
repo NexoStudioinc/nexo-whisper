@@ -44,6 +44,8 @@ struct VocabularyView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            RareWordSuggestionsBanner()
+
             GroupBox {
                 Label {
                     Text("Add words to help Nexo Whisper recognize them properly. (Requires AI enhancement)")

@@ -197,13 +197,22 @@ class WhisperModelManager: ObservableObject {
 
     // MARK: - Model Download & Management
 
-    private func downloadFileWithProgress(from url: URL, progressKey: String) async throws -> Data {
-        let destinationURL = modelsDirectory.appendingPathComponent(UUID().uuidString)
-
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
+    /// Descarga un archivo desde `url` a disco con reporte de progreso.
+    ///
+    /// Cambio importante (refactor 2026-05): antes devolvía `Data` y los
+    /// callers escribían el archivo de nuevo a su ubicación final → dos
+    /// copias completas en disco + posible OOM en Macs de 8GB con modelos
+    /// Whisper Large (1.5GB). Ahora devuelve la URL del archivo ya en su
+    /// destino — la transferencia entera es file-system → file-system, con
+    /// uso de RAM constante (~10MB del buffer interno de URLSession).
+    ///
+    /// `destinationFile` es el path FINAL donde el caller quiere el archivo;
+    /// movemos el descargado directo ahí sin pasar por `Data`.
+    private func downloadFileWithProgress(from url: URL, progressKey: String, to destinationFile: URL) async throws {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             let finished = ManagedAtomic(false)
 
-            func finishOnce(_ result: Result<Data, Error>) {
+            func finishOnce(_ result: Result<Void, Error>) {
                 if finished.exchange(true, ordering: .acquiring) == false {
                     continuation.resume(with: result)
                 }
@@ -223,10 +232,10 @@ class WhisperModelManager: ObservableObject {
                 }
 
                 do {
-                    try FileManager.default.moveItem(at: tempURL, to: destinationURL)
-                    let data = try Data(contentsOf: destinationURL, options: .mappedIfSafe)
-                    finishOnce(.success(data))
-                    try? FileManager.default.removeItem(at: destinationURL)
+                    // Si el destino existe (retry), removerlo primero.
+                    try? FileManager.default.removeItem(at: destinationFile)
+                    try FileManager.default.moveItem(at: tempURL, to: destinationFile)
+                    finishOnce(.success(()))
                 } catch {
                     finishOnce(.failure(error))
                 }
@@ -255,6 +264,12 @@ class WhisperModelManager: ObservableObject {
             Task {
                 await withTaskCancellationHandler {
                     observation.invalidate()
+                    // Cancelar la descarga HTTP real: si no llamamos a
+                    // task.cancel(), URLSession sigue bajando el modelo en
+                    // background (puede ser 1.5 GB) aunque la Task de Swift
+                    // ya recibió el CancellationError. Consume datos del
+                    // usuario sin posibilidad de detenerlo hasta cerrar la app.
+                    task.cancel()
                     if finished.exchange(true, ordering: .acquiring) == false {
                         continuation.resume(throwing: CancellationError())
                     }
@@ -294,21 +309,17 @@ class WhisperModelManager: ObservableObject {
 
     private func downloadMainModel(_ model: WhisperModel, from url: URL) async throws -> WhisperModelFile {
         let progressKeyMain = model.name + "_main"
-        let data = try await downloadFileWithProgress(from: url, progressKey: progressKeyMain)
-
         let destinationURL = modelsDirectory.appendingPathComponent(model.filename)
-        try data.write(to: destinationURL)
-
+        // Descarga directo al destino final, sin pasar por `Data` (ahorra
+        // ~1.5GB de RAM en modelos Whisper Large).
+        try await downloadFileWithProgress(from: url, progressKey: progressKeyMain, to: destinationURL)
         return WhisperModelFile(name: model.name, url: destinationURL)
     }
 
     private func downloadAndSetupCoreMLModel(for model: WhisperModelFile, from url: URL) async throws -> WhisperModelFile {
         let progressKeyCoreML = model.name + "_coreml"
-        let coreMLData = try await downloadFileWithProgress(from: url, progressKey: progressKeyCoreML)
-
         let coreMLZipPath = modelsDirectory.appendingPathComponent("\(model.name)-encoder.mlmodelc.zip")
-        try coreMLData.write(to: coreMLZipPath)
-
+        try await downloadFileWithProgress(from: url, progressKey: progressKeyCoreML, to: coreMLZipPath)
         return try await unzipAndSetupCoreMLModel(for: model, zipPath: coreMLZipPath, progressKey: progressKeyCoreML)
     }
 

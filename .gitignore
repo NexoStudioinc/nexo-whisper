@@ -103,3 +103,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk 
+# Assets binarios pesados (no van al repo)
+Nexo brand.zip
+*.DS_Store

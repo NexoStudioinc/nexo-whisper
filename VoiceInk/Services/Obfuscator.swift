@@ -26,8 +26,10 @@ struct Obfuscator {
         return String(salted.dropFirst(salt.count).dropLast(salt.count))
     }
     
-    /// Gets a device-specific identifier to use as salt
-    /// Uses the same logic as PolarService for consistency
+    /// Gets a device-specific identifier to use as salt.
+    /// Stable through reinstalls (Mac serial number) o fallback a UUID
+    /// persistido en UserDefaults. Lo usaba la activación de Polar.sh
+    /// (ya borrada); hoy queda disponible para otros usos in-app.
     static func getDeviceIdentifier() -> String {
         // Try to get Mac serial number first
         if let serialNumber = getMacSerialNumber() {

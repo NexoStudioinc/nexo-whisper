@@ -10,16 +10,26 @@ struct DictionarySettingsView: View {
     enum DictionarySection: String, CaseIterable {
         case replacements = "Word Replacements"
         case spellings = "Vocabulary"
-        
-        var description: String {
+
+        // LocalizedStringKey en vez de String para que SwiftUI auto-localice
+        // los literales contra xcstrings. Si fueran String SwiftUI los pasaría
+        // como variables y nunca traduciría.
+        var titleKey: LocalizedStringKey {
+            switch self {
+            case .replacements: return "Word Replacements"
+            case .spellings:    return "Vocabulary"
+            }
+        }
+
+        var descriptionKey: LocalizedStringKey {
             switch self {
             case .spellings:
                 return "Add words to help Nexo Whisper recognize them properly"
             case .replacements:
-                return "Automatically replace specific words/phrases with custom formatted text "
+                return "Automatically replace specific words/phrases with custom formatted text"
             }
         }
-        
+
         var icon: String {
             switch self {
             case .spellings:
@@ -128,10 +138,10 @@ struct SectionCard: View {
                     .foregroundStyle(isSelected ? .blue : .secondary)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(section.rawValue)
+                    Text(section.titleKey)
                         .font(.headline)
-                    
-                    Text(section.description)
+
+                    Text(section.descriptionKey)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

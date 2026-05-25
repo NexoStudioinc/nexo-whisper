@@ -71,7 +71,8 @@ extension PromptIcon {
         "airplane",
         "leaf.fill",
         "hand.raised.fill",
-        "hand.thumbsup.fill"
+        "hand.thumbsup.fill",
+        "face.smiling.fill"
     ]
 }
 
@@ -263,7 +264,9 @@ extension CustomPrompt {
         .contentShape(Rectangle())
         .scaleEffect(isSelected ? 1.05 : 1.0)
         .onTapGesture(count: 2) {
-            // Double tap to edit
+            // Doble click → abre el editor del prompt directamente. La
+            // descripción + promptText se ven dentro del editor; no tiene
+            // sentido un popup intermedio.
             if let onEdit = onEdit {
                 onEdit(self)
             }
@@ -272,6 +275,7 @@ extension CustomPrompt {
             // Single tap to select
             onTap()
         }
+        .help(NSLocalizedString(self.description ?? self.title, comment: ""))
         .contextMenu {
             if onEdit != nil || onDelete != nil {
                 if let onEdit = onEdit {

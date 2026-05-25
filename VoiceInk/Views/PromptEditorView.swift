@@ -66,6 +66,43 @@ struct PromptEditorView: View {
     }
 
     var body: some View {
+        // Gating: crear/editar prompts custom es feature Pro. Editar
+        // trigger words de un predefinido SÍ está permitido en free (no
+        // crea contenido nuevo, solo metadata para activarlo por voz).
+        //
+        // El editor completo se bloquea cuando:
+        //   - mode == .add (creando nuevo prompt custom), o
+        //   - mode == .edit y el prompt NO es predefinido (editando custom).
+        //
+        // Usamos `if case` en vez de `==`/`!=` porque Mode tiene un caso con
+        // valor asociado (`.edit(CustomPrompt)`) y Swift no infiere `!=`
+        // automáticamente cuando hay associated values y el equatable es custom.
+        let isCreatingCustom: Bool = {
+            if case .add = mode { return true }
+            return false
+        }()
+        let isEditingCustom = !isEditingPredefinedPrompt && !isCreatingCustom
+        let requiresPro = isCreatingCustom || isEditingCustom
+
+        if requiresPro && !FeatureGate.isAvailable(.customPrompts) {
+            ProUpsellOverlay(
+                feature: .customPrompts,
+                icon: "square.and.pencil",
+                title: "Custom Prompts",
+                description: "Creá tus propios prompts personalizados para mejorar la transcripción según tu workflow.",
+                bullets: [
+                    "Prompts ilimitados con título, descripción e ícono",
+                    "Trigger words para activación por voz",
+                    "Modo \"sistema\" o \"raw\" según tu necesidad",
+                    "Más los 7 predefinidos extras (Chat, Email, Coding, Summary, etc.)"
+                ]
+            )
+        } else {
+            editorContent
+        }
+    }
+
+    private var editorContent: some View {
         VStack(spacing: 0) {
             // Header
             HStack(spacing: 12) {

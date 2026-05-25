@@ -11,7 +11,7 @@ struct EnhancementShortcutsView: View {
 
                     InfoTip(
                         "Quickly enable or disable AI enhancement while recording. Available only when Nexo Whisper is running and the recorder is visible.",
-                        learnMoreURL: "https://nexostudio.xyz/nexo-whisper/docs/enhancement-shortcuts"
+                        learnMoreURL: NexoURLs.docsEnhancementShortcuts
                     )
                 }
 
@@ -29,7 +29,7 @@ struct EnhancementShortcutsView: View {
 
                     InfoTip(
                         "Switch between your saved prompts using ⌘1 through ⌘0 to activate the corresponding prompt in the order they are saved. Available only when Nexo Whisper is running and the recorder is visible.",
-                        learnMoreURL: "https://nexostudio.xyz/nexo-whisper/docs/enhancement-shortcuts"
+                        learnMoreURL: NexoURLs.docsEnhancementShortcuts
                     )
                 }
 

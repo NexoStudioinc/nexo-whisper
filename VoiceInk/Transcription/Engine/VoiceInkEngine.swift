@@ -469,7 +469,10 @@ class VoiceInkEngine: NSObject, ObservableObject {
     }
 
     @objc func handleLicenseStatusChanged() {
-        pipeline.licenseViewModel = LicenseViewModel()
+        // Noop: el `LicenseViewModel.shared` que usa el pipeline es reactivo,
+        // así que cambios de status se propagan automáticamente. Se mantiene
+        // este handler suscrito a `.licenseStatusChanged` por si en el futuro
+        // queremos disparar efectos colaterales (ej. invalidar caches).
     }
 
     @objc func handlePromptChange() {

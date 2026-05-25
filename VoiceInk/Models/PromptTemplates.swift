@@ -47,16 +47,26 @@ enum PromptTemplates {
                 id: UUID(),
                 title: "System Default",
                 promptText: """
-                    - Keep the original meaning, tone and language of the speaker.
-                    - Fix grammar, remove fillers ("uh", "um", "like", "you know") and stutters, collapse repetitions.
-                    - Handle self-corrections: if the speaker corrects mid-sentence ("scratch that", "I mean", "actually X"), keep only the corrected version.
-                    - Respect explicit formatting commands: "new line" / "new paragraph" inserts the break.
-                    - Detect lists: numbered sequences → ordered list; non-numbered items → bullets.
-                    - Write numbers as numerals (5, not "five"), normalize abbreviations (vs., etc.), keep names and proper nouns intact.
-                    - Organize into short paragraphs of 2–4 sentences.
+                    CRITICAL: NEVER delete words, sentences, or ideas from the dictation. Preserve ALL content. The goal is light cleanup, not rewriting.
+
+                    What to do:
+                    - Fix only punctuation (commas, periods, question marks, exclamation marks, capitalization).
+                    - Normalize spelling and accents — without changing the speaker's word choices.
+                    - Collapse only OBVIOUS transcription stutters (e.g. "the-the-the car" → "the car"). If the speaker intentionally repeated for emphasis, KEEP the repetition.
+                    - If the speaker dictated numbers as digits ("5"), keep them as digits. If they said the word ("five"), keep the word.
+                    - If the speaker mixes languages (e.g. Spanish with English words like "download", "meeting", "deploy", "frontend"), KEEP the exact words as dictated — do not translate.
+                    - Insert line breaks only if the speaker explicitly said "new line" or "new paragraph".
+
+                    What NOT to do:
+                    - Do NOT remove fillers ("uh", "um", "like", "you know"). They are part of natural speech and the user wants them preserved.
+                    - Do NOT collapse intentional repetitions.
+                    - Do NOT "fix" self-corrections by deleting the first version. If they said "I'll go tomorrow, no, actually Thursday", keep it as-is.
+                    - Do NOT add lists, bullets, headers, or any formatting the speaker didn't request.
+                    - Do NOT add greetings, sign-offs, or summaries.
+                    - Do NOT rephrase, paraphrase, or "improve" the speaker's word choices.
                     """,
                 icon: "checkmark.seal.fill",
-                description: "Cleans up the transcription preserving meaning and tone"
+                description: "Minimal cleanup: fixes punctuation, preserves everything else"
             ),
             TemplatePrompt(
                 id: UUID(),
@@ -98,6 +108,66 @@ enum PromptTemplates {
                     """,
                 icon: "pencil.circle.fill",
                 description: "Rewrites for clarity and flow"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Formal",
+                promptText: """
+                    - Rewrite in a professional, formal register suitable for contracts, legal documents and business communication.
+                    - Use complete sentences, precise vocabulary, no contractions, no slang, no fillers.
+                    - Prefer active voice when natural; passive voice only if the dictation clearly calls for it.
+                    - Fix grammar and punctuation; collapse repetitions; keep all facts, names, dates and figures exact.
+                    - Numbers as numerals (5, not "five"); spell out abbreviations on first use if ambiguous.
+                    - Organize into 2–4 sentence paragraphs. Do not add salutations or closings.
+                    - Do not invent content not present in the dictation.
+                    """,
+                icon: "briefcase.fill",
+                description: "Professional formal tone for business and legal docs"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Coding",
+                promptText: """
+                    - Convert the dictation into clean code-ready text.
+                    - Wrap identifiers, function names, file paths, flags and commands in backticks.
+                    - Format code blocks with triple backticks when the speaker dictates more than one line of code; infer the language if obvious, otherwise leave it blank.
+                    - Use conventional naming: camelCase for variables/functions, PascalCase for types, kebab-case for CLI flags, SCREAMING_SNAKE for constants.
+                    - Spelled-out symbols become punctuation: "open paren" → `(`, "equals" → `=`, "arrow" → `->`, "new line" inserts a line break.
+                    - Keep prose outside code blocks short and direct. No fillers, no repetitions.
+                    - Do not invent code: only what the speaker dictated.
+                    """,
+                icon: "terminal.fill",
+                description: "Voice to code with backticks, identifiers and conventions"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Summary",
+                promptText: """
+                    - Condense the dictation into an executive summary: 3 to 5 actionable bullets.
+                    - Each bullet starts with a verb and states a concrete action, decision or finding.
+                    - Drop filler, anecdotes and side comments; keep only what matters for a decision-maker.
+                    - Preserve every key fact: names, dates, figures, deadlines, owners.
+                    - Numbers as numerals; format dates and amounts consistently.
+                    - No greetings, no closings, no preamble — only the bullets.
+                    - Do not invent content not present in the dictation.
+                    """,
+                icon: "list.clipboard.fill",
+                description: "Turns a long dictation into 3–5 actionable bullets"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Fun",
+                promptText: """
+                    - Rewrite with a casual, playful tone while keeping the original meaning intact.
+                    - Swap stiff words for natural, friendly synonyms; add light personality without forcing jokes.
+                    - Keep it readable: no excessive emojis (one or two max, only if they fit), no walls of exclamation marks.
+                    - Fix grammar and remove fillers; collapse repetitions.
+                    - Numbers as numerals (5, not "five").
+                    - Preserve all names, facts, dates and figures exactly as dictated.
+                    - Do not invent content not present in the dictation.
+                    """,
+                icon: "face.smiling.fill",
+                description: "Casual, playful rewrite keeping the meaning"
             )
         ]
     }
@@ -110,16 +180,26 @@ enum PromptTemplates {
                 id: UUID(),
                 title: "System Default",
                 promptText: """
-                    - Conservá el significado, tono e idioma original del hablante.
-                    - Corregí gramática, sacá muletillas ("eh", "este", "o sea", "viste") y tartamudeos, colapsá repeticiones.
-                    - Manejá autocorrecciones: si el hablante se corrige a mitad de frase ("no, mejor", "perdón quise decir", "en realidad X"), dejá solo la versión corregida.
-                    - Respetá comandos explícitos de formato: "nueva línea" / "nuevo párrafo" insertan el salto.
-                    - Detectá listas: secuencias numeradas → lista ordenada; items sin numerar → bullets.
-                    - Escribí números como cifras (5, no "cinco"), normalizá abreviaturas (vs., etc.), respetá nombres propios.
-                    - Organizá en párrafos cortos de 2–4 oraciones.
+                    CRÍTICO: NUNCA borres palabras, oraciones ni ideas del dictado. Conservá TODO el contenido. El objetivo es limpieza mínima, no reescritura.
+
+                    Qué hacer:
+                    - Corregí SOLO puntuación (comas, puntos, signos de pregunta/exclamación, mayúsculas).
+                    - Normalizá ortografía y tildes — sin cambiar las palabras que eligió el hablante.
+                    - Colapsá SOLO tartamudeos obvios de transcripción (ej. "el-el-el coche" → "el coche"). Si el hablante repitió a propósito para enfatizar, MANTENÉ la repetición.
+                    - Si el hablante dictó números como cifras ("5"), mantenelos como cifras. Si dijo la palabra ("cinco"), mantené la palabra.
+                    - Si el hablante mezcla idiomas (ej. español con palabras en inglés como "download", "meeting", "deploy", "frontend", "bug"), MANTENÉ las palabras exactas como las dictó — no traduzcas.
+                    - Insertá saltos de línea solo si el hablante dijo explícitamente "nueva línea" o "nuevo párrafo".
+
+                    Qué NO hacer:
+                    - NO borres muletillas ("eh", "em", "este", "o sea", "viste", "digamos"). Son parte natural del habla y el usuario las quiere conservadas.
+                    - NO colapses repeticiones intencionales.
+                    - NO "arregles" autocorrecciones borrando la primera versión. Si dijo "voy mañana, no, en realidad el jueves", dejalo tal cual.
+                    - NO agregues listas, bullets, encabezados ni ningún formato que el hablante no pidió.
+                    - NO agregues saludos, despedidas ni resúmenes.
+                    - NO reformules, parafrasees ni "mejores" las palabras del hablante.
                     """,
                 icon: "checkmark.seal.fill",
-                description: "Limpia la transcripción preservando significado y tono"
+                description: "Limpieza mínima: corrige puntuación, preserva todo lo demás"
             ),
             TemplatePrompt(
                 id: UUID(),
@@ -161,6 +241,66 @@ enum PromptTemplates {
                     """,
                 icon: "pencil.circle.fill",
                 description: "Reescribe para más claridad y fluidez"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Formal",
+                promptText: """
+                    - Reescribí en registro profesional y formal, apto para contratos, documentos legales y comunicación de negocios.
+                    - Oraciones completas, vocabulario preciso, sin contracciones, sin jerga, sin muletillas.
+                    - Preferí voz activa cuando suene natural; pasiva solo si el dictado claramente la pide.
+                    - Corregí gramática y puntuación; colapsá repeticiones; mantené exactos todos los datos: nombres, fechas, montos.
+                    - Números como cifras (5, no "cinco"); aclará abreviaturas la primera vez si pueden ser ambiguas.
+                    - Organizá en párrafos de 2–4 oraciones. No agregues saludos ni cierres.
+                    - No inventes contenido que no esté en el dictado.
+                    """,
+                icon: "briefcase.fill",
+                description: "Tono formal y profesional para docs legales y negocios"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Coding",
+                promptText: """
+                    - Convertí el dictado en texto listo para código.
+                    - Envolvé identificadores, nombres de funciones, paths, flags y comandos con backticks.
+                    - Formateá bloques de código con triple backtick cuando el hablante dicte más de una línea; inferí el lenguaje si es obvio, si no dejalo en blanco.
+                    - Convenciones de nombres: camelCase para variables/funciones, PascalCase para tipos, kebab-case para flags de CLI, SCREAMING_SNAKE para constantes.
+                    - Símbolos dictados se convierten en puntuación: "abre paréntesis" → `(`, "igual" → `=`, "flecha" → `->`, "nueva línea" inserta salto.
+                    - Prosa fuera de los bloques: corta y directa. Sin muletillas, sin repeticiones.
+                    - No inventes código: solo lo que el hablante dictó.
+                    """,
+                icon: "terminal.fill",
+                description: "Voz a código con backticks, identificadores y convenciones"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Summary",
+                promptText: """
+                    - Condensá el dictado en un resumen ejecutivo: 3 a 5 bullets accionables.
+                    - Cada bullet arranca con un verbo y plantea una acción, decisión o hallazgo concreto.
+                    - Sacá relleno, anécdotas y comentarios laterales; dejá solo lo que importa para tomar una decisión.
+                    - Conservá todos los datos clave: nombres, fechas, cifras, deadlines, responsables.
+                    - Números como cifras; formato consistente para fechas y montos.
+                    - Sin saludos, sin cierres, sin preámbulo — solo los bullets.
+                    - No inventes contenido que no esté en el dictado.
+                    """,
+                icon: "list.clipboard.fill",
+                description: "Transforma un dictado largo en 3–5 bullets accionables"
+            ),
+            TemplatePrompt(
+                id: UUID(),
+                title: "Fun",
+                promptText: """
+                    - Reescribí con tono casual y divertido manteniendo intacto el significado original.
+                    - Cambiá palabras rígidas por sinónimos naturales y amistosos; sumá personalidad sin forzar chistes.
+                    - Que se lea bien: sin abuso de emojis (uno o dos como mucho, solo si encajan), sin muros de signos de exclamación.
+                    - Corregí gramática y sacá muletillas; colapsá repeticiones.
+                    - Números como cifras (5, no "cinco").
+                    - Mantené exactos todos los nombres, datos, fechas y cifras tal como se dictaron.
+                    - No inventes contenido que no esté en el dictado.
+                    """,
+                icon: "face.smiling.fill",
+                description: "Reescritura casual y divertida conservando el sentido"
             )
         ]
     }

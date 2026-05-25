@@ -56,15 +56,25 @@ struct InfoTip: View {
 // MARK: - Convenience initializers
 
 extension InfoTip {
-    /// Creates an InfoTip with just a message
-    init(_ message: String) {
-        self.message = message
+    /// Creates an InfoTip with just a message.
+    /// El parámetro acepta `LocalizedStringResource` para que los literales
+    /// de los call sites se extraigan a `Localizable.xcstrings` y se traduzcan.
+    init(_ message: LocalizedStringResource) {
+        self.message = String(localized: message)
         self.learnMoreLink = nil
     }
 
-    /// Creates an InfoTip with a learn more link
-    init(_ message: String, learnMoreURL: String) {
-        self.message = message
+    /// Creates an InfoTip with a learn more link.
+    init(_ message: LocalizedStringResource, learnMoreURL: String) {
+        self.message = String(localized: message)
         self.learnMoreLink = URL(string: learnMoreURL)
+    }
+
+    /// Variante con `String` ya resuelto (para call sites que pasan strings
+    /// dinámicos vía `AppText.t(...)` u otra fuente runtime).
+    init(resolved message: String, learnMoreURL: String? = nil) {
+        self.message = message
+        if let learnMoreURL { self.learnMoreLink = URL(string: learnMoreURL) }
+        else { self.learnMoreLink = nil }
     }
 }

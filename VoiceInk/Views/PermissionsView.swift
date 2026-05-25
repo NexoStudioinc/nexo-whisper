@@ -1,17 +1,19 @@
 import SwiftUI
 import AVFoundation
 import Cocoa
+import IOKit.hid
 
 class PermissionManager: ObservableObject {
     @Published var audioPermissionStatus = AVCaptureDevice.authorizationStatus(for: .audio)
     @Published var isAccessibilityEnabled = false
     @Published var isScreenRecordingEnabled = false
+    @Published var isInputMonitoringEnabled = false
     @Published var isKeyboardShortcutSet = false
-    
+
     init() {
         // Start observing system events that might indicate permission changes
         setupNotificationObservers()
-        
+
         // Initial permission checks
         checkAllPermissions()
     }
@@ -39,7 +41,28 @@ class PermissionManager: ObservableObject {
         checkAccessibilityPermissions()
         checkScreenRecordingPermission()
         checkAudioPermissionStatus()
+        checkInputMonitoringPermission()
         checkKeyboardShortcut()
+    }
+
+    /// Input Monitoring (Listen to keyboard events globally) — necesario
+    /// para el hotkey de grabación. Sin este permiso `CGEvent.tapCreate`
+    /// no recibe los keystrokes y el atajo no funciona.
+    func checkInputMonitoringPermission() {
+        // IOHIDCheckAccess no muestra prompt; solo consulta el estado.
+        // Valores: .granted, .denied, .unknown (= no preguntado todavía).
+        let status = IOHIDCheckAccess(kIOHIDRequestTypeListenEvent)
+        DispatchQueue.main.async {
+            self.isInputMonitoringEnabled = (status == kIOHIDAccessTypeGranted)
+        }
+    }
+
+    /// Dispara el prompt nativo del sistema. Si el usuario nunca lo
+    /// denegó, esto agrega Nexo Whisper a la lista de Input Monitoring.
+    /// Si ya está denegado, no hace nada — hay que ir manualmente a
+    /// System Settings (el botón se encarga de abrir esa pantalla).
+    func requestInputMonitoringPermission() {
+        _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
     }
     
     func checkAccessibilityPermissions() {
@@ -117,9 +140,9 @@ struct PermissionCard: View {
                             .font(.headline)
                         if let message = infoTipMessage {
                             if let link = infoTipLink, !link.isEmpty {
-                                InfoTip(message, learnMoreURL: link)
+                                InfoTip(resolved: message, learnMoreURL: link)
                             } else {
-                                InfoTip(message)
+                                InfoTip(resolved: message)
                             }
                         }
                     }
@@ -212,11 +235,21 @@ struct PermissionsView: View {
                 // Permission Cards
                 VStack(spacing: 16) {
                     // Keyboard Shortcut Permission
+                    //
+                    // Importante: leer `isGranted` desde `permissionManager.isKeyboardShortcutSet`
+                    // (NO desde `recordingShortcutManager.isShortcutConfigured`).
+                    //
+                    // El botón de refresh ejecuta `permissionManager.checkKeyboardShortcut()`,
+                    // que actualiza `permissionManager.isKeyboardShortcutSet` leyendo el estado
+                    // real desde `ShortcutStore`. Si la card mira otra variable (la del
+                    // RecordingShortcutManager externo) el refresh no surte efecto visible y
+                    // queda colgada en el estado inicial. Las otras 4 cards de esta vista
+                    // siguen el mismo patrón (todas leen de permissionManager).
                     PermissionCard(
                         icon: "keyboard",
                         title: "Keyboard Shortcut",
                         description: "Set up a keyboard shortcut to use Nexo Whisper anywhere",
-                        isGranted: recordingShortcutManager.isShortcutConfigured,
+                        isGranted: permissionManager.isKeyboardShortcutSet,
                         buttonTitle: "Configure Shortcut",
                         buttonAction: {
                             NotificationCenter.default.post(
@@ -263,6 +296,28 @@ struct PermissionsView: View {
                         infoTipMessage: String(localized: "Nexo Whisper uses Accessibility permissions to paste the transcribed text directly into other applications at your cursor's position. This allows for a seamless dictation experience across your Mac.")
                     )
                     
+                    // Input Monitoring Permission — necesario para que el
+                    // atajo global de grabación reciba los keystrokes.
+                    // Sin este permiso el hotkey no dispara nada, y al
+                    // usuario sin documentación le parece que la app está rota.
+                    PermissionCard(
+                        icon: "keyboard.badge.eye",
+                        title: "Input Monitoring Access",
+                        description: "Allow Nexo Whisper to detect your global keyboard shortcut",
+                        isGranted: permissionManager.isInputMonitoringEnabled,
+                        buttonTitle: "Open System Settings",
+                        buttonAction: {
+                            // Disparamos el prompt nativo (agrega la app a
+                            // la lista) y abrimos directo el panel exacto.
+                            permissionManager.requestInputMonitoringPermission()
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        },
+                        checkPermission: { permissionManager.checkInputMonitoringPermission() },
+                        infoTipMessage: String(localized: "Required for the global recording shortcut to work. Without this permission, pressing your hotkey does nothing.")
+                    )
+
                     // Screen Recording Permission
                     PermissionCard(
                         icon: "rectangle.on.rectangle",
@@ -279,7 +334,7 @@ struct PermissionsView: View {
                         },
                         checkPermission: { permissionManager.checkScreenRecordingPermission() },
                         infoTipMessage: String(localized: "Nexo Whisper captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored."),
-                        infoTipLink: "https://nexostudio.xyz/nexo-whisper/docs/contexto"
+                        infoTipLink: NexoURLs.docsContext
                     )
                 }
             }

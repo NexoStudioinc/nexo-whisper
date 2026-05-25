@@ -22,7 +22,10 @@ class TranscriptionPipeline {
         self.modelContext = modelContext
         self.serviceRegistry = serviceRegistry
         self.enhancementService = enhancementService
-        self.licenseViewModel = LicenseViewModel()
+        // Singleton: el viewmodel es global y reactivo. Asignarlo desde el
+        // exterior tras un cambio de status (como hacía VoiceInkEngine) ya
+        // no es necesario — el singleton se auto-actualiza.
+        self.licenseViewModel = LicenseViewModel.shared
     }
 
     /// Run the full pipeline for a given transcription record.
@@ -210,6 +213,20 @@ class TranscriptionPipeline {
                     NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
                 }
                 NotificationCenter.default.post(name: .transcriptionCompleted, object: transcription)
+
+                // Alimentamos el tracker de palabras raras para que pueda
+                // sugerir agregar términos al diccionario después de N apariciones.
+                // Defensivo: snapshot del texto antes del dispatch, tracking
+                // nunca debe romper la transcripción.
+                if transcription.transcriptionStatus == TranscriptionStatus.completed.rawValue {
+                    let textForTracker = transcription.text
+                    let ctx = modelContext
+                    Task { @MainActor in
+                        do {
+                            RareWordTracker.shared.feed(text: textForTracker, modelContext: ctx)
+                        }
+                    }
+                }
             } catch {
                 logger.error("Failed to save transcription: \(error.localizedDescription, privacy: .public)")
             }
@@ -220,22 +237,37 @@ class TranscriptionPipeline {
             return
         }
 
-        if var textToPaste = finalPastedText,
+        if let textToPaste = finalPastedText,
            transcription.transcriptionStatus == TranscriptionStatus.completed.rawValue {
-            if case .trialExpired = licenseViewModel.licenseState {
-                textToPaste = """
-                    Your trial has expired. Upgrade to VoiceInk Pro at tryvoiceink.com/buy
-                    \n\(textToPaste)
-                    """
-            }
+            // Tras la migración a freemium (sin trial), la transcripción local
+            // es libre — no se inyecta más banner "trial expired" en el paste.
+            // El gating de features Pro vive en FeatureGate, no en esta capa.
 
             let appendSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
             let pastedText = textToPaste + (appendSpace ? " " : "")
             let pasteResult = await CursorPaster.startPasteAtCursor(pastedText).value
 
-            // Fallback: si no había text field para recibir el paste, el texto
-            // quedó persistente en el clipboard. Avisamos al usuario para que
-            // no se pierda la transcripción.
+            // SAFETY NET CRÍTICA: el texto SIEMPRE termina en el clipboard como
+            // red de seguridad. Si la mejora IA tardó y el usuario perdió foco,
+            // o si el paste no llegó al lugar correcto, puede recuperarlo con
+            // Cmd+V manual. Esto corre DESPUÉS del clipboard restore (que se
+            // ejecuta dentro de CursorPaster con un delay), para que nuestra
+            // escritura tenga la última palabra y no se pierda la transcripción.
+            let safetyNetText = pastedText
+            Task { @MainActor in
+                let restoreDelay = max(
+                    UserDefaults.standard.double(forKey: "clipboardRestoreDelay"),
+                    0.25
+                )
+                // Esperamos restoreDelay + buffer para asegurarnos de quedar
+                // últimos en escribir al pasteboard.
+                let waitSeconds = restoreDelay + 0.5
+                try? await Task.sleep(nanoseconds: UInt64(waitSeconds * 1_000_000_000))
+                _ = ClipboardManager.setClipboard(safetyNetText, transient: false, sessionID: nil)
+            }
+
+            // Fallback: si no había text field para recibir el paste, avisamos
+            // al usuario que el texto quedó en el clipboard.
             if pasteResult == .noTextFieldFocused {
                 await MainActor.run {
                     NotificationManager.shared.showNotification(

@@ -190,11 +190,10 @@ class AIEnhancementService: ObservableObject {
         let finalContextSection = allContextSections + customVocabularySection
 
         if let activePrompt = activePrompt {
-            if activePrompt.id == PredefinedPrompts.assistantPromptId {
-                return activePrompt.promptText + finalContextSection
-            } else {
-                return activePrompt.finalPromptText + finalContextSection
-            }
+            // El prompt "Assistant" se removió de los predefinidos. Si más
+            // adelante volvemos a un prompt sin instrucciones de sistema,
+            // se puede flaguear por `activePrompt.useSystemInstructions == false`.
+            return activePrompt.finalPromptText + finalContextSection
         } else {
             let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first!
             return defaultPrompt.finalPromptText + finalContextSection
@@ -385,13 +384,56 @@ class AIEnhancementService: ObservableObject {
         let enhancementPrompt: EnhancementPrompt = .transcriptionEnhancement
         let promptName = activePrompt?.title
 
+        // Gating de prompts Pro: el user free solo puede usar el System
+        // Default. Si seleccionó cualquier otro predefinido o un custom,
+        // abortamos antes de gastar tokens. La UI del selector debería
+        // bloquear esto upstream pero acá hay doble check de seguridad.
+        if let active = activePrompt, !FeatureGate.isPromptAvailable(active.id) {
+            throw EnhancementError.proPromptRequired
+        }
+
         do {
             let result = try await makeRequestWithRetry(text: text, mode: enhancementPrompt)
             let endTime = Date()
             let duration = endTime.timeIntervalSince(startTime)
+            // Tracking de gasto estimado: solo si el provider es de pago.
+            // Para localCLI/ollama no tiene sentido porque corre con la
+            // suscripción/cuenta del usuario.
+            recordTokenUsageIfBillable(inputText: text, outputText: result)
             return (result, duration, promptName)
         } catch {
             throw error
+        }
+    }
+
+    /// Estima tokens (heurística chars/3.5) y guarda un `TokenUsageRecord`
+    /// si el provider activo es facturable. Errores silenciosos: tracking
+    /// nunca debe romper la transcripción. La persistencia va por
+    /// `TokenUsageStore` (UserDefaults JSON) para evitar crashes de
+    /// migración SwiftData.
+    private func recordTokenUsageIfBillable(inputText: String, outputText: String) {
+        let inputTokens = TokenPricing.estimateTokens(from: inputText)
+        let outputTokens = TokenPricing.estimateTokens(from: outputText)
+
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let provider = self.aiService.selectedProvider.rawValue
+            guard TokenPricing.isBillable(provider: provider) else { return }
+            let model = self.aiService.currentModel
+            let cost = TokenPricing.estimateCost(
+                provider: provider,
+                model: model,
+                inputTokens: inputTokens,
+                outputTokens: outputTokens
+            )
+            let record = TokenUsageRecord(
+                provider: provider,
+                model: model,
+                inputTokens: inputTokens,
+                outputTokens: outputTokens,
+                costUSD: cost
+            )
+            TokenUsageStore.shared.append(record)
         }
     }
 
@@ -443,6 +485,14 @@ class AIEnhancementService: ObservableObject {
 
     private func initializePredefinedPrompts() {
         let predefinedTemplates = PredefinedPrompts.createDefaultPrompts()
+        let validPredefinedIds = Set(predefinedTemplates.map { $0.id })
+
+        // Limpieza de prompts predefinidos viejos que ya no están en el set
+        // actual (ej: "Assistant" que se removió). Solo afecta prompts
+        // marcados `isPredefined`; los custom del usuario no se tocan.
+        customPrompts.removeAll { prompt in
+            prompt.isPredefined && !validPredefinedIds.contains(prompt.id)
+        }
 
         for template in predefinedTemplates {
             if let existingIndex = customPrompts.firstIndex(where: { $0.id == template.id }) {
@@ -463,6 +513,13 @@ class AIEnhancementService: ObservableObject {
                 customPrompts.append(template)
             }
         }
+
+        // Si el prompt seleccionado era el Assistant viejo (ya removido),
+        // re-seleccionar el primero disponible.
+        if let selected = selectedPromptId,
+           !customPrompts.contains(where: { $0.id == selected }) {
+            selectedPromptId = customPrompts.first?.id
+        }
     }
 }
 
@@ -475,6 +532,10 @@ enum EnhancementError: Error {
     case rateLimitExceeded
     case timeout
     case customError(String)
+    /// Lanzado cuando el user free intenta usar uno de los 7 prompts
+    /// extras (Chat, Email, Rewrite, Formal, Coding, Summary, Fun) o un
+    /// custom prompt creado por él. El "System Default" sigue libre.
+    case proPromptRequired
 }
 
 extension EnhancementError: LocalizedError {
@@ -496,6 +557,8 @@ extension EnhancementError: LocalizedError {
             return "Enhancement request timed out. Check your connection or increase the timeout duration."
         case .customError(let message):
             return message
+        case .proPromptRequired:
+            return "This prompt requires a Pro license. The free tier includes the System Default prompt — upgrade to Pro to unlock Chat, Email, Rewrite, Formal, Coding, Summary, Fun and custom prompts."
         }
     }
 }

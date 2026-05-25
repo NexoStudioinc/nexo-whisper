@@ -125,7 +125,7 @@ struct OnboardingPermissionsView: View {
                                     if permissions[currentPermissionIndex].type == .screenRecording {
                                         InfoTip(
                                             "Nexo Whisper captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored.",
-                                            learnMoreURL: "https://nexostudio.xyz/nexo-whisper/docs/contexto"
+                                            learnMoreURL: NexoURLs.docsContext
                                         )
                                     }
                                 }

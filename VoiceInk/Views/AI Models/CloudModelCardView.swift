@@ -123,7 +123,7 @@ struct CloudModelCardView: View {
                 .lineLimit(1)
             
             // Language
-            Label(model.language, systemImage: "globe")
+            Label(LocalizedStringKey(model.language), systemImage: "globe")
                 .font(.system(size: 11))
                 .foregroundColor(Color(.secondaryLabelColor))
                 .lineLimit(1)
@@ -152,7 +152,7 @@ struct CloudModelCardView: View {
     }
     
     private var descriptionSection: some View {
-        Text(model.description)
+        Text(LocalizedStringKey(model.description))
             .font(.system(size: 11))
             .foregroundColor(Color(.secondaryLabelColor))
             .lineLimit(2)

@@ -274,14 +274,25 @@ struct InputModeCard: View {
         }
     }
 
-    private var description: String {
+    // LocalizedStringKey en vez de String para que SwiftUI auto-localice
+    // los literales contra Localizable.xcstrings. Si fueran String, los
+    // pasaríamos como variables y SwiftUI usaría la versión literal en EN.
+    private var titleKey: LocalizedStringKey {
+        switch mode {
+        case .systemDefault: return "System Default"
+        case .custom: return "Custom Device"
+        case .prioritized: return "Prioritized"
+        }
+    }
+
+    private var descriptionKey: LocalizedStringKey {
         switch mode {
         case .systemDefault: return "Use your Mac's default input"
         case .custom: return "Select a specific input device"
         case .prioritized: return "Set up device priority order"
         }
     }
-    
+
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 12) {
@@ -289,12 +300,12 @@ struct InputModeCard: View {
                     .font(.system(size: 28))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(isSelected ? .blue : .secondary)
-                
+
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(mode.rawValue)
+                    Text(titleKey)
                         .font(.headline)
-                    
-                    Text(description)
+
+                    Text(descriptionKey)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
