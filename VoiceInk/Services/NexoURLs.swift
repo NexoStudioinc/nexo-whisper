@@ -22,15 +22,13 @@ enum NexoURLs {
 
     // MARK: - Producto / venta (Lemon Squeezy)
 
-    /// Checkout del producto en Lemon Squeezy.
-    /// TODO(maxi): reemplazar por el slug real del producto cuando se cree
-    /// en el dashboard de LS. Hoy es placeholder bajo el subdomain del store.
-    static let buy            = "\(store)/buy/nexo-whisper-pro"
+    /// Checkout del producto Nexo Whisper Pro en Lemon Squeezy.
+    /// Product ID: 1087875 · Variant UUID: 3afa04ca-c09a-4032-a56e-868bf373b972
+    /// Store custom domain: store.nexowhisper.com
+    static let buy            = "\(store)/checkout/buy/3afa04ca-c09a-4032-a56e-868bf373b972"
 
-    /// Customer portal donde el user puede ver sus licencias, gestionar
-    /// activaciones por device, descargar invoices y pedir reembolsos.
-    /// LS genera estos links por customer; el endpoint base es del store.
-    /// TODO(maxi): ajustar al path real (LS suele ser `/billing` o un magic link).
+    /// Customer portal de LS para gestionar activaciones, descargar invoices,
+    /// pedir reembolsos y deactivar devices. Con custom domain → `/billing`.
     static let customerPortal = "\(store)/billing"
 
     /// Programa de afiliados (Lemon Squeezy lo provee por producto).
