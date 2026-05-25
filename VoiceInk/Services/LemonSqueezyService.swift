@@ -8,7 +8,7 @@ import os
 enum LicenseError: Error {
     /// 404 — la key no existe en este store (o nunca existió).
     case keyNotFound
-    /// Excedió el límite de activations del producto (típicamente 3 Macs).
+    /// Excedió el límite de activations del producto (1 Mac por licencia).
     case activationLimitReached
     /// HTTP no esperado (5xx, 401, etc).
     case serverError(Int)

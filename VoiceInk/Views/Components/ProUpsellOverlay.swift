@@ -97,7 +97,7 @@ struct ProUpsellOverlay: View {
             Button(action: { showPricingSheet = true }) {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                    Text("Get Nexo Whisper Pro")
+                    Text("Conseguí Nexo Whisper Pro")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: 280)

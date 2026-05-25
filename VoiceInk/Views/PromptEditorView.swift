@@ -88,7 +88,7 @@ struct PromptEditorView: View {
             ProUpsellOverlay(
                 feature: .customPrompts,
                 icon: "square.and.pencil",
-                title: "Custom Prompts",
+                title: "Prompts personalizados",
                 description: "Creá tus propios prompts personalizados para mejorar la transcripción según tu workflow.",
                 bullets: [
                     "Prompts ilimitados con título, descripción e ícono",

@@ -31,7 +31,7 @@ struct AudioTranscribeView: View {
             ProUpsellOverlay(
                 feature: .fileTranscription,
                 icon: "waveform.badge.mic",
-                title: "Transcribe Audio Files",
+                title: "Transcribir archivos de audio",
                 description: "Procesá archivos .mp3, .wav, .m4a, .flac, .mp4 y más con Whisper local o transcripción cloud.",
                 bullets: [
                     "Drag & drop de múltiples archivos",

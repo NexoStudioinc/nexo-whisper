@@ -31,7 +31,7 @@ struct ProPricingSheet: View {
 
     /// Precio del producto en LS (Nexo Whisper Pro).
     private let priceDisplay = "$7.99"
-    private let priceCaption = "One-time payment · Lifetime updates · 3 Macs"
+    private let priceCaption = "One-time payment · Lifetime updates · 1 Mac"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -195,7 +195,7 @@ struct ProPricingSheet: View {
                 featureRow(included: true, "Mejora vía CLI local (Claude Code, Codex, Antigravity, Copilot)")
                 featureRow(included: true, "7 prompts predefinidos extras (Chat, Email, Coding, Summary, etc.)")
                 featureRow(included: true, "Prompts custom ilimitados")
-                featureRow(included: true, "Hasta 3 Macs por licencia")
+                featureRow(included: true, "Activación en 1 Mac · ¿Necesitás otra? Comprá otra licencia")
                 featureRow(included: true, "Soporte prioritario y actualizaciones gratis")
             }
 

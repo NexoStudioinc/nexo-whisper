@@ -133,7 +133,7 @@ struct LicenseManagementView: View {
                     featureItem(icon: "bubble.left.and.bubble.right.fill", title: "Priority Support", color: .purple)
                     featureItem(icon: "infinity.circle.fill", title: "Lifetime Access", color: .blue)
                     featureItem(icon: "arrow.up.circle.fill", title: "Free Updates", color: .green)
-                    featureItem(icon: "macbook.and.iphone", title: "Multiple Devices", color: .orange)
+                    featureItem(icon: "macbook", title: "1 Mac por licencia", color: .orange)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
             }
@@ -180,11 +180,11 @@ struct LicenseManagementView: View {
 
             // Customer portal (para gestionar activaciones en otros devices)
             VStack(spacing: 20) {
-                Text("Need to manage your devices?")
+                Text("¿Necesitás otra Mac?")
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    Text("Access your customer portal to deactivate other Macs, view invoices, or request a refund.")
+                    Text("Cada licencia activa 1 Mac. Si querés otra, comprá otra licencia (USD 7.99). Desde el portal podés también desactivar este device, ver invoices o pedir reembolso.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -311,7 +311,7 @@ struct LicenseManagementView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    Text("You can use Nexo Whisper on all your personal devices")
+                    Text("Esta licencia activa 1 Mac. Para otra Mac, comprá otra licencia.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)

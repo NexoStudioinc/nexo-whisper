@@ -46,10 +46,39 @@ final class LocalizationManager {
     private init() {}
 
     /// Idioma actualmente seleccionado por el usuario en la app.
-    /// Si no hay selección guardada, devuelve `english` (default).
+    ///
+    /// Si el user nunca eligió idioma manualmente, detectamos su preferencia
+    /// del sistema:
+    ///   - macOS en español (cualquier variante: es, es-AR, es-MX, etc.) → ES
+    ///   - macOS en portugués → PT (si está soportado en el enum)
+    ///   - Cualquier otro → EN (default global)
+    ///
+    /// Esa detección corre solo la PRIMERA vez. Apenas el user toca el
+    /// picker de idioma en Settings, `setLanguage` escribe a UserDefaults
+    /// y futuros arranques respetan esa elección.
     var currentLanguage: AppLanguage {
-        let stored = UserDefaults.standard.string(forKey: appLanguageKey) ?? AppLanguage.english.rawValue
-        return AppLanguage(rawValue: stored) ?? .english
+        if let stored = UserDefaults.standard.string(forKey: appLanguageKey),
+           let lang = AppLanguage(rawValue: stored) {
+            return lang
+        }
+
+        // Sin preferencia guardada → auto-detect del sistema.
+        let systemLang = Locale.current.language.languageCode?.identifier ?? "en"
+        let detected: AppLanguage
+        switch systemLang {
+        case "es":
+            detected = .spanish
+        case "pt":
+            // Si AppLanguage tiene .portuguese, usarlo; si no, EN como fallback.
+            detected = AppLanguage(rawValue: "pt") ?? .english
+        default:
+            detected = .english
+        }
+
+        // Persistir la detección para que sea consistente en próximos arranques
+        // (y para que `lastAppliedKey` de setLanguage no se confunda).
+        UserDefaults.standard.set(detected.rawValue, forKey: appLanguageKey)
+        return detected
     }
 
     /// Cambia el idioma activo. Persiste la elección y muestra una alerta

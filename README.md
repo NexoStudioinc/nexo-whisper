@@ -29,7 +29,7 @@ Apretás un hotkey, hablás, soltás. La transcripción se pega donde tengas el 
 - **Historial** completo: ver, re-transcribir, re-mejorar, exportar CSV.
 - **1 prompt predefinido** (System Default — limpieza mínima preservando contenido).
 
-### 💰 Pro ($7 USD, una vez, hasta 3 Macs)
+### 💰 Pro ($7.99 USD, una vez, 1 Mac por licencia)
 
 Todo lo de Free, más:
 

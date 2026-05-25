@@ -60,14 +60,30 @@ local: check setup
 		CODE_SIGN_ENTITLEMENTS="$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
 		SWIFT_ACTIVE_COMPILATION_CONDITIONS='$$(inherited) LOCAL_BUILD' \
 		build
+	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
+	DEST="$$HOME/Downloads/Nexo Whisper.app" && \
+	if [ -d "$$APP_PATH" ]; then \
+		echo "Copying Nexo Whisper.app (DEV build) to ~/Downloads..."; \
+		rm -rf "$$DEST"; \
+		rm -rf "$$HOME/Downloads/VoiceInk.app"; \
+		ditto "$$APP_PATH" "$$DEST"; \
+		xattr -cr "$$DEST"; \
+		echo ""; \
+		echo "✅ DEV build saved to: ~/Downloads/Nexo Whisper.app"; \
+		echo "   LOCAL_BUILD activo → arranca en Pro automáticamente + debug toggle visible."; \
+		echo "   Run with: open \"$$HOME/Downloads/Nexo Whisper.app\""; \
+	else \
+		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
+		exit 1; \
+	fi
 
 # Build PARA DISTRIBUCIÓN PÚBLICA — sin LOCAL_BUILD flag.
 # Resultado: app arranca en estado .free por default. Para activar Pro
 # requiere license key real de Lemon Squeezy. Este es el DMG que va a
 # GitHub Releases para que descarguen los usuarios.
 #
-# Misma config que `make local` excepto el `LOCAL_BUILD` flag y el destino
-# del .app (con sufijo "-release" para no pisar el build dev).
+# El .app de release queda en ~/Downloads/Nexo Whisper Release.app
+# para no pisar la app dev (~/Downloads/Nexo Whisper.app).
 local-release: check setup
 	@echo "Building VoiceInk for PUBLIC release (no LOCAL_BUILD → .free by default)..."
 	@rm -rf "$(LOCAL_DERIVED_DATA)"
@@ -91,27 +107,6 @@ local-release: check setup
 		echo "✅ Release build saved to: ~/Downloads/Nexo Whisper Release.app"; \
 		echo "   Arranca en .free — para Pro requiere license key de LS."; \
 		echo "   Empaquetar DMG con: create-dmg (ver BUILDING.md)"; \
-	else \
-		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
-		exit 1; \
-	fi
-	@# NOTA: este target NO altera ~/Downloads/Nexo Whisper.app (build dev)
-	@# para que puedas tener ambas versiones lado a lado.
-	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
-	DEST="$$HOME/Downloads/Nexo Whisper.app" && \
-	if [ -d "$$APP_PATH" ]; then \
-		echo "Copying Nexo Whisper.app to ~/Downloads..."; \
-		rm -rf "$$DEST"; \
-		rm -rf "$$HOME/Downloads/VoiceInk.app"; \
-		ditto "$$APP_PATH" "$$DEST"; \
-		xattr -cr "$$DEST"; \
-		echo ""; \
-		echo "Build complete! App saved to: ~/Downloads/Nexo Whisper.app"; \
-		echo "Run with: open \"$$HOME/Downloads/Nexo Whisper.app\""; \
-		echo ""; \
-		echo "Limitations of local builds:"; \
-		echo "  - No iCloud dictionary sync"; \
-		echo "  - No automatic updates (pull new code and rebuild to update)"; \
 	else \
 		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
 		exit 1; \
