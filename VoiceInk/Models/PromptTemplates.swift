@@ -176,32 +176,6 @@ enum PromptTemplates {
                 icon: "face.smiling.fill",
                 description: "Reescritura extrema con tono random (borracho, dramático, pirata, etc.)"
             ),
-            TemplatePrompt(
-                id: UUID(),
-                title: "Translate to English",
-                promptText: """
-                    Translate the transcript to natural, fluent English. Preserve the speaker's tone and intent.
-                    - If the transcript is already in English, return it as-is (with light cleanup of fillers).
-                    - Adapt cultural references when needed (e.g. "che" → "hey", "boludo" → "dude" / "buddy").
-                    - Keep all names, dates, numbers exactly as in the original.
-                    - Output only the translated text. No notes, no markdown, no "Translation:" prefix.
-                    """,
-                icon: "globe.americas.fill",
-                description: "Translate any dictation to English"
-            ),
-            TemplatePrompt(
-                id: UUID(),
-                title: "Traducir a español",
-                promptText: """
-                    Traducí el transcript a español natural y fluido (rioplatense preferido). Conservá el tono y la intención del hablante.
-                    - Si el transcript ya está en español, devolvelo como está (con limpieza leve de muletillas).
-                    - Adaptá referencias culturales cuando corresponda (ej. "dude" → "amigo", "OMG" → "Dios mío").
-                    - Mantené nombres, fechas, números exactamente como en el original.
-                    - Devolvé solo el texto traducido. Sin notas, sin markdown, sin prefijo "Traducción:".
-                    """,
-                icon: "globe.americas.fill",
-                description: "Translates any dictation to Spanish (rioplatense)"
-            )
         ]
     }
 
@@ -342,32 +316,6 @@ enum PromptTemplates {
                 icon: "face.smiling.fill",
                 description: "Reescritura extrema con tono random (borracho, dramático, pirata, etc.)"
             ),
-            TemplatePrompt(
-                id: UUID(),
-                title: "Translate to English",
-                promptText: """
-                    Translate the transcript to natural, fluent English. Preserve the speaker's tone and intent.
-                    - If the transcript is already in English, return it as-is (with light cleanup of fillers).
-                    - Adapt cultural references when needed (e.g. "che" → "hey", "boludo" → "dude" / "buddy").
-                    - Keep all names, dates, numbers exactly as in the original.
-                    - Output only the translated text. No notes, no markdown, no "Translation:" prefix.
-                    """,
-                icon: "globe.americas.fill",
-                description: "Traducí cualquier dictado al inglés"
-            ),
-            TemplatePrompt(
-                id: UUID(),
-                title: "Traducir a español",
-                promptText: """
-                    Traducí el transcript a español natural y fluido (rioplatense preferido). Conservá el tono y la intención del hablante.
-                    - Si el transcript ya está en español, devolvelo como está (con limpieza leve de muletillas).
-                    - Adaptá referencias culturales cuando corresponda (ej. "dude" → "amigo", "OMG" → "Dios mío").
-                    - Mantené nombres, fechas, números exactamente como en el original.
-                    - Devolvé solo el texto traducido. Sin notas, sin markdown, sin prefijo "Traducción:".
-                    """,
-                icon: "globe.americas.fill",
-                description: "Traducí cualquier dictado al español (rioplatense)"
-            )
         ]
     }
 }

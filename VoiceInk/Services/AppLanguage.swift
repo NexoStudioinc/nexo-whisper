@@ -75,9 +75,20 @@ final class LocalizationManager {
             detected = .english
         }
 
-        // Persistir la detección para que sea consistente en próximos arranques
-        // (y para que `lastAppliedKey` de setLanguage no se confunda).
+        // Persistir la detección. CRÍTICO: además de `appLanguageKey`, hay
+        // que setear `AppleLanguages` — ese es el que SwiftUI consulta para
+        // resolver strings de Localizable.xcstrings. Sin esto, el onboarding
+        // arranca en inglés aunque el sistema esté en español (lo notamos
+        // como bug en QA: tabs en EN pero Settings en ES, inconsistente).
+        //
+        // No mostramos alert de reinicio (a diferencia de setLanguage) porque
+        // este es el PRIMER arranque — no hay views ya renderizadas que
+        // necesiten refresh. lastAppliedKey también se setea para que
+        // setLanguage no piense que el user "ya estaba" en este idioma.
         UserDefaults.standard.set(detected.rawValue, forKey: appLanguageKey)
+        UserDefaults.standard.set([detected.rawValue], forKey: appleLanguagesKey)
+        UserDefaults.standard.set(detected.rawValue, forKey: lastAppliedKey)
+        UserDefaults.standard.synchronize()
         return detected
     }
 

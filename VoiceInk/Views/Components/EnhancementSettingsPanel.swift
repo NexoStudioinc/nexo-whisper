@@ -6,8 +6,32 @@ struct EnhancementSettingsPanel: View {
     @AppStorage("ShortEnhancementWordThreshold") private var shortEnhancementWordThreshold = 3
     @AppStorage("EnhancementTimeoutSeconds") private var enhancementTimeoutSeconds = 7
     @AppStorage("EnhancementRetryOnTimeout") private var retryOnTimeout = true
+    /// Idioma destino de traducción automática. Si != "off", el LLM traduce
+    /// el output al código ISO indicado, sin importar el idioma del input.
+    /// Implementación en AIPrompts.appendTranslationDirectiveIfNeeded.
+    @AppStorage("TargetTranslationLanguage") private var targetTranslationLanguage = "off"
+    @ObservedObject private var licenseViewModel = LicenseViewModel.shared
     @State private var isShortEnhancementExpanded = false
     @State private var isHandlingToggleChange = false
+    @State private var showPricingSheet = false
+
+    /// Idiomas soportados por el picker de traducción. Códigos ISO 639-1.
+    /// La lista cubre los idiomas más comunes con buenos modelos LLM.
+    /// Para agregar más: el LLM moderno entiende los 99 de Whisper.
+    private let translationLanguages: [(code: String, label: String, flag: String)] = [
+        ("off",  "Desactivada",    ""),
+        ("es",   "Español",        "🇪🇸"),
+        ("en",   "English",        "🇬🇧"),
+        ("pt",   "Português",      "🇧🇷"),
+        ("fr",   "Français",       "🇫🇷"),
+        ("de",   "Deutsch",        "🇩🇪"),
+        ("it",   "Italiano",       "🇮🇹"),
+        ("ja",   "日本語",          "🇯🇵"),
+        ("zh",   "中文",            "🇨🇳"),
+        ("ko",   "한국어",          "🇰🇷"),
+        ("ru",   "Русский",        "🇷🇺"),
+        ("ar",   "العربية",        "🇸🇦")
+    ]
 
     var onDismiss: () -> Void
 
@@ -60,6 +84,71 @@ struct EnhancementSettingsPanel: View {
                     .toggleStyle(.switch)
                 } header: {
                     Text("Context")
+                }
+
+                // MARK: - Auto-translate (Pro)
+                Section {
+                    if !licenseViewModel.isPro {
+                        // Free: mostrar el picker pero con candado, click → pricing.
+                        Button {
+                            showPricingSheet = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "lock.fill")
+                                    .foregroundStyle(.orange)
+                                    .font(.system(size: 12))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack(spacing: 4) {
+                                        Text("Auto-translate")
+                                        ProBadge()
+                                    }
+                                    Text("Traducí cualquier dictado al idioma que elijas")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        // Pro: picker funcional. Si != "off", el LLM traduce
+                        // el output al idioma elegido (cualquier sea el input).
+                        Picker(selection: $targetTranslationLanguage) {
+                            ForEach(translationLanguages, id: \.code) { lang in
+                                HStack {
+                                    if !lang.flag.isEmpty {
+                                        Text(lang.flag)
+                                    }
+                                    Text(lang.label)
+                                }
+                                .tag(lang.code)
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("Auto-translate output to")
+                                InfoTip("Si elegís un idioma, todo lo que dictes se va a traducir automáticamente al idioma elegido — sin importar en qué idioma hablás. Apagada por default: el output queda en el mismo idioma del dictado.")
+                            }
+                        }
+                        .pickerStyle(.menu)
+
+                        if targetTranslationLanguage != "off" {
+                            HStack(spacing: 6) {
+                                Image(systemName: "globe.americas.fill")
+                                    .foregroundStyle(.blue)
+                                    .font(.system(size: 11))
+                                Text("Traducción activa: hablás en cualquier idioma, salida en \(currentTranslationLabel())")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.top, 2)
+                        }
+                    }
+                } header: {
+                    Text("Translation")
                 }
 
                 Section {
@@ -152,5 +241,16 @@ struct EnhancementSettingsPanel: View {
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
         }
+        .sheet(isPresented: $showPricingSheet) {
+            ProPricingSheet(isPresented: $showPricingSheet)
+        }
+    }
+
+    /// Devuelve la etiqueta human-readable del idioma destino actual.
+    /// Si por algún motivo el código no está en la lista, devuelve el código.
+    private func currentTranslationLabel() -> String {
+        translationLanguages
+            .first(where: { $0.code == targetTranslationLanguage })?
+            .label ?? targetTranslationLanguage
     }
 }

@@ -14,11 +14,13 @@ import Foundation
 ///   reduciendo latencia y costo del CLI.
 enum AIPrompts {
     static var customPromptTemplate: String {
-        isSpanish ? customPromptTemplateES : customPromptTemplateEN
+        let base = isSpanish ? customPromptTemplateES : customPromptTemplateEN
+        return appendTranslationDirectiveIfNeeded(to: base)
     }
 
     static var assistantMode: String {
-        isSpanish ? assistantModeES : assistantModeEN
+        let base = isSpanish ? assistantModeES : assistantModeEN
+        return appendTranslationDirectiveIfNeeded(to: base)
     }
 
     // MARK: - Idioma activo
@@ -30,6 +32,57 @@ enum AIPrompts {
     private static var isSpanish: Bool {
         let raw = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
         return raw == "es"
+    }
+
+    // MARK: - Traducción dinámica
+    //
+    // Feature: el user puede setear `TargetTranslationLanguage` en UserDefaults
+    // (vía picker en Settings → AI Enhancement). Cuando está seteado y es
+    // distinto del idioma del input, agregamos una directiva al system prompt
+    // que sobrescribe la regla "responde en el idioma del input" → ahora el
+    // LLM traduce el output al idioma elegido por el user.
+    //
+    // El picker mapea cualquier idioma (es, en, fr, de, it, pt, ja, zh, ko,
+    // ru, ar, etc) — los 99 que entiende cualquier LLM moderno. NO depende
+    // de Whisper (Whisper sigue siendo "qué idioma habla el user").
+    //
+    // Esta es feature Pro: se gateaba al setear el target language en la UI.
+
+    /// Si el user configuró un idioma destino de traducción y es != del idioma
+    /// de la app, inyecta directiva al system prompt para que el LLM traduzca.
+    /// Sin esto, el LLM respeta la regla "responde en el idioma del input".
+    private static func appendTranslationDirectiveIfNeeded(to template: String) -> String {
+        guard let target = UserDefaults.standard.string(forKey: "TargetTranslationLanguage"),
+              !target.isEmpty,
+              target != "off" else {
+            return template
+        }
+        let directive = isSpanish
+            ? """
+
+              ANULACIÓN DE IDIOMA — TRADUCCIÓN ACTIVA:
+              El usuario configuró traducción automática al idioma con código ISO "\(target)".
+              Ignorá la regla anterior de "responder en el mismo idioma del input".
+              SIEMPRE devolvé el output traducido al idioma "\(target)", sin importar en qué idioma esté el transcript.
+              Mantené nombres propios, fechas, números y código exactamente como en el original.
+              """
+            : """
+
+              LANGUAGE OVERRIDE — TRANSLATION ACTIVE:
+              The user configured automatic translation to ISO code "\(target)".
+              Ignore the previous rule of "respond in the input language".
+              ALWAYS return the output translated to "\(target)", regardless of the transcript's language.
+              Keep proper nouns, dates, numbers and code exactly as in the original.
+              """
+        return template + "\n" + directive
+    }
+
+    /// Helper accesible desde la UI para saber si la traducción está activa.
+    /// Devuelve el código ISO del idioma destino, o `nil` si está apagada.
+    static var activeTranslationTarget: String? {
+        let value = UserDefaults.standard.string(forKey: "TargetTranslationLanguage")
+        guard let value, !value.isEmpty, value != "off" else { return nil }
+        return value
     }
 
     // MARK: - English
