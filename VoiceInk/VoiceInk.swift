@@ -41,6 +41,19 @@ struct VoiceInkApp: App {
 
         AppDefaults.registerDefaults()
 
+        // Bootstrap del idioma ANTES de que SwiftUI cargue el primer view.
+        // Si el user nunca eligió idioma explícitamente, hacemos auto-detect
+        // del sistema y seteamos AppleLanguages (que es lo que SwiftUI lee
+        // para resolver Localizable.xcstrings). Sin este force-init, el
+        // primer arranque mostraba el onboarding en inglés aunque el sistema
+        // estuviera en español.
+        //
+        // Bypass del @MainActor: estamos en init de App, antes que SwiftUI
+        // arranque su run loop. MainActor.assumeIsolated es safe acá.
+        _ = MainActor.assumeIsolated {
+            LocalizationManager.shared.currentLanguage
+        }
+
         if UserDefaults.standard.object(forKey: "powerModeUIFlag") == nil {
             let hasEnabledPowerModes = PowerModeManager.shared.configurations.contains { $0.isEnabled }
             UserDefaults.standard.set(hasEnabledPowerModes, forKey: "powerModeUIFlag")
