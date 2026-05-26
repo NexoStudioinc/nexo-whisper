@@ -22,10 +22,10 @@ enum NexoURLs {
 
     // MARK: - Producto / venta (Lemon Squeezy)
 
-    /// Checkout del producto Nexo Whisper Pro en Lemon Squeezy.
-    /// Product ID: 1087875 · Variant UUID: 3afa04ca-c09a-4032-a56e-868bf373b972
+    /// Checkout del producto Nexo Whisper Pro en Lemon Squeezy (LIVE mode).
+    /// Product ID: 1087705 · Variant UUID: 352a86e6-3239-4883-93c5-0d0f5f38845a
     /// Store custom domain: store.nexowhisper.com
-    static let buy            = "\(store)/checkout/buy/3afa04ca-c09a-4032-a56e-868bf373b972"
+    static let buy            = "\(store)/checkout/buy/352a86e6-3239-4883-93c5-0d0f5f38845a"
 
     /// Customer portal de LS para gestionar activaciones, descargar invoices,
     /// pedir reembolsos y deactivar devices. Con custom domain → `/billing`.
