@@ -21,11 +21,11 @@
           <li>Soporte español rioplatense + inglés.</li>
         </ul>
       ]]></description>
-      <pubDate>Mon, 25 May 2026 20:45:00 -0300</pubDate>
+      <pubDate>Mon, 25 May 2026 21:15:00 -0300</pubDate>
       <enclosure
         url="https://github.com/NexoStudioinc/nexo-whisper-releases/releases/download/v1.0.0/NexoWhisper.dmg"
-        sparkle:edSignature="Fwy1D07SUv/+n32zwaebboIUjb/3NVEuN9OXOwcYcczaiDmjYpAFgFswj0EEBx7FjmXAvmwJlK03Y+/x/hsGBQ=="
-        length="17851831"
+        sparkle:edSignature="R1KKoMFfzopmuEYFvCABgWWKo0x0FmfdkJD1FYtFoQ+M6BAYj7e2PzcHsTdPevrn10NfKtirjHgQ0cORkavPAA=="
+        length="17881640"
         type="application/octet-stream" />
       <sparkle:minimumSystemVersion>14.4</sparkle:minimumSystemVersion>
     </item>
