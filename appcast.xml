@@ -2,7 +2,7 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <title>Nexo Whisper</title>
-    <link>https://nexostudio.xyz/nexo-whisper/appcast.xml</link>
+    <link>https://nexowhisper.com/appcast.xml</link>
     <description>Updates de Nexo Whisper para macOS.</description>
     <language>es</language>
 
@@ -23,9 +23,9 @@
       ]]></description>
       <pubDate>Mon, 25 May 2026 21:38:00 -0300</pubDate>
       <enclosure
-        url="https://github.com/NexoStudioinc/nexo-whisper-releases/releases/download/v1.0.0/NexoWhisper.dmg"
-        sparkle:edSignature="WyqlI6HsnYc5T+mMUTjNNDbbuooc5UFnf44bvMutmOEKnQheMtpJ6RTG9A9ZT0DsbtJ3wcWObsCBQaI1D6yGBw=="
-        length="17881350"
+        url="https://github.com/NexoStudioinc/nexo-whisper-releases/releases/download/v1.0.0/NexoWhisper-1.0.0.dmg"
+        sparkle:edSignature="Tu7KZQQfRTQbr9xIk2NSGHQyfoKwRKlB+vscBJzPh+aBCjLJGD/UDSLZ5hqZBCf5e176b2QnFVEY9y8Oes+hAQ=="
+        length="17881661"
         type="application/octet-stream" />
       <sparkle:minimumSystemVersion>14.4</sparkle:minimumSystemVersion>
     </item>

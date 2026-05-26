@@ -11,16 +11,15 @@
 	         sign_update path/to/NexoWhisper-X.Y.Z.dmg
 	       El comando vive en .local-build/SourcePackages/artifacts/sparkle/Sparkle/bin/
 	       y usa automáticamente la key del Keychain.
-	     - SUFeedURL: actualmente apunta a un appcast que NO existe todavía
-	       (nexostudio.xyz/nexo-whisper/appcast.xml). Sparkle falla silencioso
-	       y no trae updates hasta que hostemos el feed. Antes de la primera
-	       release con sistema de updates hay que:
-	         1. Hostear appcast.xml (GH Pages de nexo-whisper-releases o Vercel).
-	         2. Subir cada DMG firmado al feed.
+	     - SUFeedURL: apunta a https://nexowhisper.com/appcast.xml (servido
+	       por Vercel desde apps/landing/appcast.xml en el repo
+	       nexo-whisper-web). Cada release nueva: re-firmar DMG con
+	       sign_update, actualizar appcast.xml con la nueva firma+tamaño,
+	       commit+push del repo web.
 	     - Para exportar la clave privada (backup): generate_keys -x backup.txt
 	       Guardar el backup en lugar seguro (NO commitear). -->
 	<key>SUFeedURL</key>
-	<string>https://nexostudio.xyz/nexo-whisper/appcast.xml</string>
+	<string>https://nexowhisper.com/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>mOUFe0IN3Reas7/gBKIv0u4EPO7iitLFarn1VBtRAds=</string>
 	<key>LSUIElement</key>
