@@ -184,7 +184,7 @@ struct LicenseManagementView: View {
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    Text("Cada licencia activa 1 Mac. Si querés otra, comprá otra licencia (USD 7.99). Desde el portal podés también desactivar este device, ver invoices o pedir reembolso.")
+                    Text("Cada licencia activa 1 Mac. Si querés otra, comprá otra licencia. Desde el portal podés también desactivar este device, ver invoices o pedir reembolso.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)

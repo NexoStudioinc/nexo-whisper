@@ -29,8 +29,9 @@ struct ProPricingSheet: View {
     @ObservedObject private var licenseViewModel = LicenseViewModel.shared
     @State private var showActivationForm = false
 
-    /// Precio del producto en LS (Nexo Whisper Pro).
-    private let priceDisplay = "$7.99"
+    /// Caption del CTA. El precio NO se hardcodea en la app — el comprador
+    /// lo ve en el checkout de Lemon Squeezy (fuente de verdad). Esto evita
+    /// rebuildear la app cada vez que cambie el precio.
     private let priceCaption = "One-time payment · Lifetime updates · 1 Mac"
 
     var body: some View {
@@ -170,13 +171,8 @@ struct ProPricingSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(priceDisplay)
-                        .font(.system(size: 32, weight: .heavy))
-                    Text("USD")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
+                Text("One-time purchase")
+                    .font(.system(size: 18, weight: .bold))
                 Text(priceCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -204,7 +200,7 @@ struct ProPricingSheet: View {
             Button(action: handleBuyClick) {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                    Text("Buy Pro · \(priceDisplay)")
+                    Text("Get Pro")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
