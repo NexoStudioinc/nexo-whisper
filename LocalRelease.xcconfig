@@ -1,0 +1,19 @@
+// LocalRelease.xcconfig
+// Build configuration para release público (sin LOCAL_BUILD).
+// Usado por `make local-release` — produce el binario que se distribuye al cliente.
+//
+// Diferencia clave vs LocalBuild.xcconfig:
+//   - NO setea LOCAL_BUILD → el código bajo `#if LOCAL_BUILD` NO se compila.
+//   - El debug toggle NO se muestra en la UI.
+//   - La app arranca en .free hasta que el usuario active license key.
+
+// Ad-hoc signing (works without a developer account)
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM =
+PROVISIONING_PROFILE_SPECIFIER =
+
+// NOTA: SWIFT_ACTIVE_COMPILATION_CONDITIONS NO incluye LOCAL_BUILD.
+// Si en el futuro se necesitan otros flags compilados solo para release público,
+// se agregan acá.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited)
