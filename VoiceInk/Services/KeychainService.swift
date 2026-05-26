@@ -2,19 +2,27 @@ import Foundation
 import Security
 import os
 
-/// Securely stores and retrieves API keys using Keychain with iCloud sync.
-/// For local (unsigned) builds, uses UserDefaults instead since Keychain
-/// requires stable code signing to reliably persist data across rebuilds.
+/// Almacenamiento de credenciales (license key, instance ID, API keys).
+///
+/// IMPORTANTE: usamos UserDefaults en vez del Keychain real porque la app
+/// está ad-hoc signed sin Apple Developer Team ID. Sin un App Identifier
+/// estable, el Keychain de macOS NO persiste los items entre relanzamientos
+/// (cada launch se asigna un identifier distinto y los items no se encuentran).
+///
+/// Resultado: si usábamos Keychain, el user activaba la licencia, cerraba
+/// la app, abría de nuevo → volvía a `.free`. Bug fixeado 2026-05-26.
+///
+/// Cuando tengamos Apple Developer Account (con Team ID estable), podemos
+/// migrar a Keychain real para mayor seguridad. Por ahora, UserDefaults
+/// es la única opción que funciona consistentemente.
 final class KeychainService {
     static let shared = KeychainService()
 
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "KeychainService")
     private let service = "com.prakashjoshipax.VoiceInk"
 
-    #if LOCAL_BUILD
     private let defaults = UserDefaults.standard
     private let localPrefix = "LocalKeychain_"
-    #endif
 
     private init() {}
 
@@ -30,29 +38,11 @@ final class KeychainService {
         return save(data: data, forKey: key, syncable: syncable)
     }
 
-    /// Saves data to Keychain.
+    /// Saves data (a UserDefaults bajo el prefix localPrefix).
     @discardableResult
     func save(data: Data, forKey key: String, syncable: Bool = true) -> Bool {
-        #if LOCAL_BUILD
         defaults.set(data, forKey: localPrefix + key)
         return true
-        #else
-        // First, try to delete any existing item to avoid duplicates
-        delete(forKey: key, syncable: syncable)
-
-        var query = baseQuery(forKey: key, syncable: syncable)
-        query[kSecValueData as String] = data
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-
-        if status == errSecSuccess {
-            logger.info("Successfully saved keychain item for key: \(key, privacy: .public)")
-            return true
-        } else {
-            logger.error("Failed to save keychain item for key: \(key, privacy: .public), status: \(status, privacy: .public)")
-            return false
-        }
-        #endif
     }
 
     /// Retrieves a string value from Keychain.
@@ -63,67 +53,26 @@ final class KeychainService {
         return String(data: data, encoding: .utf8)
     }
 
-    /// Retrieves data from Keychain.
+    /// Retrieves data desde UserDefaults bajo el prefix localPrefix.
     func getData(forKey key: String, syncable: Bool = true) -> Data? {
-        #if LOCAL_BUILD
         return defaults.data(forKey: localPrefix + key)
-        #else
-        var query = baseQuery(forKey: key, syncable: syncable)
-        query[kSecReturnData as String] = kCFBooleanTrue
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-
-        if status == errSecSuccess {
-            return result as? Data
-        } else if status != errSecItemNotFound {
-            logger.error("Failed to retrieve keychain item for key: \(key, privacy: .public), status: \(status, privacy: .public)")
-        }
-
-        return nil
-        #endif
     }
 
-    /// Deletes an item from Keychain.
+    /// Deletes an item.
     @discardableResult
     func delete(forKey key: String, syncable: Bool = true) -> Bool {
-        #if LOCAL_BUILD
         defaults.removeObject(forKey: localPrefix + key)
         return true
-        #else
-        let query = baseQuery(forKey: key, syncable: syncable)
-        let status = SecItemDelete(query as CFDictionary)
-
-        if status == errSecSuccess || status == errSecItemNotFound {
-            if status == errSecSuccess {
-                logger.info("Successfully deleted keychain item for key: \(key, privacy: .public)")
-            }
-            return true
-        } else {
-            logger.error("Failed to delete keychain item for key: \(key, privacy: .public), status: \(status, privacy: .public)")
-            return false
-        }
-        #endif
     }
 
-    /// Checks if a key exists in Keychain.
+    /// Checks if a key exists.
     func exists(forKey key: String, syncable: Bool = true) -> Bool {
-        #if LOCAL_BUILD
         return defaults.data(forKey: localPrefix + key) != nil
-        #else
-        var query = baseQuery(forKey: key, syncable: syncable)
-        query[kSecReturnData as String] = kCFBooleanFalse
-
-        let status = SecItemCopyMatching(query as CFDictionary, nil)
-        return status == errSecSuccess
-        #endif
     }
 
     // MARK: - Private Helpers
 
-    #if !LOCAL_BUILD
-    /// Creates base Keychain query dictionary.
+    #if false  // Disabled — ver doc en top de archivo. Mantenido por si volvemos a Keychain real con Developer ID.
     private func baseQuery(forKey key: String, syncable: Bool) -> [String: Any] {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
