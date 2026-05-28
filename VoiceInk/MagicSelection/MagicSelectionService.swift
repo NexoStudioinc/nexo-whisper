@@ -181,20 +181,34 @@ final class MagicSelectionService {
 
         Self.logger.info("🪄 Magic Selection triggered by \(source.rawValue) at \(String(format: "(%.0f, %.0f)", location.x, location.y))")
 
-        // Capturar contexto (técnica AX del otro agente)
+        // Capturar contexto (técnica AX: elemento/selección bajo el cursor)
         let context = MagicContextExtractor.extract(at: location)
-
-        // F1: solo loguear. Sin UI ni grabación todavía.
         Self.logger.info("Context: \(context.debugDescription)")
-        if let text = context.bestText {
+
+        // ── Feedback visual inmediato ───────────────────────────────────
+        // Mostramos una notificación nativa con lo que capturó, para que el
+        // usuario VEA que el trigger funcionó y qué texto agarró. Es el
+        // primer paso del pipeline de valor; en F2 esto se reemplaza por el
+        // pill "escuchando" + grabación de voz.
+        if let text = context.bestText, !text.isEmpty {
+            let preview = text.count > 80 ? String(text.prefix(80)) + "…" : text
+            let appName = context.appName ?? "app"
+            NotificationManager.shared.showNotification(
+                title: "🪄 Magic Selection — capturé en \(appName):\n\"\(preview)\"",
+                type: .info,
+                duration: 4.0
+            )
             Self.logger.info("Best text under cursor:\n\(text.prefix(200))")
         } else {
+            NotificationManager.shared.showNotification(
+                title: "🪄 Magic Selection activado, pero no encontré texto bajo el cursor. Probá parándote justo encima de un texto.",
+                type: .warning,
+                duration: 4.0
+            )
             Self.logger.info("No text could be extracted under cursor")
         }
 
-        // F2+: TODO — abrir UI y arrancar recording
-        // CursorGlowPanel.shared.show(at: location)
-        // MagicSelectionPillView.show(at: location)
-        // engine.toggleRecord(... withMagicContext: context)
+        // F2+: TODO — reemplazar la notificación por el pill "escuchando" +
+        // grabar voz + mandar [contexto + comando] a la IA + reemplazar texto
     }
 }
