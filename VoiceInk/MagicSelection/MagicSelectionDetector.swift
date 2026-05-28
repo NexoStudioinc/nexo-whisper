@@ -57,8 +57,7 @@ final class MagicSelectionDetector {
     private var lastActivationAt: TimeInterval = 0
     private var lastMouseLocation: NSPoint = .zero
 
-    private var eventTap: CFMachPort?
-    private var eventTapRunLoopSource: CFRunLoopSource?
+    private var eventMonitor: Any?
     private var onWiggleDetected: ((NSPoint) -> Void)?
 
     init(config: Config = .default) {
@@ -75,17 +74,13 @@ final class MagicSelectionDetector {
     func start(onWiggleDetected: @escaping (NSPoint) -> Void) -> Bool {
         stop()
         self.onWiggleDetected = onWiggleDetected
-        return installEventTap()
+        return installEventMonitor()
     }
 
     func stop() {
-        if let eventTapRunLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), eventTapRunLoopSource, .commonModes)
-            self.eventTapRunLoopSource = nil
-        }
-        if let eventTap {
-            CFMachPortInvalidate(eventTap)
-            self.eventTap = nil
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            self.eventMonitor = nil
         }
         window.removeAll(keepingCapacity: true)
         lastDirectionSign = 0
@@ -96,47 +91,39 @@ final class MagicSelectionDetector {
         self.config = newConfig
     }
 
-    // ── Event tap setup ─────────────────────────────────────────────────
+    // ── Event monitor setup ─────────────────────────────────────────────
 
-    private func installEventTap() -> Bool {
-        // Sólo mouseMoved — los delta importantes vienen acá.
-        // Usamos listenOnly para no consumir el evento (los clicks deben
-        // seguir funcionando normal).
-        let mask = (1 << CGEventType.mouseMoved.rawValue)
-            | (1 << CGEventType.leftMouseDragged.rawValue)
-            | (1 << CGEventType.rightMouseDragged.rawValue)
-
-        let callback: CGEventTapCallBack = { _, _, event, refcon in
-            guard let refcon else { return Unmanaged.passUnretained(event) }
-            let detector = Unmanaged<MagicSelectionDetector>
-                .fromOpaque(refcon)
-                .takeUnretainedValue()
-            detector.handleMouseEvent(event)
-            return Unmanaged.passUnretained(event)
+    private func installEventMonitor() -> Bool {
+        // Usamos NSEvent.addGlobalMonitorForEvents en vez de CGEventTap.
+        // Razones:
+        //   - No requiere Input Monitoring permission separado de Accessibility
+        //   - No tiene side-effects sobre el rendering del cursor (CGEventTap
+        //     puede causar que el cursor desaparezca en algunas situaciones)
+        //   - API más simple, menos puntos de falla
+        //   - Para wiggle detection, los ~10-20ms de latencia adicional de
+        //     NSEvent vs CGEventTap no afectan en absoluto
+        eventMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]
+        ) { [weak self] event in
+            self?.handleNSEvent(event)
         }
 
-        let refcon = Unmanaged.passUnretained(self).toOpaque()
-
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .listenOnly,
-            eventsOfInterest: CGEventMask(mask),
-            callback: callback,
-            userInfo: refcon
-        ) else {
-            Self.logger.error("Failed to create CGEventTap for MagicSelectionDetector")
+        if eventMonitor == nil {
+            Self.logger.error("Failed to install NSEvent global monitor for MagicSelectionDetector")
             return false
         }
 
-        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
-
-        self.eventTap = tap
-        self.eventTapRunLoopSource = source
-        Self.logger.info("MagicSelectionDetector event tap installed")
+        Self.logger.info("MagicSelectionDetector NSEvent monitor installed")
         return true
+    }
+
+    private func handleNSEvent(_ event: NSEvent) {
+        // NSEvent.locationInWindow para mouse global no aplica — usamos
+        // mouseLocation que ya está en coords de pantalla.
+        let location = NSEvent.mouseLocation
+        let cgPoint = CGPoint(x: location.x, y: location.y)
+        // Llamamos al mismo path que el viejo callback CGEvent
+        handleMovementUpdate(at: cgPoint)
     }
 
     // Para diagnosticar: cuenta eventos recibidos (sin log spam)
@@ -145,21 +132,18 @@ final class MagicSelectionDetector {
 
     // ── Core: handle every mouseMoved event ─────────────────────────────
 
-    private func handleMouseEvent(_ event: CGEvent) {
+    /// Procesa un movimiento del mouse. Llamado tanto por el detector
+    /// NSEvent como (en F2) potencialmente por test programático.
+    private func handleMovementUpdate(at location: CGPoint) {
         let now = CACurrentMediaTime()
-        let location = event.location // CGPoint en coords flipped (screen origin top-left)
 
-        // Diagnóstico: cada 100 eventos, loguear señal de vida. Si nunca
-        // se ve este log → el CGEventTap no está recibiendo eventos
-        // (problema de permisos o tap roto).
+        // Diagnóstico: cada 100 eventos, loguear señal de vida.
         eventCounter += 1
         if eventCounter % 100 == 0 && (now - lastEventLogAt) > 2.0 {
             Self.logger.debug("Detector alive: \(self.eventCounter) mouse events processed")
             lastEventLogAt = now
         }
 
-        // Calculamos deltaX manualmente porque event.getIntegerValueField(.mouseEventDeltaX)
-        // a veces es 0 para eventos sintéticos.
         let deltaX = location.x - lastMouseLocation.x
         lastMouseLocation = NSPoint(x: location.x, y: location.y)
 
@@ -214,33 +198,18 @@ final class MagicSelectionDetector {
         triggerWiggle(at: location, now: now)
     }
 
-    private func triggerWiggle(at flippedPoint: CGPoint, now: TimeInterval) {
+    private func triggerWiggle(at point: CGPoint, now: TimeInterval) {
         lastActivationAt = now
         window.removeAll(keepingCapacity: true)
         lastDirectionSign = 0
 
-        // Convertimos de CGEvent coords (top-left origin) a NSEvent coords
-        // (bottom-left origin) para que sea consistente con NSEvent.mouseLocation
-        // que usa el resto del proyecto.
-        let nsPoint = Self.convertToNSCoordinates(flippedPoint)
+        // Con NSEvent.mouseLocation las coords ya están en sistema NSScreen
+        // (origen abajo-izquierda), no hace falta convertir.
+        let nsPoint = NSPoint(x: point.x, y: point.y)
 
         Self.logger.info("Wiggle detected at \(String(format: "(%.0f, %.0f)", nsPoint.x, nsPoint.y))")
 
-        // Llamamos en main para que el handler pueda crear UI sin race conditions
-        DispatchQueue.main.async { [weak self] in
-            self?.onWiggleDetected?(nsPoint)
-        }
-    }
-
-    private static func convertToNSCoordinates(_ cgPoint: CGPoint) -> NSPoint {
-        // El cursor en CGEvent viene en coords de la pantalla principal con
-        // origen arriba-izquierda. NSScreen / NSEvent.mouseLocation usan
-        // origen abajo-izquierda. Hay que invertir Y respecto a la altura
-        // del bounding box de TODAS las pantallas combinadas.
-        guard let primaryScreen = NSScreen.screens.first else {
-            return NSPoint(x: cgPoint.x, y: cgPoint.y)
-        }
-        let flippedY = primaryScreen.frame.height - cgPoint.y
-        return NSPoint(x: cgPoint.x, y: flippedY)
+        // El handler se llama desde main (el callback de NSEvent ya viene de main)
+        onWiggleDetected?(nsPoint)
     }
 }

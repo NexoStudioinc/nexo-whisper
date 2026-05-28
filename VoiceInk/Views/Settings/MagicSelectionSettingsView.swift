@@ -70,11 +70,28 @@ struct MagicSelectionSection: View {
                 // Hotkey configurable (la forma más confiable de activación)
                 LabeledContent("Atajo de teclado para activar") {
                     ShortcutRecorder(action: .magicSelection) {
-                        // No-op: el ShortcutMonitor se refresca solo
+                        // No-op: el ShortcutMonitor se refresca solo via
+                        // notification de ShortcutStore.shortcutDidChange.
+                        // Refrescamos el diagnóstico para que se vea el cambio.
+                        refreshDiagnostics()
                     }
                     .controlSize(.small)
                 }
                 .padding(.leading, 24)
+
+                // Warning si el hotkey configurado es solo un modificador
+                // (no funciona como atajo regular — necesita combo con tecla)
+                if let shortcut = ShortcutStore.shortcut(for: .magicSelection),
+                   shortcut.kind == .modifierOnly {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text("El atajo configurado (\(shortcut.displayString)) es solo un modificador. Para que dispare, combinalo con una tecla — por ejemplo ⌥M (Option+M) o ⌃⌥Z.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.leading, 24)
+                }
 
                 // Toggle de activación por wiggle
                 Toggle("Activar también con gesto wiggle del mouse", isOn: $wiggleEnabled)
@@ -142,6 +159,10 @@ struct MagicSelectionSection: View {
                     Button {
                         Task { @MainActor in
                             MagicSelectionService.shared.triggerManually()
+                            // Refrescamos el resultado en pantalla para que se vea
+                            // que el trigger pasó (sin solo loguear a Console)
+                            triggerTestNow()
+                            lastTestResult = "🎯 TRIGGER SIMULADO disparado.\n\n" + lastTestResult
                         }
                     } label: {
                         Label("Simular trigger", systemImage: "wand.and.stars.inverse")
