@@ -1,0 +1,26 @@
+// LocalDevMagic.xcconfig
+// Build configuration para correr DEV en paralelo con la app real.
+//
+// Cambia el bundle ID a `com.prakashjoshipax.VoiceInk.dev` para que:
+//   - macOS la trate como app distinta a la de producción
+//   - Tengan permisos Accessibility / Microphone / Input Monitoring
+//     INDEPENDIENTES (no compiten por los mismos)
+//   - UserDefaults / Keychain / App Support folder estén separados
+//     (cada una guarda su estado sin pisar al otro)
+//
+// Usa `make local-magic` (definido en Makefile) para producir la build
+// con este xcconfig. La app resultante se renombra "Nexo Whisper Magic.app"
+// en ~/Downloads para distinguirla.
+
+// Ad-hoc signing (mismo patrón que LocalBuild.xcconfig)
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM =
+PROVISIONING_PROFILE_SPECIFIER =
+
+// Bundle ID separado de la app real. Esto es lo clave.
+PRODUCT_BUNDLE_IDENTIFIER = com.prakashjoshipax.VoiceInk.dev
+
+// LOCAL_BUILD para que arranque en Pro automáticamente (Magic Selection
+// es feature gating-pending, mejor probarlo con todo desbloqueado).
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) LOCAL_BUILD

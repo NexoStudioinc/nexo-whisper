@@ -77,6 +77,50 @@ local: check setup
 		exit 1; \
 	fi
 
+# Build PARALELA a la app real (bundle ID distinto).
+# Pensado para probar features experimentales (ej. Magic Selection)
+# SIN sobrescribir la app de producción que el usuario ya tiene
+# instalada en /Applications. La build resultante usa:
+#   - Bundle ID: com.prakashjoshipax.VoiceInk.dev
+#   - Display name: "Nexo Whisper Magic" (renombrada post-build)
+#   - Permisos macOS (Accessibility/Mic/etc) totalmente independientes
+#     de la app de producción
+#   - LOCAL_BUILD activo → arranca en Pro
+# El .app va a ~/Downloads/Nexo Whisper Magic.app
+local-magic: check setup
+	@echo "Building Nexo Whisper Magic (DEV parallel build with separate bundle ID)..."
+	@rm -rf "$(LOCAL_DERIVED_DATA)"
+	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
+		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
+		-xcconfig LocalDevMagic.xcconfig \
+		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGNING_REQUIRED=NO \
+		CODE_SIGNING_ALLOWED=YES \
+		DEVELOPMENT_TEAM="" \
+		CODE_SIGN_ENTITLEMENTS="$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
+		build
+	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
+	DEST="$$HOME/Downloads/Nexo Whisper Magic.app" && \
+	if [ -d "$$APP_PATH" ]; then \
+		echo "Copying Nexo Whisper Magic.app to ~/Downloads..."; \
+		rm -rf "$$DEST"; \
+		ditto "$$APP_PATH" "$$DEST"; \
+		xattr -cr "$$DEST"; \
+		echo "Patching Info.plist with DEV display name..."; \
+		plutil -replace CFBundleDisplayName -string "Nexo Whisper Magic" "$$DEST/Contents/Info.plist"; \
+		plutil -replace CFBundleName -string "Nexo Whisper Magic" "$$DEST/Contents/Info.plist"; \
+		echo "Re-signing after Info.plist patch..."; \
+		codesign --force --sign - --deep "$$DEST" 2>/dev/null || true; \
+		echo ""; \
+		echo "✅ Magic Selection DEV build saved to: ~/Downloads/Nexo Whisper Magic.app"; \
+		echo "   Bundle ID: com.prakashjoshipax.VoiceInk.dev"; \
+		echo "   Permisos macOS independientes de la app real"; \
+		echo "   Run with: open \"$$HOME/Downloads/Nexo Whisper Magic.app\""; \
+	else \
+		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
+		exit 1; \
+	fi
+
 # Build PARA DISTRIBUCIÓN PÚBLICA — sin LOCAL_BUILD flag.
 # Resultado: app arranca en estado .free por default. Para activar Pro
 # requiere license key real de Lemon Squeezy. Este es el DMG que va a
