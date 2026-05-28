@@ -14,6 +14,7 @@ enum ShortcutAction: Hashable {
     case miniRecorderEscape
     case miniRecorderPrompt(Int)
     case miniRecorderPowerMode(Int)
+    case magicSelection
 
     var userDefaultsKey: String {
         "Shortcut_\(storageName)"
@@ -56,6 +57,8 @@ enum ShortcutAction: Hashable {
             return "miniRecorderPrompt_\(index)"
         case .miniRecorderPowerMode(let index):
             return "miniRecorderPowerMode_\(index)"
+        case .magicSelection:
+            return "magicSelection"
         }
     }
 
@@ -91,6 +94,8 @@ enum ShortcutAction: Hashable {
             return "Select Prompt \(Self.displayNumber(forMiniRecorderIndex: index))"
         case .miniRecorderPowerMode(let index):
             return "Select Power Mode \(Self.displayNumber(forMiniRecorderIndex: index))"
+        case .magicSelection:
+            return "Magic Selection"
         }
     }
 
@@ -99,7 +104,8 @@ enum ShortcutAction: Hashable {
         .pasteLastEnhancement,
         .retryLastTranscription,
         .openHistoryWindow,
-        .quickAddToDictionary
+        .quickAddToDictionary,
+        .magicSelection
     ]
 
     static let miniRecorderStoredActions: [Self] = [

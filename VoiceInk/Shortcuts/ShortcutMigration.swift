@@ -289,6 +289,8 @@ enum ShortcutMigration {
             return "powerMode_\(id.uuidString)"
         case .miniRecorderEscape, .miniRecorderPrompt, .miniRecorderPowerMode:
             return nil
+        case .magicSelection:
+            return nil // No tiene legacy key — feature nuevo en v1.81
         }
     }
 

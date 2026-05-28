@@ -15,10 +15,10 @@ struct MagicSelectionSection: View {
     @AppStorage("magicSelection.enabled") private var enabled = false
     @AppStorage("magicSelection.wiggleEnabled") private var wiggleEnabled = true
 
-    // ── Tuning del detector ─────────────────────────────────────────────
-    @AppStorage("magicSelection.directionChangesThreshold") private var directionChangesThreshold = 5
-    @AppStorage("magicSelection.minVelocityPxPerSec") private var minVelocityPxPerSec: Double = 250
-    @AppStorage("magicSelection.windowDurationMs") private var windowDurationMs = 400
+    // ── Tuning del detector (defaults más laxos para que dispare más fácil) ─
+    @AppStorage("magicSelection.directionChangesThreshold") private var directionChangesThreshold = 3
+    @AppStorage("magicSelection.minVelocityPxPerSec") private var minVelocityPxPerSec: Double = 150
+    @AppStorage("magicSelection.windowDurationMs") private var windowDurationMs = 600
     @AppStorage("magicSelection.cooldownSec") private var cooldownSec: Double = 2.0
 
     // ── Estado UI ──────────────────────────────────────────────────────
@@ -36,8 +36,17 @@ struct MagicSelectionSection: View {
                 }
 
             if enabled {
+                // Hotkey configurable (la forma más confiable de activación)
+                LabeledContent("Atajo de teclado para activar") {
+                    ShortcutRecorder(action: .magicSelection) {
+                        // No-op: el ShortcutMonitor se refresca solo
+                    }
+                    .controlSize(.small)
+                }
+                .padding(.leading, 24)
+
                 // Toggle de activación por wiggle
-                Toggle("Activar con gesto wiggle del mouse", isOn: $wiggleEnabled)
+                Toggle("Activar también con gesto wiggle del mouse", isOn: $wiggleEnabled)
                     .onChange(of: wiggleEnabled) { _, newValue in
                         Task { @MainActor in
                             MagicSelectionService.shared.isWiggleEnabled = newValue

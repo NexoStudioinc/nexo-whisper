@@ -292,6 +292,8 @@ class RecordingShortcutManager: ObservableObject {
             )
         case .quickAddToDictionary:
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
+        case .magicSelection:
+            MagicSelectionService.shared.triggerFromHotkey()
         default:
             break
         }

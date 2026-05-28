@@ -139,11 +139,24 @@ final class MagicSelectionDetector {
         return true
     }
 
+    // Para diagnosticar: cuenta eventos recibidos (sin log spam)
+    private var eventCounter: Int = 0
+    private var lastEventLogAt: TimeInterval = 0
+
     // ── Core: handle every mouseMoved event ─────────────────────────────
 
     private func handleMouseEvent(_ event: CGEvent) {
         let now = CACurrentMediaTime()
         let location = event.location // CGPoint en coords flipped (screen origin top-left)
+
+        // Diagnóstico: cada 100 eventos, loguear señal de vida. Si nunca
+        // se ve este log → el CGEventTap no está recibiendo eventos
+        // (problema de permisos o tap roto).
+        eventCounter += 1
+        if eventCounter % 100 == 0 && (now - lastEventLogAt) > 2.0 {
+            Self.logger.debug("Detector alive: \(self.eventCounter) mouse events processed")
+            lastEventLogAt = now
+        }
 
         // Calculamos deltaX manualmente porque event.getIntegerValueField(.mouseEventDeltaX)
         // a veces es 0 para eventos sintéticos.
@@ -190,7 +203,12 @@ final class MagicSelectionDetector {
         guard elapsedSec > 0 else { return }
         let avgVelocity = totalDistance / CGFloat(elapsedSec)
 
-        guard avgVelocity >= config.minVelocityPxPerSec else { return }
+        // Diagnóstico: si llegamos hasta acá pero falla velocity, logear
+        // para que el user pueda ajustar el threshold en Settings.
+        if avgVelocity < config.minVelocityPxPerSec {
+            Self.logger.debug("Wiggle near-miss: \(directionChanges) direction changes detected, but velocity \(Int(avgVelocity)) px/s < threshold \(Int(self.config.minVelocityPxPerSec)) px/s")
+            return
+        }
 
         // 🎯 ¡Wiggle detectado!
         triggerWiggle(at: location, now: now)
