@@ -299,6 +299,9 @@ struct SettingsView: View {
             // MARK: - Experimental (mantiene su Section interno propio)
             ExperimentalSection()
 
+            // MARK: - Magic Selection (PREVIEW — F1, sin recorder integration aún)
+            MagicSelectionSection()
+
             // MARK: - General
             Section {
                 Toggle(t("Hide Dock Icon"), isOn: $menuBarManager.isMenuBarOnly)
