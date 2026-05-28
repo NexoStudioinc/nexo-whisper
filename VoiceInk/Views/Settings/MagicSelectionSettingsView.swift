@@ -24,6 +24,37 @@ struct MagicSelectionSection: View {
     // ── Estado UI ──────────────────────────────────────────────────────
     @State private var lastTestResult: String = ""
     @State private var showInstructions = false
+    @State private var diagnostics: String = ""
+
+    private func refreshDiagnostics() {
+        var lines: [String] = []
+
+        // 1. Permisos
+        let axTrusted = AXIsProcessTrusted()
+        lines.append("Accessibility permission: \(axTrusted ? "✅ Granted" : "❌ MISSING")")
+
+        // 2. Estado del detector
+        let status = MagicSelectionService.shared.detectorStatus
+        switch status {
+        case .notStarted:
+            lines.append("Detector status: ⚪ Not started (toggle the master switch above)")
+        case .running:
+            lines.append("Detector status: ✅ RUNNING (waiting for wiggle)")
+        case .disabledByUser:
+            lines.append("Detector status: ⚪ Disabled by user")
+        case .startFailed(let reason):
+            lines.append("Detector status: ❌ START FAILED — \(reason)")
+        }
+
+        // 3. Hotkey configurado
+        if let shortcut = ShortcutStore.shortcut(for: .magicSelection) {
+            lines.append("Hotkey: ✅ \(shortcut.displayString)")
+        } else {
+            lines.append("Hotkey: ⚪ Not configured (click el campo de atajo arriba)")
+        }
+
+        diagnostics = lines.joined(separator: "\n")
+    }
 
     var body: some View {
         Section {
@@ -108,6 +139,15 @@ struct MagicSelectionSection: View {
                     }
                     .buttonStyle(.borderedProminent)
 
+                    Button {
+                        Task { @MainActor in
+                            MagicSelectionService.shared.triggerManually()
+                        }
+                    } label: {
+                        Label("Simular trigger", systemImage: "wand.and.stars.inverse")
+                    }
+                    .help("Simula que se disparó el wiggle o el hotkey — útil para confirmar que el pipeline completo funciona")
+
                     Spacer()
 
                     Button {
@@ -117,6 +157,54 @@ struct MagicSelectionSection: View {
                     }
                     .buttonStyle(.borderless)
                     .help("Ver instrucciones")
+                }
+
+                // Panel de diagnóstico
+                GroupBox(label: HStack {
+                    Label("Diagnóstico", systemImage: "stethoscope")
+                    Spacer()
+                    Button {
+                        refreshDiagnostics()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Refrescar diagnóstico")
+                }) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if diagnostics.isEmpty {
+                            Text("Click el botón ↻ para chequear el estado")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text(diagnostics)
+                                .font(.system(.caption, design: .monospaced))
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
+                        HStack(spacing: 8) {
+                            Button("Force restart detector") {
+                                Task { @MainActor in
+                                    MagicSelectionService.shared.stop()
+                                    MagicSelectionService.shared.startIfNeeded()
+                                    refreshDiagnostics()
+                                }
+                            }
+                            .controlSize(.small)
+
+                            Button("Open System Settings → Accessibility") {
+                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            }
+                            .controlSize(.small)
+                        }
+                    }
+                    .padding(4)
+                }
+                .onAppear {
+                    refreshDiagnostics()
                 }
 
                 // Resultado del último test

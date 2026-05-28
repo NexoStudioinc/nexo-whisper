@@ -77,23 +77,48 @@ final class MagicSelectionService {
     private var detector: MagicSelectionDetector?
     private var isActivating = false
 
-    private init() {}
+    /// Estado público del detector para diagnóstico en Settings.
+    enum DetectorStatus {
+        case notStarted
+        case running
+        case startFailed(reason: String)
+        case disabledByUser
+    }
+
+    private(set) var detectorStatus: DetectorStatus = .notStarted
+
+    private init() {
+        Self.logger.info("MagicSelectionService initialized")
+    }
 
     /// Llamar al boot de la app (`VoiceInk.swift`). Si el feature está
     /// activado y el wiggle también, monta el detector. Si está apagado,
     /// no hace nada (el hotkey igual sigue funcionando porque va por
     /// `ShortcutAction`).
     func startIfNeeded() {
+        Self.logger.info("🔧 startIfNeeded called — isEnabled=\(self.isEnabled, privacy: .public), isWiggleEnabled=\(self.isWiggleEnabled, privacy: .public)")
+
         guard isEnabled else {
             Self.logger.info("Magic Selection disabled by user — not starting detector")
+            detectorStatus = .disabledByUser
             return
         }
         guard isWiggleEnabled else {
             Self.logger.info("Magic Selection wiggle disabled — hotkey still active via ShortcutAction")
+            detectorStatus = .disabledByUser
             return
         }
         guard detector == nil else {
             Self.logger.debug("Detector already running")
+            detectorStatus = .running
+            return
+        }
+
+        // Verificar Accessibility ANTES de intentar el event tap.
+        if !AXIsProcessTrusted() {
+            let msg = "AX permission missing — go to System Settings → Privacy & Security → Accessibility → enable 'Nexo Whisper Magic'"
+            Self.logger.error("\(msg, privacy: .public)")
+            detectorStatus = .startFailed(reason: msg)
             return
         }
 
@@ -106,21 +131,34 @@ final class MagicSelectionService {
         }
         if ok {
             detector = det
-            Self.logger.info("Magic Selection detector started (wiggle enabled)")
+            detectorStatus = .running
+            Self.logger.info("✅ Magic Selection detector started (wiggle enabled)")
         } else {
-            Self.logger.error("Failed to start Magic Selection detector")
+            detectorStatus = .startFailed(reason: "CGEventTap installation failed — needs Input Monitoring permission")
+            Self.logger.error("❌ Failed to start Magic Selection detector — likely missing Input Monitoring permission")
         }
     }
 
     func stop() {
         detector?.stop()
         detector = nil
+        detectorStatus = .notStarted
         Self.logger.info("Magic Selection detector stopped")
     }
 
     /// Llamar este método desde el `ShortcutAction.magicSelection` handler
     /// para activar el flow vía hotkey en lugar de wiggle.
     func triggerFromHotkey() {
+        Self.logger.info("🔥 triggerFromHotkey called — hotkey received by service")
+        let location = NSEvent.mouseLocation
+        handleTrigger(at: location, source: .hotkey)
+    }
+
+    /// Trigger manual desde Settings → "Force trigger now".
+    /// Útil para confirmar que el pipeline completo (extractor + service) funciona
+    /// sin depender del detector ni del shortcut monitor.
+    func triggerManually() {
+        Self.logger.info("🧪 Manual trigger from Settings")
         let location = NSEvent.mouseLocation
         handleTrigger(at: location, source: .hotkey)
     }
