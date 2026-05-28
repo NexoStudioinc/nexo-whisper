@@ -1,26 +1,40 @@
 // LocalDevMagic.xcconfig
 // Build configuration para correr DEV en paralelo con la app real.
 //
+// CLAVE: firma con el cert "Apple Development" de Maxi (NO ad-hoc) para
+// que la firma sea ESTABLE entre rebuilds. Con ad-hoc, cada build cambia
+// la firma → macOS revoca el permiso de Accesibilidad → el wiggle/hotkey
+// dejan de funcionar. Con un cert estable, el permiso PERSISTE: lo
+// concedés una vez y queda para siempre, aunque recompiles 100 veces.
+//
 // Cambia el bundle ID a `com.prakashjoshipax.VoiceInk.dev` para que:
 //   - macOS la trate como app distinta a la de producción
-//   - Tengan permisos Accessibility / Microphone / Input Monitoring
-//     INDEPENDIENTES (no compiten por los mismos)
-//   - UserDefaults / Keychain / App Support folder estén separados
-//     (cada una guarda su estado sin pisar al otro)
+//   - Permisos Accessibility / Mic / Input Monitoring INDEPENDIENTES
+//   - UserDefaults / Keychain / App Support folder separados
 //
-// Usa `make local-magic` (definido en Makefile) para producir la build
-// con este xcconfig. La app resultante se renombra "Nexo Whisper Magic.app"
-// en ~/Downloads para distinguirla.
+// Usa Info.dev.plist (CFBundleName = "Nexo Whisper Magic") para que el
+// nombre salga correcto del build sin patchear con plutil post-firma.
+//
+// Usar `make local-magic`. App resultante: ~/Downloads/Nexo Whisper Magic.app
 
-// Ad-hoc signing (mismo patrón que LocalBuild.xcconfig)
-CODE_SIGN_IDENTITY = -
+// ── Firma estable con Apple Development cert (Manual signing) ────────
+// Hash del cert: 8FCAC81B328F45477DA0D5213505601CFA8C543C
+// (Apple Development: maximobetko@gmail.com, team 44C96W9ZYP)
+// Manual signing evita que Xcode busque un provisioning profile
+// "Mac Development" inexistente.
+CODE_SIGN_IDENTITY = 8FCAC81B328F45477DA0D5213505601CFA8C543C
 CODE_SIGN_STYLE = Manual
-DEVELOPMENT_TEAM =
 PROVISIONING_PROFILE_SPECIFIER =
+DEVELOPMENT_TEAM = 44C96W9ZYP
 
-// Bundle ID separado de la app real. Esto es lo clave.
+// Bundle ID separado de la app real. Esto es lo clave para permisos
+// independientes.
 PRODUCT_BUNDLE_IDENTIFIER = com.prakashjoshipax.VoiceInk.dev
 
-// LOCAL_BUILD para que arranque en Pro automáticamente (Magic Selection
-// es feature gating-pending, mejor probarlo con todo desbloqueado).
+// NOTA: el CFBundleName "Nexo Whisper Magic" se setea con plutil
+// post-build en el Makefile (no via INFOPLIST_FILE, porque el xcconfig
+// es global y rompería los Swift packages que también lo leerían).
+// El re-firmado con cert estable ocurre DESPUÉS del plutil patch.
+
+// LOCAL_BUILD para que arranque en Pro automáticamente
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) LOCAL_BUILD

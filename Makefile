@@ -77,30 +77,36 @@ local: check setup
 		exit 1; \
 	fi
 
-# Build PARALELA a la app real (bundle ID distinto).
+# Build PARALELA a la app real (bundle ID distinto), FIRMADA CON CERT ESTABLE.
 # Pensado para probar features experimentales (ej. Magic Selection)
-# SIN sobrescribir la app de producción que el usuario ya tiene
-# instalada en /Applications. La build resultante usa:
-#   - Bundle ID: com.prakashjoshipax.VoiceInk.dev
-#   - Display name: "Nexo Whisper Magic" (renombrada post-build)
-#   - Permisos macOS (Accessibility/Mic/etc) totalmente independientes
-#     de la app de producción
+# SIN sobrescribir la app de producción que el usuario ya tiene en /Applications.
+#
+# CLAVE: firma con "Apple Development" cert (no ad-hoc) para que la firma
+# sea ESTABLE entre rebuilds → el permiso de Accesibilidad PERSISTE. Con
+# ad-hoc, cada build cambiaba la firma y macOS revocaba el permiso, por eso
+# el wiggle/hotkey no funcionaban (necesitan monitoreo global de eventos,
+# que requiere Accesibilidad).
+#
+# La build usa:
+#   - Bundle ID: com.prakashjoshipax.VoiceInk.dev (permisos independientes)
+#   - Info.dev.plist → CFBundleName "Nexo Whisper Magic" (sin patch plutil)
 #   - LOCAL_BUILD activo → arranca en Pro
 # El .app va a ~/Downloads/Nexo Whisper Magic.app
 local-magic: check setup
-	@echo "Building Nexo Whisper Magic (DEV parallel build with separate bundle ID)..."
+	@echo "Building Nexo Whisper Magic (firma estable Apple Development → permisos persistentes)..."
 	@rm -rf "$(LOCAL_DERIVED_DATA)"
 	xcodebuild -project VoiceInk.xcodeproj -scheme VoiceInk -configuration Debug \
 		-derivedDataPath "$(LOCAL_DERIVED_DATA)" \
 		-xcconfig LocalDevMagic.xcconfig \
-		CODE_SIGN_IDENTITY="-" \
-		CODE_SIGNING_REQUIRED=NO \
-		CODE_SIGNING_ALLOWED=YES \
-		DEVELOPMENT_TEAM="" \
+		CODE_SIGN_IDENTITY="8FCAC81B328F45477DA0D5213505601CFA8C543C" \
+		CODE_SIGN_STYLE=Manual \
+		PROVISIONING_PROFILE_SPECIFIER="" \
+		DEVELOPMENT_TEAM=44C96W9ZYP \
 		CODE_SIGN_ENTITLEMENTS="$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
 		build
 	@APP_PATH="$(LOCAL_DERIVED_DATA)/Build/Products/Debug/VoiceInk.app" && \
 	DEST="$$HOME/Downloads/Nexo Whisper Magic.app" && \
+	SIGN_ID="8FCAC81B328F45477DA0D5213505601CFA8C543C" && \
 	if [ -d "$$APP_PATH" ]; then \
 		echo "Copying Nexo Whisper Magic.app to ~/Downloads..."; \
 		rm -rf "$$DEST"; \
@@ -109,12 +115,17 @@ local-magic: check setup
 		echo "Patching Info.plist with DEV display name..."; \
 		plutil -replace CFBundleDisplayName -string "Nexo Whisper Magic" "$$DEST/Contents/Info.plist"; \
 		plutil -replace CFBundleName -string "Nexo Whisper Magic" "$$DEST/Contents/Info.plist"; \
-		echo "Re-signing after Info.plist patch..."; \
-		codesign --force --sign - --deep "$$DEST" 2>/dev/null || true; \
+		echo "Re-signing with STABLE cert after plist patch (preserva permisos)..."; \
+		codesign --force --sign "$$SIGN_ID" \
+			--entitlements "$(CURDIR)/VoiceInk/VoiceInk.local.entitlements" \
+			"$$DEST"; \
+		echo "Verifying signature..."; \
+		codesign -dvv "$$DEST" 2>&1 | grep -E "Authority|TeamIdentifier" | head -2; \
 		echo ""; \
 		echo "✅ Magic Selection DEV build saved to: ~/Downloads/Nexo Whisper Magic.app"; \
 		echo "   Bundle ID: com.prakashjoshipax.VoiceInk.dev"; \
-		echo "   Permisos macOS independientes de la app real"; \
+		echo "   Firmada con Apple Development (estable) → permiso de Accesibilidad PERSISTE entre rebuilds"; \
+		echo "   ⚠️ La PRIMERA vez tenés que conceder Accesibilidad. Después queda."; \
 		echo "   Run with: open \"$$HOME/Downloads/Nexo Whisper Magic.app\""; \
 	else \
 		echo "Error: Could not find built VoiceInk.app at $$APP_PATH"; \
