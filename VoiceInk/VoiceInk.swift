@@ -169,6 +169,14 @@ struct VoiceInkApp: App {
         activeWindowService.configure(with: enhancementService)
         _activeWindowService = StateObject(wrappedValue: activeWindowService)
 
+        // Magic Selection (F1 — detector + extractor solo, sin UI todavía)
+        // Default OFF en producción. Para testear: encender desde Console o
+        // settear UserDefaults("magicSelection.enabled") = true antes del build.
+        // Logs: subsystem com.prakashjoshipax.voiceink, category MagicSelection*
+        Task { @MainActor in
+            MagicSelectionService.shared.startIfNeeded()
+        }
+
         let prewarmService = ModelPrewarmService(
             transcriptionModelManager: transcriptionModelManager,
             whisperModelManager: whisperModelManager,
