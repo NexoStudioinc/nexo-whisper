@@ -366,6 +366,217 @@ class AIEnhancementService: ObservableObject {
         return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Pre-calienta el motor de IA si conviene, ANTES de mandar el comando.
+    /// Pensado para llamarse apenas se activa Magic Selection (al hacer el
+    /// wiggle), mientras el usuario todavía está dictando: el trabajo de
+    /// arranque se solapa con el dictado y la respuesta llega más rápido.
+    ///
+    /// DETECCIÓN AUTOMÁTICA: solo hace algo con Local CLI (que paga cold start
+    /// del proceso en cada pedido). Con providers de API remota no hace nada
+    /// — no tienen ese costo y no queremos gastar de gusto. Debounced 30s.
+    func prewarmForMagic() {
+        guard aiService.selectedProvider == .localCLI else { return }
+        aiService.prewarmActiveLocalCLI()
+    }
+
+    // MARK: - Magic Selection (streaming)
+
+    /// Variante en STREAMING de `runMagicCommand`. Devuelve eventos: primero el
+    /// `control` (replace/answer + imagen), luego los `token` de texto en vivo.
+    ///
+    /// Mejora sobre el JSON de `runMagicCommand` (que no se puede streamear): el
+    /// modelo responde con una PRIMERA LÍNEA de control (`@@REPLACE@@` /
+    /// `@@ANSWER@@` / `@@ANSWER|img=Entidad@@`) y debajo el texto plano, que sí
+    /// streamea token a token.
+    ///
+    /// `history`: turnos previos (pregunta, respuesta) para re-preguntar en el
+    /// panel sin re-seleccionar.
+    ///
+    /// Robustez: si el provider no streamea (Local CLI) o el stream falla antes
+    /// de emitir nada, cae al camino no-streaming (`runMagicCommand`) y emite el
+    /// resultado completo de una. Así nunca se rompe lo que ya andaba.
+    func runMagicCommandStreaming(
+        selectedText: String,
+        command: String,
+        history: [(user: String, assistant: String)] = []
+    ) -> AsyncThrowingStream<MagicStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task { @MainActor in
+                let trimmedCommand = command.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                // Fallback no-streaming reutilizable (Local CLI o error temprano).
+                func fallbackNonStreaming() async {
+                    do {
+                        let raw = try await self.runMagicCommand(selectedText: selectedText, command: trimmedCommand)
+                        let parsed = MagicCommandResult.parse(raw)
+                        continuation.yield(.control(action: parsed.action, imageQuery: parsed.imageQuery))
+                        continuation.yield(.token(parsed.text))
+                        continuation.finish()
+                    } catch {
+                        continuation.finish(throwing: error)
+                    }
+                }
+
+                // Gating BYOK Pro (igual que runMagicCommand).
+                guard self.isConfigured else { continuation.finish(throwing: EnhancementError.notConfigured); return }
+                let provider = self.aiService.selectedProvider
+                if provider.requiresBYOKLicense, !FeatureGate.isAvailable(.byokEnhancement) {
+                    continuation.finish(throwing: EnhancementError.proBYOKRequired); return
+                }
+                guard !trimmedCommand.isEmpty else {
+                    continuation.finish(throwing: EnhancementError.customError("No se entendió ningún comando de voz.")); return
+                }
+
+                // Provider sin streaming (Local CLI) → fallback directo.
+                guard let cfg = self.makeMagicStreamConfig(selectedText: selectedText, command: trimmedCommand, history: history) else {
+                    await fallbackNonStreaming()
+                    return
+                }
+
+                var emittedControl = false
+                var headerDone = false
+                var buffer = ""
+
+                do {
+                    for try await chunk in MagicStreamingClient.stream(cfg) {
+                        try Task.checkCancellation()
+                        if headerDone {
+                            continuation.yield(.token(chunk))
+                            continue
+                        }
+                        buffer += chunk
+                        if let nl = buffer.firstIndex(of: "\n") {
+                            let header = String(buffer[..<nl])
+                            let rest = String(buffer[buffer.index(after: nl)...])
+                            let (action, img) = Self.parseControlHeader(header)
+                            continuation.yield(.control(action: action, imageQuery: img))
+                            emittedControl = true
+                            headerDone = true
+                            if !rest.isEmpty { continuation.yield(.token(rest)) }
+                        } else if buffer.count > 64 {
+                            // No vino header: por seguridad tratamos todo como
+                            // respuesta (no tocar el texto del usuario).
+                            continuation.yield(.control(action: .answer, imageQuery: nil))
+                            emittedControl = true
+                            headerDone = true
+                            continuation.yield(.token(buffer))
+                        }
+                    }
+                    if !headerDone {
+                        // El stream terminó antes del salto: lo que haya es la respuesta.
+                        continuation.yield(.control(action: .answer, imageQuery: nil))
+                        if !buffer.isEmpty { continuation.yield(.token(buffer)) }
+                    }
+                    continuation.finish()
+                } catch is CancellationError {
+                    continuation.finish()
+                } catch {
+                    // Si todavía no emitimos nada, reintentamos sin streaming.
+                    if emittedControl {
+                        continuation.finish(throwing: error)
+                    } else {
+                        await fallbackNonStreaming()
+                    }
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    /// Construye la config de streaming según el provider activo. Devuelve nil
+    /// para providers que no soportan streaming de chat (Local CLI).
+    private func makeMagicStreamConfig(
+        selectedText: String,
+        command: String,
+        history: [(user: String, assistant: String)]
+    ) -> MagicStreamingClient.Config? {
+        let provider = aiService.selectedProvider
+        let model = aiService.currentModel
+        let apiKey = aiService.apiKey
+
+        let family: MagicStreamingClient.Family
+        let urlString: String
+        switch provider {
+        case .localCLI:
+            return nil
+        case .anthropic:
+            family = .anthropic
+            urlString = "https://api.anthropic.com/v1/messages"
+        case .ollama:
+            // Ollama expone un endpoint OpenAI-compatible en /v1.
+            let base = (provider.baseURL).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            family = .openAICompatible
+            urlString = "\(base)/v1/chat/completions"
+        default:
+            // Resto de providers de texto: ya traen el path /chat/completions.
+            family = .openAICompatible
+            urlString = provider.baseURL
+        }
+        guard let url = URL(string: urlString), !urlString.isEmpty else { return nil }
+
+        let temperature = model.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3
+        return MagicStreamingClient.Config(
+            family: family,
+            url: url,
+            apiKey: apiKey,
+            model: model,
+            systemPrompt: Self.magicStreamingSystemPrompt,
+            userMessage: Self.magicUserMessage(selectedText: selectedText, command: command),
+            history: history,
+            temperature: temperature,
+            timeout: baseTimeout
+        )
+    }
+
+    /// System prompt del modo streaming: pide header de control + texto plano.
+    private static let magicStreamingSystemPrompt = """
+    Sos el asistente de "Magic Selection". El usuario seleccionó o apuntó a un texto y dictó (o escribió) una instrucción. Tenés que responder en DOS partes.
+
+    PARTE 1 — La PRIMERA LÍNEA debe ser EXACTAMENTE una etiqueta de control y nada más:
+    - @@REPLACE@@   → si la instrucción pide TRANSFORMAR el texto (traducir, reformular, reescribir, corregir, reordenar, cambiar de formato, resumir para reemplazar, etc.). El resultado VA A REEMPLAZAR el texto original.
+    - @@ANSWER@@    → si la instrucción es una PREGUNTA o pide INFORMACIÓN (qué significa, qué es, sinónimos, explicame, definí, contame, etc.). El resultado se MUESTRA sin tocar el texto.
+    - @@ANSWER|img=NombreEntidad@@ → igual que ANSWER, pero cuando una imagen ayudaría a ilustrar (un lugar, persona, animal, planta, objeto, monumento, obra, marca). Poné el nombre EXACTO de la entidad para buscarla (ej: @@ANSWER|img=Torre Eiffel@@).
+
+    PARTE 2 — Desde la SEGUNDA LÍNEA en adelante, SOLO el texto resultante (sin comillas, sin JSON, sin repetir la etiqueta).
+
+    Reglas:
+    - En REPLACE: devolvé SOLO el texto transformado, sin preámbulos. Conservá el idioma original salvo que pidan traducir.
+    - En ANSWER: respondé en el idioma del usuario, como un asistente experto. Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow") pero sin relleno. Adaptá el largo: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (mostrá el código corregido y explicá brevemente). Si piden "profundizá/ampliá", extendete.
+    """
+
+    private static func magicUserMessage(selectedText: String, command: String) -> String {
+        """
+        <TEXTO_SELECCIONADO>
+        \(selectedText)
+        </TEXTO_SELECCIONADO>
+
+        <INSTRUCCION>
+        \(command)
+        </INSTRUCCION>
+        """
+    }
+
+    /// Parsea la línea de control `@@REPLACE@@` / `@@ANSWER@@` / `@@ANSWER|img=…@@`.
+    /// Tolerante: ante cualquier cosa rara, asume answer (no toca el texto).
+    private static func parseControlHeader(_ header: String) -> (MagicCommandResult.Action, String?) {
+        let h = header.trimmingCharacters(in: .whitespacesAndNewlines)
+        let upper = h.uppercased()
+        if upper.hasPrefix("@@REPLACE") {
+            return (.replace, nil)
+        }
+        if upper.hasPrefix("@@ANSWER") {
+            // ¿Trae imagen? `@@ANSWER|img=Torre Eiffel@@`
+            if let range = h.range(of: "img=", options: .caseInsensitive) {
+                var img = String(h[range.upperBound...])
+                img = img.replacingOccurrences(of: "@@", with: "")
+                img = img.trimmingCharacters(in: .whitespacesAndNewlines)
+                return (.answer, img.isEmpty ? nil : img)
+            }
+            return (.answer, nil)
+        }
+        return (.answer, nil)
+    }
+
     private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {
         switch error {
         case .missingAPIKey:

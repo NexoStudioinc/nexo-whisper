@@ -345,6 +345,12 @@ final class MagicSelectionService {
             }
             Self.logger.info("Context capturado al inicio: \(context.debugDescription) editable=\(context.isSelectionEditable)")
 
+            // Pre-calentamiento oportunista: mientras el usuario dicta el
+            // comando, adelantamos el arranque del motor de IA si conviene
+            // (solo Local CLI; con API no hace nada). Esconde la latencia del
+            // cold start detrás del tiempo de dictado. Sin costo constante.
+            self.engine?.enhancementService?.prewarmForMagic()
+
             let audioURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("magic-\(UUID().uuidString).wav")
 
@@ -470,49 +476,16 @@ final class MagicSelectionService {
                     return
                 }
 
-                let raw = try await enhancement.runMagicCommand(
+                // Primer turno: streaming en vivo. Se AWAITea acá para que el
+                // defer (apagar glow / re-escuchar en continuo) corra recién al
+                // terminar el stream.
+                await self.consumeStreamingTurn(
+                    enhancement: enhancement,
                     selectedText: selectedText,
-                    command: trimmedCommand
+                    command: trimmedCommand,
+                    context: context,
+                    freshPanel: true
                 )
-                let result = MagicCommandResult.parse(raw)
-
-                guard !result.text.isEmpty else {
-                    self.notifyError("La IA devolvió un resultado vacío.")
-                    self.cleanupTempFile(audioURL)
-                    return
-                }
-
-                // Acción de "Reemplazar / Pegar" reutilizable: reactiva la app
-                // de origen (por PID) y fuerza el pegado. Clave en Chrome/
-                // Electron, que no exponen su árbol AX y donde no detectamos el
-                // input editable automáticamente.
-                let resultText = result.text
-                let sourcePID = context.sourcePID
-                let forcePaste: () -> Void = {
-                    CursorPaster.pasteReactivating(resultText, appPID: sourcePID, force: true)
-                }
-
-                switch result.action {
-                case .replace:
-                    // Criterio: ¿la SELECCIÓN vino de un campo editable? (se
-                    // decidió al capturar, no por dónde quedó el cursor). Si la
-                    // selección es editable → pega (reactivando el origen). Si
-                    // es de solo lectura o no la pudimos detectar (mail recibido,
-                    // output de Claude Code, web, Electron, o vino por clipboard)
-                    // → panel con botón "Reemplazar" para forzar el pegado.
-                    if context.isSelectionEditable {
-                        CursorPaster.pasteReactivating(result.text, appPID: sourcePID)
-                        Self.logger.info("Selección editable → reemplazo pegado (\(result.text.count) chars)")
-                    } else {
-                        self.answerPanel.show(text: result.text, near: NSEvent.mouseLocation, onReplace: forcePaste)
-                        Self.logger.info("Selección NO editable → panel con botón Reemplazar")
-                    }
-                case .answer:
-                    // Respuesta (pregunta): no toca el texto, pero igual ofrece
-                    // "Reemplazar" por si el usuario quiere insertarla (modo confío).
-                    self.answerPanel.show(text: result.text, imageQuery: result.imageQuery, near: NSEvent.mouseLocation, onReplace: forcePaste)
-                    Self.logger.info("Respuesta en panel (\(result.text.count) chars, image=\(result.imageQuery ?? "none", privacy: .public))")
-                }
             } catch {
                 self.notifyError("No pude procesar el comando: \(error.localizedDescription)")
                 Self.logger.error("Pipeline error: \(error.localizedDescription, privacy: .public)")
@@ -520,6 +493,104 @@ final class MagicSelectionService {
 
             self.cleanupTempFile(audioURL)
         }
+    }
+
+    // ── Streaming: consume el stream y empuja tokens al panel ───────────
+    /// Consume un turno de Magic en streaming. `freshPanel=true` es el primer
+    /// comando (puede pegar directo si la selección es editable); `false` es una
+    /// re-pregunta / botón desde el panel ya abierto (siempre muestra en panel).
+    @MainActor
+    private func consumeStreamingTurn(
+        enhancement: AIEnhancementService,
+        selectedText: String,
+        command: String,
+        context: MagicContext,
+        freshPanel: Bool
+    ) async {
+        let history = freshPanel ? [] : (answerPanel.currentModel?.conversation ?? [])
+        let events = enhancement.runMagicCommandStreaming(
+            selectedText: selectedText,
+            command: command,
+            history: history
+        )
+
+        var model: MagicAnswerModel? = freshPanel ? nil : answerPanel.currentModel
+        var pasteDirect = false
+        var full = ""
+
+        // Feedback inmediato cuando el panel ya está abierto (re-pregunta /
+        // botón): mostramos "Pensando…" sin esperar a la respuesta. En modo
+        // cliente (sin streaming) esto evita que parezca que no pasa nada.
+        if !freshPanel { model?.beginThinking() }
+
+        do {
+            for try await event in events {
+                switch event {
+                case .control(let action, let imageQuery):
+                    // Pegado directo solo en el primer turno, si la selección era
+                    // editable y la IA decidió reemplazar. Si no, va al panel.
+                    pasteDirect = freshPanel && action == .replace && context.isSelectionEditable
+                    if !pasteDirect {
+                        if freshPanel {
+                            let m = self.makeAnswerModel(selectedText: selectedText, context: context, enhancement: enhancement)
+                            model = m
+                            self.answerPanel.present(model: m, near: NSEvent.mouseLocation)
+                        }
+                        model?.beginTurn(imageQuery: imageQuery)
+                    }
+                case .token(let token):
+                    full += token
+                    if !pasteDirect {
+                        model?.appendToken(token)
+                        self.answerPanel.scheduleAutoHide()
+                    }
+                }
+            }
+            if pasteDirect {
+                CursorPaster.pasteReactivating(full, appPID: context.sourcePID)
+                Self.logger.info("Streaming replace editable → pegado (\(full.count) chars)")
+            } else {
+                model?.finishTurn(userCommand: command)
+                Self.logger.info("Streaming en panel completado (\(full.count) chars)")
+            }
+        } catch {
+            if let model {
+                model.failTurn("No pude completar: \(error.localizedDescription)")
+            } else {
+                self.notifyError("No pude procesar el comando: \(error.localizedDescription)")
+            }
+            Self.logger.error("Streaming error: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Crea el modelo del panel con sus closures: re-pregunta (con historial) y
+    /// "Reemplazar" (pega en el origen forzando, reactivando la app por PID).
+    @MainActor
+    private func makeAnswerModel(
+        selectedText: String,
+        context: MagicContext,
+        enhancement: AIEnhancementService
+    ) -> MagicAnswerModel {
+        let m = MagicAnswerModel(selectedText: selectedText, historyStore: answerPanel.historyStore)
+        let pid = context.sourcePID
+        m.onReplace = { [weak self] in
+            guard let self, let current = self.answerPanel.currentModel else { return }
+            CursorPaster.pasteReactivating(current.responseText, appPID: pid, force: true)
+            self.answerPanel.hide()
+        }
+        m.onCommand = { [weak self] cmd in
+            guard let self else { return }
+            Task { @MainActor in
+                await self.consumeStreamingTurn(
+                    enhancement: enhancement,
+                    selectedText: selectedText,
+                    command: cmd,
+                    context: context,
+                    freshPanel: false
+                )
+            }
+        }
+        return m
     }
 
     private func notifyError(_ message: String) {

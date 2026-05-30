@@ -2,10 +2,9 @@ import AppKit
 import SwiftUI
 import OSLog
 
-/// Resultado de un comando Magic, parseado del JSON que devuelve la IA.
-/// La IA decide si transforma el texto (`replace`) o responde una pregunta
-/// (`answer`). Si el modelo no devuelve JSON válido, asumimos `replace` con
-/// el texto crudo (comportamiento por defecto, no rompe el flujo).
+/// Resultado de un comando Magic, parseado del JSON que devuelve la IA (camino
+/// NO-streaming / fallback). El camino de streaming usa el header de control
+/// (`@@REPLACE@@` / `@@ANSWER@@`), ver `AIEnhancementService`.
 struct MagicCommandResult {
     enum Action {
         /// Reemplazar la selección con `text`.
@@ -45,6 +44,11 @@ struct MagicCommandResult {
         return MagicCommandResult(action: .replace, text: cleaned, imageQuery: nil)
     }
 }
+
+/// Acciones rápidas del panel (botones). Disparan un comando sin necesidad de
+/// (Los chips de acción ahora son configurables: ver `MagicChip` /
+/// `MagicChipStore` en MagicChips.swift — built-in + custom, on/off y orden
+/// desde Settings.)
 
 /// Busca la imagen (thumbnail) de una entidad en Wikipedia. Gratis, sin API
 /// key. Prueba primero en español y cae a inglés.
@@ -94,7 +98,8 @@ enum MagicImageSearch {
     }
 }
 
-/// Historial observable de respuestas. Reactivo: limpiar se refleja al toque.
+/// Historial observable (reactivo) de respuestas. Para reabrir lo que se generó
+/// aunque se haya cerrado la ventana. (Conversación = ver MagicAnswerModel.)
 @MainActor
 final class MagicHistoryStore: ObservableObject {
     struct Item: Identifiable {
@@ -117,12 +122,205 @@ final class MagicHistoryStore: ObservableObject {
     func clear() { items.removeAll() }
 }
 
-/// Panel flotante que muestra una respuesta de Magic Selection al lado del
-/// cursor, sin tocar el texto del usuario (para preguntas tipo "qué significa
-/// esto", "dame sinónimos", "qué es esto").
-///
-/// Mismo molde que `MagicModeOverlay`: NSPanel transparente, sin foco. A
-/// diferencia del glow, este SÍ recibe clicks (para poder cerrarlo / scrollear).
+// ── Modelo reactivo del panel ────────────────────────────────────────────
+
+/// Estado observable del panel de respuesta. El `MagicSelectionService`
+/// consume el stream de la IA y empuja tokens acá; la vista los muestra en
+/// vivo. También dispara nuevos comandos (re-pregunta / botones) vía closures.
+@MainActor
+final class MagicAnswerModel: ObservableObject {
+    /// Texto de la respuesta actual (crece token a token en streaming).
+    @Published var responseText: String = ""
+    @Published var isStreaming: Bool = false
+    @Published var errorText: String? = nil
+    @Published var imageURL: URL? = nil
+    @Published var searchingImage: Bool = false
+    /// Binding del campo de re-pregunta.
+    @Published var question: String = ""
+    /// True mientras hay una imagen para mostrar/buscar.
+    @Published var hasImage: Bool = false
+
+    /// Texto sobre el que opera la sesión (selección original).
+    let selectedText: String
+
+    /// Turnos previos (pregunta, respuesta) para dar contexto a las re-preguntas.
+    private(set) var conversation: [(user: String, assistant: String)] = []
+    private var currentImageQuery: String?
+
+    /// Disparar un nuevo comando (re-pregunta del campo o botón preset).
+    var onCommand: ((String) -> Void)?
+    /// Pegar la respuesta actual en la app de origen (botón Reemplazar).
+    var onReplace: (() -> Void)?
+    /// Cerrar el panel.
+    var onClose: (() -> Void)?
+
+    /// True mientras esperamos la respuesta de un turno SIN haber recibido
+    /// todavía el primer token. En este estado el texto VIEJO se mantiene
+    /// visible (no parpadea a vacío) con el indicador "Pensando…". Se apaga al
+    /// llegar el primer token (que recién ahí reemplaza el texto).
+    @Published var isThinking: Bool = false
+
+    /// Chip que disparó el turno en curso (para mostrar el spinner en SU chip).
+    @Published var activeChipID: UUID? = nil
+
+    /// Historial persistente de respuestas (menú reloj).
+    let historyStore: MagicHistoryStore
+
+    private var imageTask: Task<Void, Never>?
+
+    // Undo/Redo: pila de versiones del texto. `versionIndex` apunta a la actual.
+    private var versions: [String] = []
+    private var versionIndex: Int = -1
+    @Published var canUndo: Bool = false
+    @Published var canRedo: Bool = false
+
+    init(selectedText: String, historyStore: MagicHistoryStore) {
+        self.selectedText = selectedText
+        self.historyStore = historyStore
+    }
+
+    // ── API que usa el service mientras consume el stream ──────────────
+
+    /// Feedback INMEDIATO de "procesando": se llama apenas se dispara un
+    /// comando (re-pregunta / botón), antes de esperar la respuesta. NO borra
+    /// el texto: queda el anterior visible con el indicador "Pensando…" hasta
+    /// que llega la respuesta nueva (clave en modo cliente, sin streaming).
+    func beginThinking() {
+        errorText = nil
+        isStreaming = true
+        isThinking = true
+    }
+
+    /// Arranca un turno nuevo. NO limpia el texto todavía (eso pasa al llegar el
+    /// primer token); solo marca pensando y, si corresponde, busca imagen.
+    func beginTurn(imageQuery: String?) {
+        errorText = nil
+        isStreaming = true
+        isThinking = true
+        currentImageQuery = imageQuery
+        imageTask?.cancel()
+        if let q = imageQuery {
+            searchingImage = true
+            imageTask = Task { @MainActor in
+                let url = await MagicImageSearch.thumbnailURL(for: q)
+                guard !Task.isCancelled else { return }
+                self.imageURL = url
+                self.searchingImage = false
+                self.hasImage = (url != nil)
+            }
+        } else {
+            searchingImage = false
+        }
+    }
+
+    func appendToken(_ token: String) {
+        // El primer token del turno reemplaza el texto viejo y limpia la imagen.
+        if isThinking {
+            isThinking = false
+            responseText = ""
+            imageURL = nil
+            hasImage = (currentImageQuery != nil)
+        }
+        responseText += token
+    }
+
+    /// Cierra el turno: guarda en la conversación, el historial y el undo.
+    func finishTurn(userCommand: String) {
+        isStreaming = false
+        isThinking = false
+        activeChipID = nil
+        let answer = responseText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !answer.isEmpty else { return }
+        conversation.append((userCommand, answer))
+        historyStore.add(text: answer, imageQuery: currentImageQuery)
+        pushVersion(answer)
+    }
+
+    func failTurn(_ message: String) {
+        isStreaming = false
+        isThinking = false
+        activeChipID = nil
+        errorText = message
+    }
+
+    // ── Undo / Redo del texto generado ─────────────────────────────────
+
+    private func pushVersion(_ text: String) {
+        // Si veníamos de un undo, descartamos el "futuro" antes de apilar.
+        if versionIndex < versions.count - 1 {
+            versions.removeSubrange((versionIndex + 1)...)
+        }
+        versions.append(text)
+        versionIndex = versions.count - 1
+        refreshUndoState()
+    }
+
+    func undo() {
+        guard versionIndex > 0 else { return }
+        versionIndex -= 1
+        responseText = versions[versionIndex]
+        refreshUndoState()
+    }
+
+    func redo() {
+        guard versionIndex < versions.count - 1 else { return }
+        versionIndex += 1
+        responseText = versions[versionIndex]
+        refreshUndoState()
+    }
+
+    private func refreshUndoState() {
+        canUndo = versionIndex > 0
+        canRedo = versionIndex < versions.count - 1
+    }
+
+    // ── API que usa la vista ───────────────────────────────────────────
+
+    func submitQuestion() {
+        let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty, !isStreaming else { return }
+        question = ""
+        activeChipID = nil
+        onCommand?(q)
+    }
+
+    /// Dispara un chip. Para "Traducir" arma el comando con el idioma destino
+    /// (preferido / auto-detectado, o `overrideLanguage` si vino del submenú).
+    func runChip(_ chip: MagicChip, overrideLanguage: String? = nil) {
+        guard !isStreaming else { return }
+        activeChipID = chip.id
+        let cmd = chip.isTranslate
+            ? MagicTranslation.command(for: selectedText, override: overrideLanguage)
+            : chip.command
+        onCommand?(cmd)
+    }
+
+    func copyToPasteboard() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(responseText, forType: .string)
+    }
+}
+
+// ── NSPanel que SÍ puede tomar foco (para el campo de re-pregunta) ───────
+
+/// A diferencia de un `nonactivatingPanel` puro, este puede volverse key para
+/// que el `TextField` de re-pregunta reciba el teclado. Idea de Hover
+/// (FloatingPanel, GPL-3.0). Esc lo cierra.
+final class MagicKeyPanel: NSPanel {
+    var onCancel: (() -> Void)?
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+
+    override func cancelOperation(_ sender: Any?) {
+        onCancel?()
+    }
+}
+
+/// Panel flotante que muestra la respuesta de Magic Selection al lado del
+/// cursor. Reactivo (streaming), movible y redimensionable con el resize NATIVO
+/// de macOS (cursores de doble flecha en bordes y esquinas), con foco para
+/// re-preguntar.
 @MainActor
 final class MagicAnswerPanel {
 
@@ -131,340 +329,467 @@ final class MagicAnswerPanel {
         category: "MagicAnswerPanel"
     )
 
-    // Margen transparente (20px por lado) alrededor de la card para que la
-    // sombra respire. El tamaño se calcula según el contenido (más grande para
-    // respuestas largas / código).
-    private static let margin: CGFloat = 20
-    private var currentPanelSize = NSSize(width: 400, height: 320)
+    private static let minCard = NSSize(width: 300, height: 220)
+    private let defaultSize = NSSize(width: 400, height: 340)
 
-    private var panel: NSPanel?
-    private var escMonitor: Any?
+    private var panel: MagicKeyPanel?
     private var autoHideTask: Task<Void, Never>?
-    private var hostingView: NSView?
-    private var currentText: String = ""
-    private var lastAnchor: NSPoint = .zero
+    private(set) var currentModel: MagicAnswerModel?
 
-    /// Acción "Reemplazar / Pegar en el origen" del comando actual. Se setea en
-    /// `show()` (texto recién generado, con contexto vivo) y se limpia al
-    /// reabrir desde el historial (texto viejo, sin app de origen viva).
-    private var currentOnReplace: (() -> Void)?
+    /// Historial persistente de respuestas (compartido entre sesiones).
+    let historyStore = MagicHistoryStore()
 
-    /// Historial observable (reactivo) de respuestas.
-    private let historyStore = MagicHistoryStore()
+    var isVisible: Bool { panel != nil }
 
-    /// Muestra la respuesta cerca de `anchor` y la guarda en el historial.
-    /// `onReplace`: si se provee, el panel muestra un botón "Reemplazar / Pegar"
-    /// que fuerza el pegado en la app de origen (clave para Chrome/Electron,
-    /// donde no detectamos el campo editable automáticamente).
-    func show(text: String, imageQuery: String? = nil, near anchor: NSPoint, onReplace: (() -> Void)? = nil) {
-        currentOnReplace = onReplace
-        historyStore.add(text: text, imageQuery: imageQuery)
-        showInternal(text: text, imageQuery: imageQuery, near: anchor)
-    }
+    /// Muestra el panel para un modelo nuevo cerca de `anchor`.
+    func present(model: MagicAnswerModel, near anchor: NSPoint) {
+        currentModel = model
+        model.onClose = { [weak self] in self?.hide() }
 
-    /// Muestra sin agregar al historial (usado al reabrir desde el historial).
-    private func showInternal(text: String, imageQuery: String?, near anchor: NSPoint) {
-        lastAnchor = anchor
-        buildPanelIfNeeded(text: text, imageQuery: imageQuery)
+        buildPanel(model: model)
         positionPanel(near: anchor)
         panel?.orderFrontRegardless()
-        installEscMonitor()
-
-        // Auto-cierre por inactividad (generoso: el usuario puede leer).
-        autoHideTask?.cancel()
-        autoHideTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 60_000_000_000) // 60s
-            guard !Task.isCancelled else { return }
-            self.hide()
-        }
+        panel?.makeKey()
+        scheduleAutoHide()
     }
 
     func hide() {
         autoHideTask?.cancel()
         autoHideTask = nil
-        removeEscMonitor()
         panel?.orderOut(nil)
         panel = nil
+        currentModel = nil
     }
 
-    private func buildPanelIfNeeded(text: String, imageQuery: String?) {
-        // Reconstruimos siempre para refrescar el contenido.
-        panel?.orderOut(nil)
+    /// Reinicia el timer de auto-cierre. Por DEFAULT el panel NO se cierra solo
+    /// (ya hay X y Esc para cerrarlo); se controla con la preferencia
+    /// `magicSelection.panelAutoHideSeconds` (0 o ausente = nunca).
+    func scheduleAutoHide() {
+        autoHideTask?.cancel()
+        let seconds = UserDefaults.standard.double(forKey: "magicSelection.panelAutoHideSeconds")
+        guard seconds > 0 else { return }   // 0 / sin setear → no se cierra solo
+        autoHideTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self.hide()
+        }
+    }
 
-        // Tamaño según contenido: más grande para respuestas largas / código.
-        let lineCount = text.components(separatedBy: "\n").count
-        let isLong = text.count > 520 || lineCount > 12
-        let cardSize = isLong ? NSSize(width: 470, height: 440)
-                              : NSSize(width: 360, height: 300)
-        let panelSize = NSSize(width: cardSize.width + Self.margin * 2,
-                               height: cardSize.height + Self.margin * 2)
-        currentPanelSize = panelSize
+    private func buildPanel(model: MagicAnswerModel) {
+        let size = defaultSize
 
-        let newPanel = NSPanel(
-            contentRect: NSRect(origin: .zero, size: panelSize),
-            styleMask: [.borderless, .nonactivatingPanel, .resizable],
+        // Ventana `.titled` + `.resizable` + `.fullSizeContentView`: nos da el
+        // RESIZE NATIVO de macOS (cursores de doble flecha en bordes y esquinas)
+        // con la barra de título oculta y transparente. El contenido ocupa toda
+        // la ventana. Se mueve con isMovableByWindowBackground (arrastrando el
+        // interior); el resize lo maneja el sistema en los bordes (no compiten).
+        let newPanel = MagicKeyPanel(
+            contentRect: NSRect(origin: .zero, size: size),
+            styleMask: [.titled, .resizable, .fullSizeContentView, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
-        newPanel.minSize = NSSize(width: 280, height: 200)
+        newPanel.minSize = Self.minCard
+        newPanel.titleVisibility = .hidden
+        newPanel.titlebarAppearsTransparent = true
+        newPanel.standardWindowButton(.closeButton)?.isHidden = true
+        newPanel.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        newPanel.standardWindowButton(.zoomButton)?.isHidden = true
         newPanel.isFloatingPanel = true
-        // `.floating` (no `.screenSaver`): así el menú de Compartir del sistema
-        // (nivel popUpMenu) aparece ENCIMA del panel y se puede tocar. Con
-        // `.screenSaver` el panel tapaba el menú.
         newPanel.level = .floating
         newPanel.backgroundColor = .clear
         newPanel.isOpaque = false
+        // Sombra/halo lo da SwiftUI (glow de color) en el margen transparente.
         newPanel.hasShadow = false
-        // Se puede arrastrar el panel desde cualquier parte del fondo y dejarlo
-        // donde no moleste.
         newPanel.isMovableByWindowBackground = true
         newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
         newPanel.hidesOnDeactivate = false
+        newPanel.onCancel = { [weak self] in self?.hide() }
 
-        currentText = text
-        // El botón "Reemplazar / Pegar" solo aparece si hay una acción viva
-        // (texto recién generado). Al reabrir desde el historial no hay app de
-        // origen, así que no se ofrece.
-        let onReplace: (() -> Void)? = currentOnReplace.map { action in
-            { [weak self] in
-                action()
-                Task { @MainActor in self?.hide() }
-            }
-        }
         let view = MagicAnswerView(
-            text: text,
-            imageQuery: imageQuery,
-            historyStore: historyStore,
-            onReplace: onReplace,
-            onSelectHistory: { [weak self] item in
-                guard let self else { return }
-                // Texto histórico: sin contexto de origen vivo → sin Reemplazar.
-                self.currentOnReplace = nil
-                self.showInternal(text: item.text, imageQuery: item.imageQuery, near: self.lastAnchor)
-            },
+            model: model,
             onShare: { [weak self] in self?.presentShare() },
-            onClose: { [weak self] in
-                Task { @MainActor in self?.hide() }
-            }
+            onInteract: { [weak self] in self?.scheduleAutoHide() }
         )
         let hosting = NSHostingView(rootView: view)
-        hosting.frame = NSRect(origin: .zero, size: panelSize)
-        hosting.autoresizingMask = [.width, .height]  // se adapta al resize
+        hosting.frame = NSRect(origin: .zero, size: size)
+        hosting.autoresizingMask = [.width, .height]
         newPanel.contentView = hosting
 
         self.panel = newPanel
-        self.hostingView = hosting
     }
 
-    /// Abre el share sheet nativo de macOS (Mensajes, Mail, AirDrop, WhatsApp
-    /// si está instalado, etc.) anclado al panel.
     private func presentShare() {
-        guard let hostingView else { return }
-        let picker = NSSharingServicePicker(items: [currentText])
-        // Anclar cerca del botón Compartir (arriba-derecha de la card) y
-        // desplegar hacia arriba para que no quede tapado por el panel.
+        guard let panel, let hostingView = panel.contentView, let model = currentModel else { return }
+        let picker = NSSharingServicePicker(items: [model.responseText])
         let bounds = hostingView.bounds
         let rect = NSRect(x: bounds.maxX - 60, y: bounds.maxY - 36, width: 1, height: 1)
         picker.show(relativeTo: rect, of: hostingView, preferredEdge: .maxY)
     }
 
-    /// Ubica el panel al lado del cursor, clampeado dentro de la pantalla.
     private func positionPanel(near anchor: NSPoint) {
         guard let panel else { return }
-        let size = currentPanelSize
+        let size = panel.frame.size
         let screen = NSScreen.screens.first(where: { $0.frame.contains(anchor) }) ?? NSScreen.main
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
 
-        // Por defecto: abajo-derecha del cursor.
         var x = anchor.x + 18
         var y = anchor.y - size.height - 18
-
-        // Clamp horizontal.
         if x + size.width > visible.maxX { x = anchor.x - size.width - 18 }
         if x < visible.minX { x = visible.minX + 8 }
-        // Clamp vertical.
         if y < visible.minY { y = anchor.y + 18 }
         if y + size.height > visible.maxY { y = visible.maxY - size.height - 8 }
-
         panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
-
-    private func installEscMonitor() {
-        guard escMonitor == nil else { return }
-        escMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            guard event.keyCode == 53 else { return } // Esc
-            Task { @MainActor in self?.hide() }
-        }
-    }
-
-    private func removeEscMonitor() {
-        if let escMonitor {
-            NSEvent.removeMonitor(escMonitor)
-            self.escMonitor = nil
-        }
-    }
 }
+
 
 // ── La tarjeta de respuesta ─────────────────────────────────────────────
 
 private struct MagicAnswerView: View {
-    let text: String
-    var imageQuery: String? = nil
-    @ObservedObject var historyStore: MagicHistoryStore
-    /// Si no es nil, muestra el botón "Reemplazar / Pegar" (fuerza el pegado en
-    /// la app de origen — caso Chrome/Electron donde no detectamos el input).
-    var onReplace: (() -> Void)? = nil
-    var onSelectHistory: (MagicHistoryStore.Item) -> Void = { _ in }
+    @ObservedObject var model: MagicAnswerModel
     let onShare: () -> Void
-    let onClose: () -> Void
+    let onInteract: () -> Void
 
-    /// Heurística: ¿la respuesta parece código? → fuente monoespaciada.
+    @ObservedObject private var chipStore = MagicChipStore.shared
+    @State private var copied = false
+
+    private let violet = Color(red: 0.55, green: 0.36, blue: 0.96)
+    private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
+
     private var looksLikeCode: Bool {
+        let text = model.responseText
         guard text.contains("\n") else { return false }
         let markers = ["{", "}", ";", "()", "=>", "def ", "function", "import ",
                        "const ", "let ", "var ", "class ", "</", "/>", "#include", "println"]
         return markers.filter { text.contains($0) }.count >= 2
     }
 
-    @State private var copied = false
-    @State private var imageURL: URL? = nil
-    @State private var searchingImage = false
-
-    private let violet = Color(red: 0.55, green: 0.36, blue: 0.96)
-    private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
-
     var body: some View {
-        // La card llena la ventana con 20px de margen para que la SOMBRA
-        // respire. Se adapta al resize de la ventana.
+        // Margen transparente para que el HALO de color respire alrededor de la
+        // card. El resize nativo agarra en el borde de la ventana (un pelín por
+        // fuera de la card visible).
         card
-            .padding(20)
+            .padding(13)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var card: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header: marca + acciones (chiquitas, arriba) + cerrar.
-            HStack(spacing: 6) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing)
-                    )
-                Text("Magic")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.85))
-
-                Spacer()
-
-                if let onReplace {
-                    replaceButton(action: onReplace)
-                }
-                historyMenu
-                iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(text, forType: .string)
-                    withAnimation { copied = true }
-                }
-                iconButton("square.and.arrow.up", help: "Compartir", action: onShare)
-                iconButton("xmark", help: "Cerrar", action: onClose)
-            }
-            .padding(.horizontal, 13)
-            .padding(.top, 11)
-            .padding(.bottom, 9)
-
+            header
             Divider().overlay(Color.white.opacity(0.08))
-
-            // Cuerpo scrollable (imagen opcional arriba + texto).
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    // Texto primero, imagen después.
-                    Text(text)
-                        .font(looksLikeCode ? .system(size: 12, design: .monospaced)
-                                            : .system(size: 13))
-                        .foregroundStyle(.white.opacity(0.92))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    if searchingImage {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(.white.opacity(0.05))
-                            .frame(height: 120)
-                            .overlay(ProgressView().controlSize(.small))
-                    } else if let imageURL {
-                        AsyncImage(url: imageURL) { phase in
-                            switch phase {
-                            case .success(let image):
-                                // scaledToFit: entra completa, sin recortarse.
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxWidth: .infinity)
-                                    .frame(maxHeight: 180)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            case .empty:
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(.white.opacity(0.05))
-                                    .frame(height: 130)
-                                    .overlay(ProgressView().controlSize(.small))
-                            default:
-                                EmptyView()
-                            }
-                        }
-                    }
-                }
-                .padding(14)
-            }
-        }
-        .task {
-            guard let q = imageQuery else { return }
-            searchingImage = true
-            imageURL = await MagicImageSearch.thumbnailURL(for: q)
-            searchingImage = false
+            bodyScroll
+            statusBar
+            presetBar
+            askBar
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(red: 0.07, green: 0.07, blue: 0.10).opacity(0.97))
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(red: 0.07, green: 0.07, blue: 0.10).opacity(0.98))
         )
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(
                     LinearGradient(colors: [violet, cyan], startPoint: .topLeading, endPoint: .bottomTrailing),
                     lineWidth: 1.2
                 )
         )
-        .shadow(color: violet.opacity(0.35), radius: 14)
-        .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+        // Halo difuso del mismo color (violeta→cyan) + sombra de profundidad.
+        .shadow(color: violet.opacity(0.45), radius: 12)
+        .shadow(color: cyan.opacity(0.22), radius: 18)
+        .shadow(color: .black.opacity(0.35), radius: 8, y: 3)
     }
 
-    /// Menú de historial de respuestas (por si se cerró la ventana).
+    // ── Header ──────────────────────────────────────────────────────────
+
+    private var header: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing))
+            Text("Magic")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.85))
+            if model.isStreaming {
+                ProgressView().controlSize(.mini).scaleEffect(0.7)
+            }
+
+            Spacer()
+
+            historyMenu
+            iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
+                model.copyToPasteboard()
+                withAnimation { copied = true }
+                onInteract()
+            }
+            iconButton("square.and.arrow.up", help: "Compartir") { onShare(); onInteract() }
+            iconButton("xmark", help: "Cerrar") { model.onClose?() }
+        }
+        .padding(.horizontal, 13)
+        .padding(.top, 11)
+        .padding(.bottom, 9)
+    }
+
+    // ── Cuerpo (texto en streaming + imagen + error) ────────────────────
+
+    private var bodyScroll: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                if let err = model.errorText {
+                    Label(err, systemImage: "exclamationmark.triangle")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if model.responseText.isEmpty && model.isThinking {
+                    // Primer turno sin texto previo: "Pensando…" en el cuerpo.
+                    HStack(spacing: 8) {
+                        thinkingDots
+                        Text("Pensando…")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else if !model.responseText.isEmpty {
+                    // El texto se mantiene visible incluso mientras "Pensando…"
+                    // (no parpadea a vacío); recién cambia al llegar el primero
+                    // token del turno nuevo.
+                    Text(model.responseText)
+                        .font(looksLikeCode ? .system(size: 12, design: .monospaced)
+                                            : .system(size: 13))
+                        .foregroundStyle(.white.opacity(0.92))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if model.searchingImage {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(.white.opacity(0.05))
+                        .frame(height: 120)
+                        .overlay(ProgressView().controlSize(.small))
+                } else if let imageURL = model.imageURL {
+                    AsyncImage(url: imageURL) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .frame(maxHeight: 180)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        case .empty:
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(.white.opacity(0.05))
+                                .frame(height: 130)
+                                .overlay(ProgressView().controlSize(.small))
+                        default:
+                            EmptyView()
+                        }
+                    }
+                }
+
+                // Reemplazar al final de la respuesta lista: discreto, alineado
+                // a la izquierda (no invasivo).
+                if model.onReplace != nil, !model.isStreaming, !model.responseText.isEmpty {
+                    Button { model.onReplace?(); onInteract() } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.down.doc").font(.system(size: 10, weight: .semibold))
+                            Text("Reemplazar texto").font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundStyle(violet)
+                        .padding(.horizontal, 9)
+                        .frame(height: 24)
+                        .background(
+                            Capsule().fill(violet.opacity(0.12))
+                                .overlay(Capsule().strokeBorder(violet.opacity(0.45), lineWidth: 1))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 2)
+                    .help("Reemplazar / Pegar en el origen")
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    // ── Barra de estado "Pensando…" (cuando ya hay texto viejo visible) ─
+
+    @ViewBuilder private var statusBar: some View {
+        if model.isThinking && !model.responseText.isEmpty {
+            HStack(spacing: 8) {
+                thinkingDots
+                Text("Pensando…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.55))
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(Color.white.opacity(0.04))
+            .overlay(Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.06)), alignment: .top)
+        }
+    }
+
+    // ── Barra de chips de acción (configurables desde Settings) ─────────
+
+    @ViewBuilder private var presetBar: some View {
+        let chips = chipStore.enabledChips
+        if !chips.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(chips) { chip in
+                        if chip.isTranslate {
+                            translateChip(chip)
+                        } else {
+                            Button {
+                                model.runChip(chip); onInteract()
+                            } label: { chipLabel(chip) }
+                            .buttonStyle(.plain)
+                            .disabled(model.isStreaming)
+                        }
+                    }
+                }
+                .padding(.horizontal, 13)
+                .padding(.vertical, 8)
+            }
+        }
+    }
+
+    /// Chip "Traducir" con DOS zonas en la misma cápsula (no aparece
+    /// desactivado): tocás el GLOBO → menú de idiomas; tocás el TEXTO → traduce
+    /// al destino resuelto (preferido / auto-detectado).
+    private func translateChip(_ chip: MagicChip) -> some View {
+        let isActive = model.activeChipID == chip.id && model.isStreaming
+        let tint = Color.white.opacity(model.isStreaming && !isActive ? 0.4 : 0.85)
+        return HStack(spacing: 5) {
+            // Globo → menú de idiomas.
+            Menu {
+                ForEach(MagicTranslation.languages, id: \.self) { lang in
+                    Button(lang) { model.runChip(chip, overrideLanguage: lang); onInteract() }
+                }
+            } label: {
+                if isActive {
+                    ProgressView().controlSize(.mini).scaleEffect(0.55).frame(width: 10, height: 10)
+                } else {
+                    Image(systemName: chip.systemImage).font(.system(size: 9, weight: .semibold))
+                }
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .frame(width: isActive ? 12 : 12)
+
+            // Texto → traduce.
+            Button { model.runChip(chip); onInteract() } label: {
+                Text(chip.title).font(.system(size: 10, weight: .medium))
+            }
+            .buttonStyle(.plain)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 8)
+        .frame(height: 24)
+        .background(
+            Capsule().fill(isActive ? AnyShapeStyle(LinearGradient(colors: [violet.opacity(0.4), cyan.opacity(0.4)], startPoint: .leading, endPoint: .trailing))
+                                    : AnyShapeStyle(.white.opacity(0.06)))
+                .overlay(Capsule().strokeBorder(.white.opacity(0.10), lineWidth: 1))
+        )
+        .disabled(model.isStreaming)
+    }
+
+    private func chipLabel(_ chip: MagicChip) -> some View {
+        let isActive = model.activeChipID == chip.id && model.isStreaming
+        return HStack(spacing: 4) {
+            if isActive {
+                ProgressView().controlSize(.mini).scaleEffect(0.55)
+                    .frame(width: 10, height: 10)
+            } else {
+                Image(systemName: chip.systemImage).font(.system(size: 9, weight: .semibold))
+            }
+            Text(chip.title).font(.system(size: 10, weight: .medium))
+        }
+        .foregroundStyle(.white.opacity(model.isStreaming && !isActive ? 0.4 : 0.85))
+        .padding(.horizontal, 8)
+        .frame(height: 24)
+        .background(
+            Capsule().fill(isActive ? AnyShapeStyle(LinearGradient(colors: [violet.opacity(0.4), cyan.opacity(0.4)], startPoint: .leading, endPoint: .trailing))
+                                    : AnyShapeStyle(.white.opacity(0.06)))
+                .overlay(Capsule().strokeBorder(.white.opacity(0.10), lineWidth: 1))
+        )
+    }
+
+    // ── Footer: undo/redo + campo de re-pregunta inline ─────────────────
+
+    private var askBar: some View {
+        HStack(spacing: 8) {
+            // Undo / Redo del texto generado (acá, no en el header lleno).
+            footerIcon("arrow.uturn.backward", help: "Deshacer", enabled: model.canUndo) {
+                model.undo(); onInteract()
+            }
+            footerIcon("arrow.uturn.forward", help: "Rehacer", enabled: model.canRedo) {
+                model.redo(); onInteract()
+            }
+            Divider().frame(height: 16).overlay(Color.white.opacity(0.12))
+
+            TextField("Seguí preguntando…", text: $model.question)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.92))
+                .onSubmit { model.submitQuestion(); onInteract() }
+            Button {
+                model.submitQuestion(); onInteract()
+            } label: {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(
+                        (model.question.isEmpty || model.isStreaming)
+                            ? AnyShapeStyle(.white.opacity(0.25))
+                            : AnyShapeStyle(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing))
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(model.question.isEmpty || model.isStreaming)
+        }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 9)
+        .background(Color.white.opacity(0.03))
+        .overlay(Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.06)), alignment: .top)
+    }
+
+    private func footerIcon(_ icon: String, help: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white.opacity(enabled ? 0.7 : 0.2))
+                .frame(width: 20, height: 20)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .help(help)
+    }
+
+    // ── Sub-componentes ─────────────────────────────────────────────────
+
     private var historyMenu: some View {
         Menu {
-            if historyStore.items.isEmpty {
+            if model.historyStore.items.isEmpty {
                 Text("Sin historial")
             } else {
-                ForEach(historyStore.items) { item in
-                    Button(item.preview) { onSelectHistory(item) }
+                ForEach(model.historyStore.items) { item in
+                    Button(item.preview) {
+                        model.responseText = item.text
+                    }
                 }
                 Divider()
-                Button("Limpiar historial", role: .destructive) { historyStore.clear() }
+                Button("Limpiar historial", role: .destructive) { model.historyStore.clear() }
             }
         } label: {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.88))
                 .frame(width: 22, height: 22)
-                .background(
-                    Circle()
-                        .fill(.white.opacity(0.07))
-                        .overlay(
-                            Circle().strokeBorder(
-                                LinearGradient(colors: [violet.opacity(0.7), cyan.opacity(0.7)],
-                                               startPoint: .leading, endPoint: .trailing),
-                                lineWidth: 1
-                            )
-                        )
-                )
+                .background(circleBg)
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -472,50 +797,41 @@ private struct MagicAnswerView: View {
         .help("Historial")
     }
 
-    /// Botón "Reemplazar / Pegar" DESTACADO (relleno gradient): es la acción
-    /// principal cuando el resultado debía reemplazar pero no detectamos el
-    /// input (Chrome/Electron). Fuerza el pegado en la app de origen.
-    private func replaceButton(action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Image(systemName: "arrow.down.doc.fill")
-                    .font(.system(size: 9, weight: .bold))
-                Text("Reemplazar")
-                    .font(.system(size: 10, weight: .semibold))
-            }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .frame(height: 22)
-            .background(
-                Capsule().fill(
-                    LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing)
-                )
-            )
-        }
-        .buttonStyle(.plain)
-        .help("Reemplazar / Pegar en el origen")
-    }
-
-    /// Botón de solo-icono, chiquito, con el color de la marca.
     private func iconButton(_ icon: String, help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.88))
                 .frame(width: 22, height: 22)
-                .background(
-                    Circle()
-                        .fill(.white.opacity(0.07))
-                        .overlay(
-                            Circle().strokeBorder(
-                                LinearGradient(colors: [violet.opacity(0.7), cyan.opacity(0.7)],
-                                               startPoint: .leading, endPoint: .trailing),
-                                lineWidth: 1
-                            )
-                        )
-                )
+                .background(circleBg)
         }
         .buttonStyle(.plain)
         .help(help)
+    }
+
+    /// 3 puntitos que laten (indicador de "pensando" con el color de la marca).
+    private var thinkingDots: some View {
+        TimelineView(.animation(minimumInterval: 0.25)) { timeline in
+            let t = timeline.date.timeIntervalSinceReferenceDate
+            HStack(spacing: 4) {
+                ForEach(0..<3) { i in
+                    Circle()
+                        .fill(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing))
+                        .frame(width: 6, height: 6)
+                        .opacity(0.35 + 0.65 * abs(sin(t * 3 + Double(i) * 0.7)))
+                }
+            }
+        }
+    }
+
+    private var circleBg: some View {
+        Circle()
+            .fill(.white.opacity(0.07))
+            .overlay(
+                Circle().strokeBorder(
+                    LinearGradient(colors: [violet.opacity(0.7), cyan.opacity(0.7)], startPoint: .leading, endPoint: .trailing),
+                    lineWidth: 1
+                )
+            )
     }
 }

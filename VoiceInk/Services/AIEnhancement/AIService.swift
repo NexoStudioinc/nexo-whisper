@@ -488,6 +488,15 @@ class AIService: ObservableObject {
         LocalCLIService.prewarm(binaryName: template.binaryName)
     }
 
+    /// Pre-calienta el binario del Local CLI actualmente seleccionado (cachea
+    /// el ejecutable en RAM para ahorrar el cold start del proceso en la
+    /// próxima invocación real). Debounced 30s internamente. Útil para
+    /// dispararlo "oportunamente" justo antes de usar el CLI (ej. al activar
+    /// Magic Selection mientras el usuario dicta el comando).
+    func prewarmActiveLocalCLI() {
+        LocalCLIService.prewarm(binaryName: localCLIService.selectedTemplate.binaryName)
+    }
+
     func updateLocalCLICommandTemplate(_ command: String) {
         localCLIService.commandTemplate = command
         refreshLocalCLIConfigurationState()
