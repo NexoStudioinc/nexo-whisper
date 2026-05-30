@@ -127,19 +127,24 @@ struct MagicSelectionView: View {
     }
 
     private func modifierRow(title: String, help: String, selection: Binding<String>) -> some View {
-        HStack {
-            Text(title)
-            Image(systemName: "info.circle")
-                .foregroundStyle(.secondary)
-                .help(help)
-            Spacer()
-            Picker("", selection: selection) {
-                Text("Ninguna").tag("none")
-                ForEach(modifiers, id: \.id) { Text($0.label).tag($0.id) }
+        VStack(alignment: .leading, spacing: 3) {
+            HStack {
+                Text(title)
+                Spacer()
+                Picker("", selection: selection) {
+                    Text("Ninguna").tag("none")
+                    ForEach(modifiers, id: \.id) { Text($0.label).tag($0.id) }
+                }
+                .labelsHidden()
+                .frame(width: 150)
             }
-            .labelsHidden()
-            .frame(width: 150)
+            // Descripción SIEMPRE visible (el tooltip por hover no se notaba).
+            Text(help)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .help(help)
     }
 
     // ── Avanzado (sensibilidad del wiggle) ──────────────────────────────

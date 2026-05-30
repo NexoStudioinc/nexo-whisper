@@ -387,10 +387,13 @@ final class MagicAnswerPanel {
         // RESIZE NATIVO de macOS (cursores de doble flecha en bordes y esquinas)
         // con la barra de título oculta y transparente. El contenido ocupa toda
         // la ventana. Se mueve con isMovableByWindowBackground (arrastrando el
-        // interior); el resize lo maneja el sistema en los bordes (no compiten).
+        // interior); el resize lo maneja el sistema en los bordes.
+        // OJO: NO usamos `.nonactivatingPanel` — bloqueaba el resize del usuario.
+        // La ventana toma foco con makeKey() igual; el botón Reemplazar reactiva
+        // la app de origen por PID, así que no afecta el flujo.
         let newPanel = MagicKeyPanel(
             contentRect: NSRect(origin: .zero, size: size),
-            styleMask: [.titled, .resizable, .fullSizeContentView, .nonactivatingPanel],
+            styleMask: [.titled, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -526,12 +529,27 @@ private struct MagicAnswerView: View {
 
             Spacer()
 
-            historyMenu
+            // Reemplazar + Copiar juntos arriba (Maxi: gana espacio abajo).
+            if model.onReplace != nil {
+                Button { model.onReplace?(); onInteract() } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.down.doc.fill").font(.system(size: 9, weight: .bold))
+                        Text("Reemplazar").font(.system(size: 10, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .frame(height: 22)
+                    .background(Capsule().fill(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing)))
+                }
+                .buttonStyle(.plain)
+                .help("Reemplazar / Pegar en el origen")
+            }
             iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
                 model.copyToPasteboard()
                 withAnimation { copied = true }
                 onInteract()
             }
+            historyMenu
             iconButton("square.and.arrow.up", help: "Compartir") { onShare(); onInteract() }
             iconButton("xmark", help: "Cerrar") { model.onClose?() }
         }
@@ -593,26 +611,6 @@ private struct MagicAnswerView: View {
                     }
                 }
 
-                // Reemplazar al final de la respuesta lista: discreto, alineado
-                // a la izquierda (no invasivo).
-                if model.onReplace != nil, !model.isStreaming, !model.responseText.isEmpty {
-                    Button { model.onReplace?(); onInteract() } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.down.doc").font(.system(size: 10, weight: .semibold))
-                            Text("Reemplazar texto").font(.system(size: 11, weight: .medium))
-                        }
-                        .foregroundStyle(violet)
-                        .padding(.horizontal, 9)
-                        .frame(height: 24)
-                        .background(
-                            Capsule().fill(violet.opacity(0.12))
-                                .overlay(Capsule().strokeBorder(violet.opacity(0.45), lineWidth: 1))
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 2)
-                    .help("Reemplazar / Pegar en el origen")
-                }
             }
             .padding(14)
         }
@@ -737,7 +735,11 @@ private struct MagicAnswerView: View {
                 openButton(logo: "chatgpt-logo", help: "Abrir en ChatGPT") {
                     openIn("https://chatgpt.com/?q={q}")
                 }
-                openButton(symbol: "magnifyingglass", help: "Buscar en Google") {
+                openButton(logo: "gemini-logo", help: "Abrir en Gemini (copia el texto)") {
+                    model.copyToPasteboard()
+                    openIn("https://gemini.google.com/app")
+                }
+                openButton(logo: "google-logo", help: "Buscar en Google") {
                     openIn("https://www.google.com/search?q={q}")
                 }
                 Spacer()
@@ -778,15 +780,6 @@ private struct MagicAnswerView: View {
 
     private var askBar: some View {
         HStack(spacing: 8) {
-            // Undo / Redo del texto generado (acá, no en el header lleno).
-            footerIcon("arrow.uturn.backward", help: "Deshacer", enabled: model.canUndo) {
-                model.undo(); onInteract()
-            }
-            footerIcon("arrow.uturn.forward", help: "Rehacer", enabled: model.canRedo) {
-                model.redo(); onInteract()
-            }
-            Divider().frame(height: 16).overlay(Color.white.opacity(0.12))
-
             TextField("Seguí preguntando…", text: $model.question)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12))
@@ -805,6 +798,15 @@ private struct MagicAnswerView: View {
             }
             .buttonStyle(.plain)
             .disabled(model.question.isEmpty || model.isStreaming)
+
+            // Undo / Redo al FINAL (derecha), como pidió Maxi.
+            Divider().frame(height: 16).overlay(Color.white.opacity(0.12))
+            footerIcon("arrow.uturn.backward", help: "Deshacer", enabled: model.canUndo) {
+                model.undo(); onInteract()
+            }
+            footerIcon("arrow.uturn.forward", help: "Rehacer", enabled: model.canRedo) {
+                model.redo(); onInteract()
+            }
         }
         .padding(.horizontal, 13)
         .padding(.vertical, 9)
