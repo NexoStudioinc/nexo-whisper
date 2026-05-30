@@ -106,3 +106,6 @@ Temporary Items
 # Assets binarios pesados (no van al repo)
 Nexo brand.zip
 *.DS_Store
+
+# Archivos de diseño pesados (no van al repo)
+*.sketch

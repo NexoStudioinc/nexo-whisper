@@ -198,8 +198,8 @@ enum AIProvider: String, CaseIterable {
     
     var requiresAPIKey: Bool {
         switch self {
-        case .ollama, .localCLI:
-            return false
+        case .ollama, .localCLI, .apple:
+            return false  // locales: no usan API key
         default:
             return true
         }
