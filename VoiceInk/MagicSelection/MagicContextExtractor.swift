@@ -24,6 +24,10 @@ struct MagicContext {
     var selectedText: String?
     /// Role de accessibility del elemento (button, textArea, link, etc.).
     var role: String?
+    /// ¿La selección vino de un elemento EDITABLE? Determina si el resultado
+    /// se REEMPLAZA (pega) o se MUESTRA en el panel. Se decide al capturar la
+    /// selección (no por la posición del cursor al cerrar el wiggle).
+    var isSelectionEditable: Bool = false
     /// Bundle ID de la app activa (ej. "com.apple.mail").
     var appBundleId: String?
     /// Nombre de la app activa (ej. "Mail").
@@ -72,10 +76,16 @@ enum MagicContextExtractor {
             return ctx
         }
 
-        // 3. Intentar leer texto seleccionado del elemento focuseado
-        ctx.selectedText = focusedSelectedText()
+        // 3. Intentar leer texto SELECCIONADO del elemento focuseado. La
+        // selección manda y se captura del elemento focuseado, NO de la
+        // posición del cursor — así no importa dónde termine el wiggle.
+        if let (text, editable) = focusedSelectedText() {
+            ctx.selectedText = text
+            ctx.isSelectionEditable = editable
+        }
 
-        // 4. Intentar leer el elemento bajo el cursor (técnica del otro agente)
+        // 4. Intentar leer el elemento bajo el cursor (para "qué significa
+        // esto" sobre algo NO seleccionado). Esto nunca se trata como editable.
         if let (text, role) = elementTextAt(point: cursorLocation) {
             ctx.elementText = text
             ctx.role = role
@@ -87,7 +97,7 @@ enum MagicContextExtractor {
 
     // ── Técnica 1: texto seleccionado en el elemento focuseado ──────────
 
-    private static func focusedSelectedText() -> String? {
+    private static func focusedSelectedText() -> (text: String, editable: Bool)? {
         let systemElement = AXUIElementCreateSystemWide()
         var focused: CFTypeRef?
         let focusedResult = AXUIElementCopyAttributeValue(
@@ -110,12 +120,24 @@ enum MagicContextExtractor {
             &selectedText
         )
 
-        if selResult == .success,
-           let text = selectedText as? String,
-           !text.isEmpty {
-            return text
+        guard selResult == .success,
+              let text = selectedText as? String,
+              !text.isEmpty else {
+            return nil
         }
-        return nil
+
+        // ¿El elemento focuseado es editable? (settable value o role editable)
+        var role: CFTypeRef?
+        AXUIElementCopyAttributeValue(axElement, kAXRoleAttribute as CFString, &role)
+        let roleStr = (role as? String) ?? ""
+        let editableRoles: Set<String> = ["AXTextField", "AXTextArea", "AXComboBox", "AXSearchField"]
+
+        var settable: DarwinBoolean = false
+        AXUIElementIsAttributeSettable(axElement, kAXValueAttribute as CFString, &settable)
+
+        let editable = settable.boolValue || editableRoles.contains(roleStr)
+        logger.info("focusedSelectedText: role=\(roleStr, privacy: .public) editable=\(editable)")
+        return (text, editable)
     }
 
     // ── Técnica 2: leer el elemento bajo coords (X, Y) ──────────────────
@@ -170,16 +192,146 @@ enum MagicContextExtractor {
         return nil
     }
 
-    // ── Técnica 3: clipboard fallback (último recurso) ──────────────────
+    // ── ¿Hay un campo editable bajo el cursor? ──────────────────────────
 
-    /// Si las técnicas AX fallan, este método simula Cmd+C y lee el
-    /// pasteboard, preservando el contenido previo.
-    /// NOTA: ya hay una implementación parecida en `ClipboardManager` para
-    /// el pipeline normal — la podríamos reutilizar en F2. Por ahora dejamos
-    /// el método como stub para no duplicar el code path.
-    static func clipboardFallback() -> String? {
-        // TODO(F2): integrar con ClipboardManager existente
-        logger.debug("Clipboard fallback not yet implemented")
+    /// Decide si el elemento BAJO EL CURSOR es un campo de texto editable.
+    /// Se usa para elegir entre REEMPLAZAR (pegar) o MOSTRAR en el panel.
+    ///
+    /// Criterio ESTRICTO y basado en la posición del MOUSE (no en el foco de
+    /// teclado): en apps como Claude Code/terminales/Electron, el foco de
+    /// teclado está en el input aunque la selección esté en un output de solo
+    /// lectura. Ante la duda → NO editable (mejor mostrar el panel que pegar
+    /// en el lugar equivocado).
+    @MainActor
+    static func isEditableUnderCursor(at point: NSPoint) -> Bool {
+        guard AXIsProcessTrusted() else { return false }
+        let systemElement = AXUIElementCreateSystemWide()
+        guard let primaryScreen = NSScreen.screens.first else { return false }
+        let flippedY = primaryScreen.frame.height - point.y
+
+        var element: AXUIElement?
+        let result = AXUIElementCopyElementAtPosition(
+            systemElement, Float(point.x), Float(flippedY), &element
+        )
+        guard result == .success, let target = element else { return false }
+
+        var role: CFTypeRef?
+        AXUIElementCopyAttributeValue(target, kAXRoleAttribute as CFString, &role)
+        let roleStr = (role as? String) ?? ""
+
+        // Roles claramente NO editables → panel.
+        let nonEditable: Set<String> = [
+            "AXStaticText", "AXImage", "AXButton", "AXLink",
+            "AXMenuItem", "AXHeading", "AXCell"
+        ]
+        if nonEditable.contains(roleStr) {
+            logger.info("isEditableUnderCursor: role=\(roleStr, privacy: .public) → NO editable")
+            return false
+        }
+
+        // Roles claramente editables → pegar.
+        let editable: Set<String> = [
+            "AXTextField", "AXTextArea", "AXComboBox", "AXSearchField"
+        ]
+        if editable.contains(roleStr) {
+            logger.info("isEditableUnderCursor: role=\(roleStr, privacy: .public) → editable")
+            return true
+        }
+
+        // Ambiguo (AXGroup, AXUnknown, AXWebArea, etc.): solo editable si el
+        // value es realmente escribible (settable).
+        var settable: DarwinBoolean = false
+        let settableResult = AXUIElementIsAttributeSettable(
+            target, kAXValueAttribute as CFString, &settable
+        )
+        let isSettable = settableResult == .success && settable.boolValue
+        logger.info("isEditableUnderCursor: role=\(roleStr, privacy: .public) settable=\(isSettable) → \(isSettable ? "editable" : "NO editable")")
+        return isSettable
+    }
+
+    // ── Técnica 4: clipboard fallback (Chrome, Electron, terminales) ────
+
+    /// Cuando AX no expone texto (típico en Chrome/Chromium, Electron y
+    /// algunas terminales — NO construyen el árbol de accesibilidad para el
+    /// contenido web), capturamos la SELECCIÓN del usuario simulando Cmd+C y
+    /// leyendo el pasteboard. Restaura el contenido previo del clipboard para
+    /// no pisar lo que el usuario tuviera copiado.
+    ///
+    /// Requiere que el usuario YA tenga algo seleccionado. Es async porque
+    /// hay que esperar a que el Cmd+C sintético populé el pasteboard.
+    @MainActor
+    static func clipboardSelection() async -> String? {
+        guard AXIsProcessTrusted() else {
+            logger.warning("Clipboard fallback necesita permiso AX para simular Cmd+C")
+            return nil
+        }
+
+        let pasteboard = NSPasteboard.general
+        let previousChangeCount = pasteboard.changeCount
+        let saved = snapshotPasteboard(pasteboard)
+
+        postCopyCommand()
+
+        // Esperar a que el Cmd+C populé el pasteboard (cambia el changeCount),
+        // con timeout para no colgar el flujo si no había nada seleccionado.
+        let deadline = Date().addingTimeInterval(0.4)
+        while pasteboard.changeCount == previousChangeCount, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 20_000_000) // 20ms
+        }
+
+        let copied = pasteboard.string(forType: .string)
+
+        // Restaurar el clipboard previo del usuario.
+        restorePasteboard(pasteboard, snapshot: saved)
+
+        if let text = copied, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            logger.info("Clipboard fallback capturó \(text.count) chars")
+            return text
+        }
+        logger.info("Clipboard fallback: no se capturó texto (¿nada seleccionado?)")
         return nil
+    }
+
+    /// Simula Cmd+C vía CGEvent sin tocar el input source activo. Mismo
+    /// patrón que `CursorPaster.pasteFromClipboard` pero con la tecla C
+    /// (virtualKey 0x08) en vez de V.
+    @MainActor
+    private static func postCopyCommand() {
+        let source = CGEventSource(stateID: .privateState)
+        guard let cmdDown = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: true),
+              let cDown = CGEvent(keyboardEventSource: source, virtualKey: 0x08, keyDown: true),
+              let cUp = CGEvent(keyboardEventSource: source, virtualKey: 0x08, keyDown: false),
+              let cmdUp = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: false) else {
+            logger.error("No pude crear los eventos de Cmd+C")
+            return
+        }
+        cmdDown.flags = .maskCommand
+        cDown.flags = .maskCommand
+        cUp.flags = .maskCommand
+        cmdDown.post(tap: .cghidEventTap)
+        cDown.post(tap: .cghidEventTap)
+        cUp.post(tap: .cghidEventTap)
+        cmdUp.post(tap: .cghidEventTap)
+    }
+
+    private static func snapshotPasteboard(_ pb: NSPasteboard) -> [[NSPasteboard.PasteboardType: Data]] {
+        (pb.pasteboardItems ?? []).map { item in
+            var dict: [NSPasteboard.PasteboardType: Data] = [:]
+            for type in item.types {
+                if let data = item.data(forType: type) { dict[type] = data }
+            }
+            return dict
+        }
+    }
+
+    private static func restorePasteboard(_ pb: NSPasteboard, snapshot: [[NSPasteboard.PasteboardType: Data]]) {
+        pb.clearContents()
+        guard !snapshot.isEmpty else { return }
+        let items = snapshot.map { dict -> NSPasteboardItem in
+            let item = NSPasteboardItem()
+            for (type, data) in dict { item.setData(data, forType: type) }
+            return item
+        }
+        pb.writeObjects(items)
     }
 }

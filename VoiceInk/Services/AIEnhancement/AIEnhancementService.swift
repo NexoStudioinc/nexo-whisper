@@ -217,10 +217,19 @@ class AIEnhancementService: ObservableObject {
             self.lastUserMessageSent = formattedText
         }
 
+        return try await dispatchToProvider(systemMessage: systemMessage, userMessage: formattedText)
+    }
+
+    /// Envía un par (systemPrompt, userMessage) al provider AI activo y
+    /// devuelve la respuesta ya filtrada. Centraliza el despacho por provider
+    /// (Ollama / Local CLI / Anthropic / OpenAI-compatible) para que tanto el
+    /// enhancement de transcripción como flujos especiales (Magic Selection)
+    /// reusen exactamente la misma plomería y manejo de errores.
+    private func dispatchToProvider(systemMessage: String, userMessage: String) async throws -> String {
         if aiService.selectedProvider == .ollama {
             do {
                 let result = try await aiService.enhanceWithOllama(
-                    text: formattedText,
+                    text: userMessage,
                     systemPrompt: systemMessage,
                     timeout: baseTimeout
                 )
@@ -241,7 +250,7 @@ class AIEnhancementService: ObservableObject {
 
         if aiService.selectedProvider == .localCLI {
             do {
-                let result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemMessage, userPrompt: formattedText)
+                let result = try await aiService.enhanceWithLocalCLI(systemPrompt: systemMessage, userPrompt: userMessage)
                 return AIEnhancementOutputFilter.filter(result)
             } catch {
                 if let localError = error as? LocalCLIError {
@@ -261,7 +270,7 @@ class AIEnhancementService: ObservableObject {
                 result = try await AnthropicLLMClient.chatCompletion(
                     apiKey: aiService.apiKey,
                     model: aiService.currentModel,
-                    messages: [.user(formattedText)],
+                    messages: [.user(userMessage)],
                     systemPrompt: systemMessage,
                     timeout: baseTimeout
                 )
@@ -282,7 +291,7 @@ class AIEnhancementService: ObservableObject {
                     baseURL: baseURL,
                     apiKey: aiService.apiKey,
                     model: aiService.currentModel,
-                    messages: [.user(formattedText)],
+                    messages: [.user(userMessage)],
                     systemPrompt: systemMessage,
                     temperature: temperature,
                     reasoningEffort: reasoningEffort,
@@ -298,6 +307,63 @@ class AIEnhancementService: ObservableObject {
         } catch {
             throw EnhancementError.customError(error.localizedDescription)
         }
+    }
+
+    /// Magic Selection: ejecuta un `command` hablado sobre `selectedText`,
+    /// usando el provider AI que el usuario ya tiene configurado.
+    ///
+    /// La IA decide entre dos modos y los devuelve en un JSON:
+    /// - `replace`: la instrucción TRANSFORMA el texto (traducir, reformular,
+    ///   reescribir, reordenar…) → el resultado reemplaza la selección.
+    /// - `answer`: la instrucción es una PREGUNTA / pide info (qué significa,
+    ///   sinónimos, qué es esto…) → el resultado se muestra sin tocar el texto.
+    ///
+    /// Devuelve el string CRUDO del modelo (idealmente el JSON). El parseo y
+    /// la ramificación viven en MagicSelection (`MagicCommandResult.parse`).
+    ///
+    /// Reusa el mismo gating BYOK Pro que el enhancement de transcripción: el
+    /// tier free solo puede usar providers locales (Ollama / Local CLI).
+    func runMagicCommand(selectedText: String, command: String) async throws -> String {
+        guard isConfigured else { throw EnhancementError.notConfigured }
+
+        let currentProvider = aiService.selectedProvider
+        if currentProvider.requiresBYOKLicense, !FeatureGate.isAvailable(.byokEnhancement) {
+            throw EnhancementError.proBYOKRequired
+        }
+
+        let trimmedCommand = command.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedCommand.isEmpty else { throw EnhancementError.customError("No se entendió ningún comando de voz.") }
+
+        let systemMessage = """
+        Sos el asistente de "Magic Selection". El usuario seleccionó o apuntó a un texto y dictó una instrucción por voz. Decidí entre dos modos:
+
+        - "replace": la instrucción pide TRANSFORMAR el texto (traducir, reformular, reescribir, corregir, reordenar, cambiar de formato, resumir para reemplazar, etc.). El resultado VA A REEMPLAZAR el texto original.
+        - "answer": la instrucción es una PREGUNTA o pide INFORMACIÓN sobre el texto (qué significa, qué es, dame sinónimos o variantes, explicame, definí, etc.). El resultado se MUESTRA al usuario SIN tocar su texto.
+
+        Devolvé EXCLUSIVAMENTE un objeto JSON válido, sin markdown ni backticks, con esta forma exacta:
+        {"action": "replace", "text": "..."}
+        o
+        {"action": "answer", "text": "...", "image": "<opcional>"}
+
+        Reglas:
+        - En "replace": "text" es SOLO el texto transformado, sin comillas ni explicaciones ni preámbulos. Conservá el idioma original salvo que la instrucción pida traducir.
+        - En "answer": "text" es la respuesta para mostrar, en el idioma del usuario. Respondé como un asistente experto (explicar, contar, dar contexto, opinar). Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow"), pero sin relleno ni divagar. Adaptá el largo a lo que amerite: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (ahí mostrá el código corregido y explicá brevemente qué estaba mal). Si piden "profundizá/ampliá", extendete.
+        - Campo "image" (SOLO en "answer", opcional): si una imagen ayudaría a ilustrar la respuesta (un lugar, persona, animal, planta, objeto, monumento, obra, marca, etc.), poné en "image" el nombre EXACTO de esa entidad para buscarla (ej: "Torre Eiffel", "León africano", "Lionel Messi"). Si no corresponde una imagen, omití el campo "image".
+        - No agregues absolutamente nada fuera del JSON.
+        """
+
+        let userMessage = """
+        <TEXTO_SELECCIONADO>
+        \(selectedText)
+        </TEXTO_SELECCIONADO>
+
+        <INSTRUCCION>
+        \(trimmedCommand)
+        </INSTRUCCION>
+        """
+
+        let result = try await dispatchToProvider(systemMessage: systemMessage, userMessage: userMessage)
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {

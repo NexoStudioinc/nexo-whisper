@@ -174,6 +174,7 @@ struct VoiceInkApp: App {
         // settear UserDefaults("magicSelection.enabled") = true antes del build.
         // Logs: subsystem com.prakashjoshipax.voiceink, category MagicSelection*
         Task { @MainActor in
+            MagicSelectionService.shared.configure(engine: engine)
             MagicSelectionService.shared.startIfNeeded()
         }
 

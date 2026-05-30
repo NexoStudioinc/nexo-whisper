@@ -58,6 +58,7 @@ final class MagicSelectionDetector {
     private var lastMouseLocation: NSPoint = .zero
 
     private var eventMonitor: Any?
+    private var localMonitor: Any?
     private var onWiggleDetected: ((NSPoint) -> Void)?
 
     init(config: Config = .default) {
@@ -81,6 +82,10 @@ final class MagicSelectionDetector {
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
             self.eventMonitor = nil
+        }
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+            self.localMonitor = nil
         }
         window.removeAll(keepingCapacity: true)
         lastDirectionSign = 0
@@ -108,12 +113,22 @@ final class MagicSelectionDetector {
             self?.handleNSEvent(event)
         }
 
+        // Monitor LOCAL: el global NO recibe eventos cuando Nexo Whisper está
+        // al frente. El local cubre ese caso (ej. probar el wiggle con la
+        // ventana de la app/Settings adelante). Devolvemos el evento intacto.
+        localMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]
+        ) { [weak self] event in
+            self?.handleNSEvent(event)
+            return event
+        }
+
         if eventMonitor == nil {
             Self.logger.error("Failed to install NSEvent global monitor for MagicSelectionDetector")
             return false
         }
 
-        Self.logger.info("MagicSelectionDetector NSEvent monitor installed")
+        Self.logger.info("MagicSelectionDetector NSEvent monitors installed (global + local)")
         return true
     }
 
