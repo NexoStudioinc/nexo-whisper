@@ -544,6 +544,10 @@ class AIEnhancementService: ObservableObject {
     - @@ACTION|tool=reminders@@ → si pide crear un RECORDATORIO o agregar a Recordatorios. Debajo va el texto del recordatorio.
     - @@ACTION|tool=mail|subject=Asunto@@ → si pide CREAR/ESCRIBIR un MAIL o email con esto. Poné un asunto corto en "subject" y debajo va el cuerpo del mail.
     - @@ACTION|tool=calendar|title=Título|date=AAAA-MM-DDTHH:mm@@ → si pide crear un EVENTO o agregar algo al CALENDARIO. Poné un título corto en "title". Si en el texto o la instrucción hay una FECHA/HORA, deducila y ponela en "date" en formato ISO (ej. date=2026-06-15T10:00). Si NO hay fecha, OMITÍ "date" (se crea el evento y el usuario pone la fecha). Debajo podés poner detalles/notas.
+    - @@ACTION|tool=maps|query=Dirección o lugar@@ → si pide ver/abrir una dirección o lugar en el MAPA.
+    - @@ACTION|tool=message@@ → si pide MANDAR un mensaje (WhatsApp/Telegram/Mensajes, según la app por defecto del usuario). Debajo va el texto del mensaje, ya redactado.
+    - @@ACTION|tool=call|number=+5491122223333@@ → si pide LLAMAR a un número de teléfono (deducilo del texto).
+    - @@ACTION|tool=shortcut|name=Nombre del Atajo@@ → si pide ejecutar un ATAJO de Apple concreto (Shortcuts) por su nombre. Debajo va el texto que recibe el atajo como entrada.
 
     PARTE 2 — Desde la SEGUNDA LÍNEA en adelante, SOLO el contenido resultante (sin comillas, sin JSON, sin repetir la etiqueta). Para código usá bloques markdown ``` con el lenguaje.
 

@@ -461,6 +461,7 @@ private struct MagicAnswerView: View {
 
     @ObservedObject private var chipStore = MagicChipStore.shared
     @State private var copied = false
+    @AppStorage("magicSelection.messagingApp") private var messagingApp = "whatsapp"
 
     private let violet = Color(red: 0.55, green: 0.36, blue: 0.96)
     private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
@@ -754,18 +755,53 @@ private struct MagicAnswerView: View {
                 openButton(logo: "chatgpt-logo", help: "Abrir en ChatGPT") {
                     openIn("https://chatgpt.com/?q={q}")
                 }
-                openButton(logo: "gemini-logo", help: "Abrir en Gemini (copia el texto)") {
-                    model.copyToPasteboard()
-                    openIn("https://gemini.google.com/app")
+                openButton(logo: "gemini-logo", help: "Abrir en Gemini (copia el texto para pegar)") {
+                    // Gemini no acepta ?q= en la URL: copiamos la selección y
+                    // avisamos para pegar con ⌘V.
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(model.selectedText, forType: .string)
+                    NSWorkspace.shared.open(URL(string: "https://gemini.google.com/app")!)
+                    NotificationManager.shared.showNotification(
+                        title: "📋 Texto copiado — pegalo con ⌘V en Gemini",
+                        type: .info, duration: 4.0
+                    )
+                    onInteract()
                 }
                 openButton(logo: "google-logo", help: "Buscar en Google") {
                     openIn("https://www.google.com/search?q={q}")
                 }
+
                 Spacer()
+
+                // Acciones rápidas sobre la selección.
+                openButton(logo: messagingLogo, symbol: messagingSymbol, help: "Mandar por \(messagingName)") {
+                    _ = MagicActions.sendMessage(model.selectedText)
+                    onInteract()
+                }
+                openButton(symbol: "map.fill", help: "Ver en Maps") {
+                    _ = MagicActions.openMaps(model.selectedText)
+                    onInteract()
+                }
             }
             .padding(.horizontal, 13)
             .padding(.vertical, 7)
             .overlay(Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.06)), alignment: .top)
+        }
+    }
+
+    private var messagingLogo: String? {
+        switch messagingApp {
+        case "telegram": return "telegram-logo"
+        case "imessage", "messages": return nil
+        default: return "whatsapp-logo"
+        }
+    }
+    private var messagingSymbol: String? { messagingLogo == nil ? "message.fill" : nil }
+    private var messagingName: String {
+        switch messagingApp {
+        case "telegram": return "Telegram"
+        case "imessage", "messages": return "Mensajes"
+        default: return "WhatsApp"
         }
     }
 

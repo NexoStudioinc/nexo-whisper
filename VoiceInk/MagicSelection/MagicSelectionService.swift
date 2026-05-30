@@ -186,7 +186,9 @@ final class MagicSelectionService {
             // configurables en Settings). Transcribe tiene prioridad si coincide.
             let flags = NSEvent.modifierFlags
             let mode: MagicTriggerMode
-            if let tf = Self.modifierFlag(self.transcribeModifierName), flags.contains(tf) {
+            if let rf = Self.modifierFlag(self.replaceDirectModifierName), flags.contains(rf) {
+                mode = .replaceDirect
+            } else if let tf = Self.modifierFlag(self.transcribeModifierName), flags.contains(tf) {
                 mode = .transcribe
             } else if let cf = Self.modifierFlag(self.continuousModifierName), flags.contains(cf) {
                 mode = .continuous
@@ -240,9 +242,10 @@ final class MagicSelectionService {
 
     /// Modo del trigger según el modificador apretado durante el wiggle.
     enum MagicTriggerMode {
-        case normal       // wiggle solo → Magic (un comando por ciclo)
-        case continuous   // modificador continuo → escucha en loop (VAD)
-        case transcribe   // modificador transcribe → dictado puro (+mejora) y pega
+        case normal        // wiggle solo → Magic (un comando por ciclo)
+        case continuous    // modificador continuo → escucha en loop (VAD)
+        case transcribe    // modificador transcribe → dictado puro (+mejora) y pega
+        case replaceDirect // modificador reemplazo directo → pega sin abrir el panel
     }
 
     /// Mapea el nombre del modificador (Settings) a `NSEvent.ModifierFlags`.
@@ -262,9 +265,14 @@ final class MagicSelectionService {
     var transcribeModifierName: String {
         UserDefaults.standard.string(forKey: "magicSelection.transcribeModifier") ?? "control"
     }
+    var replaceDirectModifierName: String {
+        UserDefaults.standard.string(forKey: "magicSelection.replaceDirectModifier") ?? "shift"
+    }
 
     /// Modo dictado puro (transcribe + mejora si está activa, y pega). No Magic.
     private var isTranscribe = false
+    /// Modo reemplazo directo: pega el resultado sin abrir el panel.
+    private var isReplaceDirect = false
 
     private func handleTrigger(at location: NSPoint, source: TriggerSource, mode: MagicTriggerMode = .normal) {
         // Re-entrancy guard para el manejo síncrono del trigger.
@@ -282,6 +290,7 @@ final class MagicSelectionService {
             // Primer trigger: enciende el modo y arranca a escuchar.
             isContinuous = (mode == .continuous)
             isTranscribe = (mode == .transcribe)
+            isReplaceDirect = (mode == .replaceDirect)
             activateMode()
             startListening()
         case .ready:
@@ -343,6 +352,7 @@ final class MagicSelectionService {
         modeState = .off
         isContinuous = false
         isTranscribe = false
+        isReplaceDirect = false
         overlay.hide()
         if hideAnswer { answerPanel.hide() }
         removeEscMonitor()
@@ -593,6 +603,12 @@ final class MagicSelectionService {
             for try await event in events {
                 switch event {
                 case .control(let control):
+                    // Modo REEMPLAZO DIRECTO: pega sí o sí, sin abrir el panel
+                    // (modo "confío"), sea replace o answer.
+                    if self.isReplaceDirect && freshPanel {
+                        pasteDirect = true
+                        break
+                    }
                     switch control {
                     case .replace:
                         // Pegado directo solo en el primer turno con selección editable.
@@ -615,12 +631,21 @@ final class MagicSelectionService {
                 }
             }
             if pasteDirect {
-                CursorPaster.pasteReactivating(full, appPID: context.sourcePID)
-                Self.logger.info("Streaming replace editable → pegado (\(full.count) chars)")
+                // force en reemplazo directo (pega aunque no detectemos editable).
+                CursorPaster.pasteReactivating(full, appPID: context.sourcePID, force: self.isReplaceDirect)
+                Self.logger.info("Streaming → pegado directo (\(full.count) chars, force=\(self.isReplaceDirect))")
             } else {
                 model?.finishTurn(userCommand: command)
                 if let action = pendingAction {
-                    await self.runAction(tool: action.tool, params: action.params, content: full)
+                    if MagicActionConfirmer.isEnabled {
+                        // Mostrar el form de confirmación pre-cargado; al dar OK
+                        // (con los datos eventualmente editados) se ejecuta.
+                        MagicActionConfirmer.shared.confirm(tool: action.tool, params: action.params, content: full) { [weak self] t, p, c in
+                            Task { @MainActor in await self?.runAction(tool: t, params: p, content: c) }
+                        }
+                    } else {
+                        await self.runAction(tool: action.tool, params: action.params, content: full)
+                    }
                 }
                 Self.logger.info("Streaming en panel completado (\(full.count) chars)")
             }

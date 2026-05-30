@@ -27,7 +27,8 @@ enum MagicActions {
     }
 
     /// Acciones soportadas (lo que el LLM puede pedir en `tool=`).
-    static let supportedTools = ["notes", "mail", "reminders", "calendar"]
+    static let supportedTools = ["notes", "mail", "reminders", "calendar",
+                                 "maps", "message", "call", "shortcut"]
 
     /// Store de EventKit compartido (Calendario + Recordatorios).
     private static let eventStore = EKEventStore()
@@ -44,9 +45,88 @@ enum MagicActions {
             return await createReminder(body)
         case "calendar", "calendario", "event":
             return await createEvent(title: params["title"] ?? body, dateISO: params["date"])
+        case "maps":
+            return openMaps(params["query"] ?? body)
+        case "message", "whatsapp", "telegram":
+            return sendMessage(body, forceApp: tool == "message" ? nil : tool.lowercased())
+        case "call", "phone":
+            return call(params["number"] ?? body)
+        case "shortcut", "atajo":
+            return runShortcut(name: params["name"] ?? "", input: body)
         default:
             logger.error("Acción desconocida: \(tool, privacy: .public)")
             return Outcome(success: false, message: "No reconozco esa acción.", appName: nil)
+        }
+    }
+
+    // ── Maps / Mensajería / Llamada / Atajos ────────────────────────────
+
+    @MainActor
+    static func openMaps(_ query: String) -> Outcome {
+        let enc = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        guard let url = URL(string: "https://maps.apple.com/?q=\(enc)") else {
+            return Outcome(success: false, message: "No pude abrir Maps.", appName: "Maps")
+        }
+        NSWorkspace.shared.open(url)
+        return Outcome(success: true, message: "Abriendo en Maps", appName: "Maps")
+    }
+
+    /// App de mensajería por defecto (Settings) o forzada.
+    static var messagingApp: String {
+        UserDefaults.standard.string(forKey: "magicSelection.messagingApp") ?? "whatsapp"
+    }
+
+    @MainActor
+    static func sendMessage(_ text: String, forceApp: String? = nil) -> Outcome {
+        let app = forceApp ?? messagingApp
+        let enc = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let (urlStr, name): (String, String) = {
+            switch app {
+            case "telegram": return ("tg://msg?text=\(enc)", "Telegram")
+            case "imessage", "messages": return ("sms:&body=\(enc)", "Mensajes")
+            default: return ("https://wa.me/?text=\(enc)", "WhatsApp")
+            }
+        }()
+        guard let url = URL(string: urlStr) else {
+            return Outcome(success: false, message: "No pude armar el mensaje.", appName: name)
+        }
+        NSWorkspace.shared.open(url)
+        return Outcome(success: true, message: "Mensaje listo en \(name)", appName: name)
+    }
+
+    @MainActor
+    static func call(_ number: String) -> Outcome {
+        let clean = number.filter { "+0123456789".contains($0) }
+        guard !clean.isEmpty, let url = URL(string: "tel:\(clean)") else {
+            return Outcome(success: false, message: "No encontré un número para llamar.", appName: nil)
+        }
+        NSWorkspace.shared.open(url)
+        return Outcome(success: true, message: "Llamando a \(clean)…", appName: nil)
+    }
+
+    @MainActor
+    static func runShortcut(name: String, input: String) -> Outcome {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return Outcome(success: false, message: "No me dijiste qué Atajo correr.", appName: "Shortcuts")
+        }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/shortcuts")
+        process.arguments = ["run", trimmed]
+        let inPipe = Pipe()
+        process.standardInput = inPipe
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+        do {
+            try process.run()
+            if let data = input.data(using: .utf8) {
+                inPipe.fileHandleForWriting.write(data)
+            }
+            inPipe.fileHandleForWriting.closeFile()
+            return Outcome(success: true, message: "Atajo “\(trimmed)” ejecutado", appName: "Shortcuts")
+        } catch {
+            logger.error("shortcuts run falló: \(error.localizedDescription, privacy: .public)")
+            return Outcome(success: false, message: "No pude ejecutar el atajo.", appName: "Shortcuts")
         }
     }
 

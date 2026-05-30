@@ -10,6 +10,8 @@ struct MagicPanelSettingsView: View {
     @AppStorage("magicSelection.panelAutoHideSeconds") private var autoHideSeconds: Double = 0
     @AppStorage("magicSelection.translateLanguage") private var translateLanguage = "Inglés"
     @AppStorage("magicSelection.translateAutoDetect") private var translateAutoDetect = true
+    @AppStorage("magicSelection.confirmActions") private var confirmActions = true
+    @AppStorage("magicSelection.messagingApp") private var messagingApp = "whatsapp"
 
     @State private var showingAddChip = false
 
@@ -21,6 +23,8 @@ struct MagicPanelSettingsView: View {
                 translateSection
                 Divider()
                 autoHideSection
+                Divider()
+                actionsSection
                 Divider()
                 chromeNote
             }
@@ -143,6 +147,31 @@ struct MagicPanelSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    // ── Acciones (confirmar + mensajería) ───────────────────────────────
+
+    private var actionsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Acciones").font(.system(size: 12, weight: .semibold))
+            Toggle("Confirmar antes de crear (evento / nota / recordatorio)", isOn: $confirmActions)
+                .toggleStyle(.switch)
+            Text("Muestra los datos preseleccionados para revisar y editar antes de crear.")
+                .font(.caption).foregroundStyle(.secondary)
+            HStack {
+                Text("App de mensajería por defecto")
+                Spacer()
+                Picker("", selection: $messagingApp) {
+                    Text("WhatsApp").tag("whatsapp")
+                    Text("Telegram").tag("telegram")
+                    Text("Mensajes").tag("imessage")
+                }
+                .labelsHidden()
+                .frame(width: 150)
+            }
+            Text("Para “mandá esto por mensaje”. El ícono de la app elegida aparece en el panel.")
+                .font(.caption).foregroundStyle(.secondary)
         }
     }
 

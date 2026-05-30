@@ -15,6 +15,7 @@ struct MagicSelectionView: View {
 
     @AppStorage("magicSelection.continuousModifier") private var continuousModifier = "option"
     @AppStorage("magicSelection.transcribeModifier") private var transcribeModifier = "control"
+    @AppStorage("magicSelection.replaceDirectModifier") private var replaceDirectModifier = "shift"
 
     private let modifiers: [(id: String, label: String)] = [
         ("option", "⌥ Option"), ("control", "⌃ Control"),
@@ -121,9 +122,30 @@ struct MagicSelectionView: View {
                     help: "Mantené esta tecla durante el wiggle para dictar texto: graba tu voz, la transcribe (y la mejora si tenés la mejora de IA activada) y la pega donde está el cursor. Como el dictado normal, pero invocado con el wiggle.",
                     selection: $transcribeModifier
                 )
+                modifierRow(
+                    title: "Tecla para reemplazo directo",
+                    help: "Mantené esta tecla durante el wiggle para que el resultado se pegue DIRECTO sobre la selección, sin abrir el panel (modo \"confío en la respuesta\").",
+                    selection: $replaceDirectModifier
+                )
+
+                if let conflict = modifierConflict {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                        Text("La tecla \(conflict) está asignada a más de un modo. Elegí teclas distintas para cada uno.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
             }
             .padding(6)
         }
+    }
+
+    /// Si dos o más modos comparten el mismo modificador (≠ Ninguna), devuelve
+    /// su etiqueta para avisar del conflicto.
+    private var modifierConflict: String? {
+        let used = [continuousModifier, transcribeModifier, replaceDirectModifier].filter { $0 != "none" }
+        let dup = used.first { m in used.filter { $0 == m }.count > 1 }
+        return dup.flatMap { id in modifiers.first { $0.id == id }?.label }
     }
 
     private func modifierRow(title: String, help: String, selection: Binding<String>) -> some View {
