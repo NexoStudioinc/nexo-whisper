@@ -529,26 +529,6 @@ private struct MagicAnswerView: View {
 
             Spacer()
 
-            // Reemplazar + Copiar juntos arriba (Maxi: gana espacio abajo).
-            if model.onReplace != nil {
-                Button { model.onReplace?(); onInteract() } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.down.doc.fill").font(.system(size: 9, weight: .bold))
-                        Text("Reemplazar").font(.system(size: 10, weight: .semibold))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .frame(height: 22)
-                    .background(Capsule().fill(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing)))
-                }
-                .buttonStyle(.plain)
-                .help("Reemplazar / Pegar en el origen")
-            }
-            iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
-                model.copyToPasteboard()
-                withAnimation { copied = true }
-                onInteract()
-            }
             historyMenu
             iconButton("square.and.arrow.up", help: "Compartir") { onShare(); onInteract() }
             iconButton("xmark", help: "Cerrar") { model.onClose?() }
@@ -611,9 +591,48 @@ private struct MagicAnswerView: View {
                     }
                 }
 
+                // Reemplazar + Copiar juntos, al final de la respuesta lista.
+                if !model.isStreaming, !model.responseText.isEmpty {
+                    HStack(spacing: 8) {
+                        if model.onReplace != nil {
+                            actionPill(icon: "arrow.down.doc", text: "Reemplazar texto",
+                                       help: "Reemplazar / Pegar en el origen") {
+                                model.onReplace?(); onInteract()
+                            }
+                        }
+                        actionPill(icon: copied ? "checkmark" : "doc.on.doc",
+                                   text: copied ? "Copiado" : "Copiar",
+                                   help: "Copiar el resultado") {
+                            model.copyToPasteboard()
+                            withAnimation { copied = true }
+                            onInteract()
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 2)
+                }
             }
             .padding(14)
         }
+    }
+
+    /// Pastilla de acción discreta (Reemplazar / Copiar) al pie de la respuesta.
+    private func actionPill(icon: String, text: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: icon).font(.system(size: 10, weight: .semibold))
+                Text(text).font(.system(size: 11, weight: .medium))
+            }
+            .foregroundStyle(violet)
+            .padding(.horizontal, 9)
+            .frame(height: 24)
+            .background(
+                Capsule().fill(violet.opacity(0.12))
+                    .overlay(Capsule().strokeBorder(violet.opacity(0.45), lineWidth: 1))
+            )
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 
     // ── Barra de estado "Pensando…" (cuando ya hay texto viejo visible) ─
