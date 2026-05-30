@@ -11,11 +11,21 @@ import OSLog
 /// Devuelve un `AsyncThrowingStream<String, Error>` que emite los fragmentos
 /// de texto (tokens) a medida que llegan. El parseo del header de control y la
 /// lógica de Magic viven una capa arriba (`AIEnhancementService`).
+/// Qué decidió la IA hacer con el resultado.
+enum MagicControl: Equatable {
+    /// Reemplazar la selección con el texto.
+    case replace
+    /// Mostrar el texto en el panel (pregunta/info). `imageQuery` opcional.
+    case answer(imageQuery: String?)
+    /// Ejecutar una acción del sistema (Notas, Mail, Recordatorios). El texto
+    /// que sigue es el contenido (cuerpo de la nota/mail/recordatorio).
+    case action(tool: String, params: [String: String])
+}
+
 /// Evento de alto nivel del pipeline de Magic en streaming. Primero llega el
-/// `control` (qué hacer + entidad de imagen opcional), después los `token` de
-/// texto en vivo.
+/// `control` (qué hacer), después los `token` de texto en vivo.
 enum MagicStreamEvent {
-    case control(action: MagicCommandResult.Action, imageQuery: String?)
+    case control(MagicControl)
     case token(String)
 }
 

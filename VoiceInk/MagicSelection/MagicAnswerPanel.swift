@@ -457,20 +457,12 @@ private struct MagicAnswerView: View {
     private let violet = Color(red: 0.55, green: 0.36, blue: 0.96)
     private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
 
-    private var looksLikeCode: Bool {
-        let text = model.responseText
-        guard text.contains("\n") else { return false }
-        let markers = ["{", "}", ";", "()", "=>", "def ", "function", "import ",
-                       "const ", "let ", "var ", "class ", "</", "/>", "#include", "println"]
-        return markers.filter { text.contains($0) }.count >= 2
-    }
-
     var body: some View {
-        // Margen transparente para que el HALO de color respire alrededor de la
-        // card. El resize nativo agarra en el borde de la ventana (un pelín por
-        // fuera de la card visible).
+        // Margen chico: el halo respira pero el borde de la card queda CERCA del
+        // borde de la ventana, así el resize nativo (que agarra en el borde de la
+        // ventana) es fácil de pescar y no se confunde con "mover".
         card
-            .padding(13)
+            .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -493,13 +485,23 @@ private struct MagicAnswerView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(
                     LinearGradient(colors: [violet, cyan], startPoint: .topLeading, endPoint: .bottomTrailing),
-                    lineWidth: 1.2
+                    lineWidth: 1.1
                 )
         )
-        // Halo difuso del mismo color (violeta→cyan) + sombra de profundidad.
-        .shadow(color: violet.opacity(0.45), radius: 12)
-        .shadow(color: cyan.opacity(0.22), radius: 18)
-        .shadow(color: .black.opacity(0.35), radius: 8, y: 3)
+        // HALO que SIGUE la forma redondeada (no es un shadow de caja, así no se
+        // ve cuadrado): un trazo gradient difuminado por detrás. Notorio en el
+        // borde, se difumina suave hacia afuera y muere dentro del margen.
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(
+                    LinearGradient(colors: [violet, cyan], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    lineWidth: 3
+                )
+                .blur(radius: 6)
+                .opacity(0.8)
+        )
+        // Sombra negra suave solo para despegar del fondo (sin color, sutil).
+        .shadow(color: .black.opacity(0.3), radius: 6, y: 2)
     }
 
     // ── Header ──────────────────────────────────────────────────────────
@@ -555,14 +557,10 @@ private struct MagicAnswerView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 } else if !model.responseText.isEmpty {
                     // El texto se mantiene visible incluso mientras "Pensando…"
-                    // (no parpadea a vacío); recién cambia al llegar el primero
-                    // token del turno nuevo.
-                    Text(model.responseText)
-                        .font(looksLikeCode ? .system(size: 12, design: .monospaced)
-                                            : .system(size: 13))
-                        .foregroundStyle(.white.opacity(0.92))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // (no parpadea a vacío); recién cambia al llegar el primer
+                    // token del turno nuevo. Render Markdown (bloques de código
+                    // con formato estilo chat de LLM).
+                    MagicMarkdownView(text: model.responseText)
                 }
 
                 if model.searchingImage {

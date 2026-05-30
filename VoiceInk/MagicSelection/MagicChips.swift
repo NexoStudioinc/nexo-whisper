@@ -64,8 +64,21 @@ final class MagicChipStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([MagicChip].self, from: data),
            !decoded.isEmpty {
             chips = decoded
+            mergeNewBuiltins()
         } else {
             chips = Self.defaults
+        }
+    }
+
+    /// Agrega los chips de fábrica nuevos (que no estaban cuando el usuario
+    /// guardó su config) sin pisar su orden ni sus chips custom. Así una nueva
+    /// versión con chips nuevos los muestra sin que el usuario haga "Restaurar".
+    private func mergeNewBuiltins() {
+        let existing = Set(chips.map { $0.title.lowercased() })
+        let missing = Self.defaults.filter { !existing.contains($0.title.lowercased()) }
+        if !missing.isEmpty {
+            chips.append(contentsOf: missing)
+            save()
         }
     }
 
@@ -90,7 +103,9 @@ final class MagicChipStore: ObservableObject {
             MagicChip(title: "Responder", systemImage: "arrowshape.turn.up.left",
                       command: "Redactá una respuesta breve y útil a esto, manteniendo el tono."),
             MagicChip(title: "Ortografía", systemImage: "text.badge.checkmark",
-                      command: "Corregí la ortografía y la gramática. Devolvé solo el texto corregido.")
+                      command: "Corregí la ortografía y la gramática. Devolvé solo el texto corregido."),
+            MagicChip(title: "Código", systemImage: "chevron.left.forwardslash.chevron.right",
+                      command: "Analizá este código: detectá errores o bugs, explicá brevemente el problema y devolvé el código corregido en un bloque de código markdown (```), indicando el lenguaje.")
         ]
     }
 }

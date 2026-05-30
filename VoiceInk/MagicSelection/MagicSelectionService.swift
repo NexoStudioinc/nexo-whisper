@@ -516,6 +516,7 @@ final class MagicSelectionService {
 
         var model: MagicAnswerModel? = freshPanel ? nil : answerPanel.currentModel
         var pasteDirect = false
+        var pendingAction: (tool: String, params: [String: String])? = nil
         var full = ""
 
         // Feedback inmediato cuando el panel ya está abierto (re-pregunta /
@@ -523,20 +524,32 @@ final class MagicSelectionService {
         // cliente (sin streaming) esto evita que parezca que no pasa nada.
         if !freshPanel { model?.beginThinking() }
 
+        // Abre el panel (si hace falta) y arranca el turno visual.
+        func openPanelIfNeeded(imageQuery: String?) {
+            if freshPanel {
+                let m = self.makeAnswerModel(selectedText: selectedText, context: context, enhancement: enhancement)
+                model = m
+                self.answerPanel.present(model: m, near: NSEvent.mouseLocation)
+            }
+            model?.beginTurn(imageQuery: imageQuery)
+        }
+
         do {
             for try await event in events {
                 switch event {
-                case .control(let action, let imageQuery):
-                    // Pegado directo solo en el primer turno, si la selección era
-                    // editable y la IA decidió reemplazar. Si no, va al panel.
-                    pasteDirect = freshPanel && action == .replace && context.isSelectionEditable
-                    if !pasteDirect {
-                        if freshPanel {
-                            let m = self.makeAnswerModel(selectedText: selectedText, context: context, enhancement: enhancement)
-                            model = m
-                            self.answerPanel.present(model: m, near: NSEvent.mouseLocation)
-                        }
-                        model?.beginTurn(imageQuery: imageQuery)
+                case .control(let control):
+                    switch control {
+                    case .replace:
+                        // Pegado directo solo en el primer turno con selección editable.
+                        pasteDirect = freshPanel && context.isSelectionEditable
+                        if !pasteDirect { openPanelIfNeeded(imageQuery: nil) }
+                    case .answer(let imageQuery):
+                        openPanelIfNeeded(imageQuery: imageQuery)
+                    case .action(let tool, let params):
+                        // El contenido se muestra en el panel y al cerrar el
+                        // turno se ejecuta la acción (Notas / Mail / Recordatorio).
+                        pendingAction = (tool, params)
+                        openPanelIfNeeded(imageQuery: nil)
                     }
                 case .token(let token):
                     full += token
@@ -551,6 +564,9 @@ final class MagicSelectionService {
                 Self.logger.info("Streaming replace editable → pegado (\(full.count) chars)")
             } else {
                 model?.finishTurn(userCommand: command)
+                if let action = pendingAction {
+                    self.runAction(tool: action.tool, params: action.params, content: full)
+                }
                 Self.logger.info("Streaming en panel completado (\(full.count) chars)")
             }
         } catch {
@@ -591,6 +607,19 @@ final class MagicSelectionService {
             }
         }
         return m
+    }
+
+    /// Ejecuta una acción de sistema (Notas / Mail / Recordatorio) con el
+    /// contenido generado y avisa el resultado con un toast.
+    @MainActor
+    private func runAction(tool: String, params: [String: String], content: String) {
+        let outcome = MagicActions.run(tool: tool, params: params, content: content)
+        NotificationManager.shared.showNotification(
+            title: "\(outcome.success ? "✅" : "⚠️") \(outcome.message)",
+            type: outcome.success ? .info : .error,
+            duration: 5.0
+        )
+        Self.logger.info("Acción \(tool, privacy: .public) → \(outcome.success ? "ok" : "fail")")
     }
 
     private func notifyError(_ message: String) {

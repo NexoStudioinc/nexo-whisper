@@ -404,13 +404,18 @@ class AIEnhancementService: ObservableObject {
             let task = Task { @MainActor in
                 let trimmedCommand = command.trimmingCharacters(in: .whitespacesAndNewlines)
 
-                // Fallback no-streaming reutilizable (Local CLI o error temprano).
+                // Fallback no-streaming (Local CLI o error temprano): usa el MISMO
+                // prompt de header, así las acciones y el formato funcionan igual
+                // sin streaming. Pide la respuesta completa de una.
                 func fallbackNonStreaming() async {
                     do {
-                        let raw = try await self.runMagicCommand(selectedText: selectedText, command: trimmedCommand)
-                        let parsed = MagicCommandResult.parse(raw)
-                        continuation.yield(.control(action: parsed.action, imageQuery: parsed.imageQuery))
-                        continuation.yield(.token(parsed.text))
+                        let raw = try await self.dispatchToProvider(
+                            systemMessage: Self.magicStreamingSystemPrompt,
+                            userMessage: Self.magicUserMessage(selectedText: selectedText, command: trimmedCommand)
+                        )
+                        let (control, body) = Self.parseHeaderResponse(raw)
+                        continuation.yield(.control(control))
+                        continuation.yield(.token(body))
                         continuation.finish()
                     } catch {
                         continuation.finish(throwing: error)
@@ -448,15 +453,14 @@ class AIEnhancementService: ObservableObject {
                         if let nl = buffer.firstIndex(of: "\n") {
                             let header = String(buffer[..<nl])
                             let rest = String(buffer[buffer.index(after: nl)...])
-                            let (action, img) = Self.parseControlHeader(header)
-                            continuation.yield(.control(action: action, imageQuery: img))
+                            continuation.yield(.control(Self.parseControlHeader(header)))
                             emittedControl = true
                             headerDone = true
                             if !rest.isEmpty { continuation.yield(.token(rest)) }
                         } else if buffer.count > 64 {
                             // No vino header: por seguridad tratamos todo como
                             // respuesta (no tocar el texto del usuario).
-                            continuation.yield(.control(action: .answer, imageQuery: nil))
+                            continuation.yield(.control(.answer(imageQuery: nil)))
                             emittedControl = true
                             headerDone = true
                             continuation.yield(.token(buffer))
@@ -464,7 +468,7 @@ class AIEnhancementService: ObservableObject {
                     }
                     if !headerDone {
                         // El stream terminó antes del salto: lo que haya es la respuesta.
-                        continuation.yield(.control(action: .answer, imageQuery: nil))
+                        continuation.yield(.control(.answer(imageQuery: nil)))
                         if !buffer.isEmpty { continuation.yield(.token(buffer)) }
                     }
                     continuation.finish()
@@ -534,17 +538,22 @@ class AIEnhancementService: ObservableObject {
 
     PARTE 1 — La PRIMERA LÍNEA debe ser EXACTAMENTE una etiqueta de control y nada más:
     - @@REPLACE@@   → si la instrucción pide TRANSFORMAR el texto (traducir, reformular, reescribir, corregir, reordenar, cambiar de formato, resumir para reemplazar, etc.). El resultado VA A REEMPLAZAR el texto original.
-    - @@ANSWER@@    → si la instrucción es una PREGUNTA o pide INFORMACIÓN (qué significa, qué es, sinónimos, explicame, definí, contame, etc.). El resultado se MUESTRA sin tocar el texto.
+    - @@ANSWER@@    → si la instrucción es una PREGUNTA o pide INFORMACIÓN (qué significa, qué es, sinónimos, explicame, definí, contame, armar una lista a partir de algo, etc.). El resultado se MUESTRA sin tocar el texto.
     - @@ANSWER|img=NombreEntidad@@ → igual que ANSWER, pero cuando una imagen ayudaría a ilustrar (un lugar, persona, animal, planta, objeto, monumento, obra, marca). Poné el nombre EXACTO de la entidad para buscarla (ej: @@ANSWER|img=Torre Eiffel@@).
+    - @@ACTION|tool=notes@@ → si la instrucción pide GUARDAR o AGREGAR algo a Notas. Debajo va el contenido de la nota.
+    - @@ACTION|tool=reminders@@ → si pide crear un RECORDATORIO o agregar a Recordatorios. Debajo va el texto del recordatorio.
+    - @@ACTION|tool=mail|subject=Asunto@@ → si pide CREAR/ESCRIBIR un MAIL o email con esto. Poné un asunto corto en "subject" y debajo va el cuerpo del mail.
+    - @@ACTION|tool=calendar|title=Título|date=AAAA-MM-DDTHH:mm@@ → si pide crear un EVENTO o agregar algo al CALENDARIO. Poné un título corto en "title". Si en el texto o la instrucción hay una FECHA/HORA, deducila y ponela en "date" en formato ISO (ej. date=2026-06-15T10:00). Si NO hay fecha, OMITÍ "date" (se crea el evento y el usuario pone la fecha). Debajo podés poner detalles/notas.
 
-    PARTE 2 — Desde la SEGUNDA LÍNEA en adelante, SOLO el texto resultante (sin comillas, sin JSON, sin repetir la etiqueta).
+    PARTE 2 — Desde la SEGUNDA LÍNEA en adelante, SOLO el contenido resultante (sin comillas, sin JSON, sin repetir la etiqueta). Para código usá bloques markdown ``` con el lenguaje.
 
     Reglas:
     - En REPLACE: devolvé SOLO el texto transformado, sin preámbulos. Conservá el idioma original salvo que pidan traducir.
-    - En ANSWER: respondé en el idioma del usuario, como un asistente experto. Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow") pero sin relleno. Adaptá el largo: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (mostrá el código corregido y explicá brevemente). Si piden "profundizá/ampliá", extendete.
+    - En ANSWER: respondé en el idioma del usuario, como un asistente experto. Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow") pero sin relleno. Adaptá el largo: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (mostrá el código corregido en un bloque ``` y explicá brevemente). Si piden "profundizá/ampliá", extendete.
+    - En ACTION: el contenido (debajo) tiene que estar listo para guardarse/enviarse (bien formateado: una lista como lista, un mail como mail). Elegí ACTION solo si la instrucción claramente pide mandar algo a esa app.
     """
 
-    private static func magicUserMessage(selectedText: String, command: String) -> String {
+    nonisolated private static func magicUserMessage(selectedText: String, command: String) -> String {
         """
         <TEXTO_SELECCIONADO>
         \(selectedText)
@@ -556,25 +565,57 @@ class AIEnhancementService: ObservableObject {
         """
     }
 
-    /// Parsea la línea de control `@@REPLACE@@` / `@@ANSWER@@` / `@@ANSWER|img=…@@`.
-    /// Tolerante: ante cualquier cosa rara, asume answer (no toca el texto).
-    private static func parseControlHeader(_ header: String) -> (MagicCommandResult.Action, String?) {
+    /// Parsea la línea de control en un `MagicControl`. Tolerante: ante
+    /// cualquier cosa rara, asume answer (no toca el texto).
+    nonisolated private static func parseControlHeader(_ header: String) -> MagicControl {
         let h = header.trimmingCharacters(in: .whitespacesAndNewlines)
         let upper = h.uppercased()
-        if upper.hasPrefix("@@REPLACE") {
-            return (.replace, nil)
-        }
-        if upper.hasPrefix("@@ANSWER") {
-            // ¿Trae imagen? `@@ANSWER|img=Torre Eiffel@@`
-            if let range = h.range(of: "img=", options: .caseInsensitive) {
-                var img = String(h[range.upperBound...])
-                img = img.replacingOccurrences(of: "@@", with: "")
-                img = img.trimmingCharacters(in: .whitespacesAndNewlines)
-                return (.answer, img.isEmpty ? nil : img)
+
+        if upper.hasPrefix("@@REPLACE") { return .replace }
+
+        if upper.hasPrefix("@@ACTION") {
+            let params = parseParams(h)
+            let tool = params["tool"]?.lowercased() ?? ""
+            if MagicActions.supportedTools.contains(tool) {
+                return .action(tool: tool, params: params)
             }
-            return (.answer, nil)
+            return .answer(imageQuery: nil)
         }
-        return (.answer, nil)
+
+        if upper.hasPrefix("@@ANSWER") {
+            let params = parseParams(h)
+            let img = params["img"].flatMap { $0.isEmpty ? nil : $0 }
+            return .answer(imageQuery: img)
+        }
+
+        return .answer(imageQuery: nil)
+    }
+
+    /// Extrae `clave=valor` separados por `|` de una etiqueta `@@TIPO|k=v|k2=v2@@`.
+    nonisolated private static func parseParams(_ header: String) -> [String: String] {
+        let inner = header.replacingOccurrences(of: "@@", with: "")
+        var result: [String: String] = [:]
+        for part in inner.split(separator: "|") {
+            let kv = part.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            guard kv.count == 2 else { continue }
+            let key = kv[0].trimmingCharacters(in: .whitespaces).lowercased()
+            let value = kv[1].trimmingCharacters(in: .whitespaces)
+            if !key.isEmpty { result[key] = value }
+        }
+        return result
+    }
+
+    /// Para el fallback no-streaming: separa el header (1ª línea) del cuerpo.
+    nonisolated static func parseHeaderResponse(_ raw: String) -> (MagicControl, String) {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let nl = trimmed.firstIndex(of: "\n") {
+            let header = String(trimmed[..<nl])
+            let body = String(trimmed[trimmed.index(after: nl)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if header.contains("@@") {
+                return (parseControlHeader(header), body)
+            }
+        }
+        return (.answer(imageQuery: nil), trimmed)
     }
 
     private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {
