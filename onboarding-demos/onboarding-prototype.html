@@ -3,73 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Onboarding — Conocé Magic</title>
+<title>Conocé Magic Selection</title>
 <style>
   :root{--violet:#8c5cf5;--cyan:#5ccbf2;--bg:#0b0b11;--ink:#e9e9f1}
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{min-height:100vh;background:
+  html,body{height:100%;overflow:hidden}
+  body{background:
       radial-gradient(1200px 640px at 82% -8%, rgba(140,92,245,.16), transparent 60%),
       radial-gradient(1000px 560px at 2% 108%, rgba(92,203,242,.12), transparent 60%),
       var(--bg);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;color:var(--ink)}
 
-  /* barra superior */
-  .top{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;z-index:50;
-    background:linear-gradient(180deg,rgba(11,11,17,.9),transparent)}
+  .top{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;z-index:50}
   .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
   .brand .sp{font-size:15px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
   .skip{font-size:13px;color:rgba(233,233,241,.55);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:7px 15px;cursor:pointer;transition:.2s}
   .skip:hover{color:#fff;background:rgba(255,255,255,.1)}
 
-  .wrap{max-width:880px;margin:0 auto;padding:108px 24px 140px}
-  .hero{text-align:center;margin-bottom:54px}
-  .hero h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
-  .hero h1 .g{background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p{font-size:16px;color:rgba(233,233,241,.6);margin-top:12px}
+  /* slides: una por pantalla, sin scroll */
+  .stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .slide{position:absolute;width:100%;max-width:860px;padding:0 50px;display:flex;align-items:center;gap:50px;
+    opacity:0;transform:translateY(34px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .slide.up{transform:translateY(-34px)}
+  .slide .txt{flex:1}
+  .slide .num{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:9px}
+  .slide .txt h3{font-size:27px;font-weight:700;margin-bottom:12px;line-height:1.15}
+  .slide .txt p{font-size:15.5px;line-height:1.65;color:rgba(233,233,241,.64);max-width:340px}
+  .slide .tag{display:inline-block;margin-top:14px;font-size:12px;color:rgba(255,255,255,.82);background:rgba(140,92,245,.16);border:1px solid rgba(140,92,245,.3);border-radius:999px;padding:6px 12px}
 
-  /* fila demo + texto */
-  .feat{display:flex;align-items:center;gap:46px;margin-bottom:46px;opacity:0;transform:translateY(26px);
-    transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
-  .feat.show{opacity:1;transform:none}
-  /* las tandas ya vistas se atenúan/difuminan para centrar el foco en la actual */
-  .feat.dim{filter:blur(3px) saturate(.85);opacity:.22;pointer-events:none}
-  .feat:nth-child(even){flex-direction:row-reverse}
-  .feat .txt{flex:1}
-  .feat .num{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-    background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
-  .feat .txt h3{font-size:23px;font-weight:700;margin-bottom:10px}
-  .feat .txt p{font-size:15px;line-height:1.65;color:rgba(233,233,241,.62);max-width:330px}
-  .feat .txt .tag{display:inline-block;margin-top:12px;font-size:12px;color:rgba(255,255,255,.8);background:rgba(140,92,245,.16);border:1px solid rgba(140,92,245,.3);border-radius:999px;padding:5px 11px}
-
-  /* ===== ventana demo (mismo estilo) ===== */
-  .win{position:relative;width:400px;height:262px;border-radius:14px;overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.55);flex-shrink:0}
+  /* ventana demo */
+  .win{position:relative;width:420px;height:272px;border-radius:14px;overflow:hidden;box-shadow:0 28px 72px rgba(0,0,0,.55);flex-shrink:0}
   .tab{height:32px;display:flex;align-items:center;gap:7px;padding:0 12px}
   .dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
   .addr,.fn{margin-left:8px;font-size:11px}
-  .glow{position:absolute;left:128px;top:108px;width:86px;height:86px;opacity:0;transform:translate(-50%,-50%) scale(.6);
-    background:radial-gradient(closest-side,rgba(140,92,245,.85),rgba(140,92,245,0) 70%),radial-gradient(closest-side,rgba(92,203,242,.5),rgba(92,203,242,0) 75%);filter:blur(5px);z-index:4;animation:glowSeq 13s infinite}
-  .cursor{position:absolute;left:126px;top:104px;width:13px;height:13px;opacity:0;z-index:6;animation:curM 13s infinite}
-  .pill{position:absolute;display:flex;align-items:center;gap:7px;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(0,0,0,.45);opacity:0;z-index:7;animation:pillShow 13s infinite}
+  .glow{position:absolute;left:130px;top:110px;width:88px;height:88px;opacity:0;transform:translate(-50%,-50%) scale(.6);
+    background:radial-gradient(closest-side,rgba(140,92,245,.85),rgba(140,92,245,0) 70%),radial-gradient(closest-side,rgba(92,203,242,.5),rgba(92,203,242,0) 75%);filter:blur(5px);z-index:4;animation:glowSeq 12s infinite}
+  .cursor{position:absolute;left:128px;top:106px;width:13px;height:13px;opacity:0;z-index:6;animation:curM 12s infinite}
+  .pill{position:absolute;left:112px;top:152px;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(0,0,0,.45);opacity:0;z-index:7;animation:pillShow 12s infinite}
   .bars{display:flex;gap:3px;align-items:center;height:12px}.bars span{width:3px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;animation:wave .9s ease-in-out infinite}
   .bars span:nth-child(2){animation-delay:.1s}.bars span:nth-child(3){animation-delay:.2s}.bars span:nth-child(4){animation-delay:.3s}
   @keyframes wave{0%,100%{height:4px}50%{height:12px}}
-  .voice{position:absolute;left:110px;top:150px;transform:translateX(-50%);background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.82);font-style:italic;white-space:nowrap;opacity:0;z-index:7;box-shadow:0 8px 22px rgba(0,0,0,.4);animation:voiceShow 13s infinite}
-  .panel{position:absolute;border-radius:12px;padding:1px;opacity:0;z-index:5;animation:panFade 13s infinite}
+  .voice{position:absolute;left:112px;top:152px;transform:translateX(-50%);background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.82);font-style:italic;white-space:nowrap;opacity:0;z-index:7;box-shadow:0 8px 22px rgba(0,0,0,.4);animation:voiceShow 12s infinite}
+  .panel{position:absolute;border-radius:12px;padding:1px;opacity:0;z-index:5;animation:panFade 12s infinite}
   .panel::before{content:"";position:absolute;inset:-1px;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--violet),var(--cyan));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
   .pin{position:relative;background:#12121b;border-radius:11px;overflow:hidden;box-shadow:0 0 30px rgba(140,92,245,.25),0 14px 36px rgba(0,0,0,.5)}
   .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.07)}
   .sp2{font-size:10.5px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
   .pt{font-size:10.5px;color:rgba(255,255,255,.82);font-weight:600}
   .pbody{padding:10px 11px;font-size:11.5px;line-height:1.5;color:rgba(255,255,255,.92)}
+  .rev{animation:revShow 12s infinite}
   .caret{display:inline-block;width:6px;height:12px;vertical-align:-2px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;margin-left:2px;animation:blink 1s steps(2) infinite}
   @keyframes blink{50%{opacity:0}}
   .chk{display:flex;align-items:center;gap:7px;margin:3px 0;font-size:11.5px;color:rgba(255,255,255,.9)}
   .box{width:13px;height:13px;border-radius:4px;border:1.5px solid rgba(140,92,245,.7)}
-  .toast{position:absolute;display:flex;align-items:center;gap:8px;background:#12121b;border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:10px 11px;box-shadow:0 0 24px rgba(92,203,242,.22),0 12px 28px rgba(0,0,0,.45);opacity:0;z-index:5;animation:toastFade 13s infinite}
-  .rev{animation:revShow 13s infinite}
+  .toast{position:absolute;left:50%;top:96px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:#12121b;border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:10px 11px;box-shadow:0 0 24px rgba(92,203,242,.22),0 12px 28px rgba(0,0,0,.45);opacity:0;z-index:5;animation:toastFade 12s infinite}
   .badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--violet),var(--cyan))}
   .tt{font-size:12px;color:rgba(255,255,255,.92);font-weight:600}.ts{font-size:10.5px;color:rgba(255,255,255,.55)}
+
   @keyframes voiceShow{0%,30%{opacity:0}36%,50%{opacity:1}54%,100%{opacity:0}}
   @keyframes pillShow{0%,22%{opacity:0}28%,44%{opacity:1}48%,100%{opacity:0}}
   @keyframes panFade{0%,48%{opacity:0}56%,93%{opacity:1}100%{opacity:0}}
@@ -78,95 +69,80 @@
   @keyframes curM{0%,12%{opacity:0}18%,74%{opacity:1}80%,100%{opacity:0}}
   @keyframes glowSeq{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0;transform:translate(-50%,-50%) scale(1.12)}40%,70%{opacity:.9}78%,100%{opacity:0}}
 
-  /* contenidos claros */
   .light{background:linear-gradient(180deg,#fbfbfd,#f2f2f6)}.light .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}.light .addr,.light .fn{color:#7a7a86}
   .content{padding:16px 20px}.content h4{font-size:14px;color:#1c1c22;margin-bottom:8px}.content p{font-size:12.5px;line-height:1.65;color:#54545f}
   .sel{background:linear-gradient(90deg,rgba(140,92,245,.27),rgba(92,203,242,.27));border-radius:4px;padding:0 3px}
   .url{background:#fff;border:1px solid #e0e0e6;border-radius:6px;padding:2px 8px;flex:1;color:#7a7a86}
 
-  /* botón siguiente / empezar */
-  .nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;padding:22px;z-index:50;background:linear-gradient(0deg,var(--bg) 30%,transparent)}
-  .btn{font-size:15px;font-weight:600;color:#fff;border:none;border-radius:999px;padding:13px 30px;cursor:pointer;
-    background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 10px 30px rgba(140,92,245,.4);transition:.2s}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 14px 36px rgba(140,92,245,.5)}
-  .btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);box-shadow:none}
+  /* navegación inferior */
+  .nav{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:20px;padding:22px;z-index:50}
+  .arrow{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .arrow:hover{background:rgba(255,255,255,.12)}
+  .arrow:disabled{opacity:.25;cursor:default}
+  .dots{display:flex;gap:8px}
+  .pd{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:.3s}
+  .pd.on{background:linear-gradient(90deg,var(--violet),var(--cyan));width:22px;border-radius:5px}
+  .btn{font-size:15px;font-weight:600;color:#fff;border:none;border-radius:999px;padding:12px 26px;cursor:pointer;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 10px 28px rgba(140,92,245,.38);transition:.2s}
+  .btn:hover{transform:translateY(-1px)}
 </style>
 </head>
 <body>
-  <div class="top">
-    <div class="brand"><span class="sp">✦</span> Magic</div>
-    <div class="skip" onclick="finish()">Saltar ›</div>
-  </div>
+  <div class="top"><div class="brand"><span class="sp">✦</span> Magic Selection</div><div class="skip" onclick="done()">Saltar ›</div></div>
 
-  <div class="wrap">
-    <div class="hero">
-      <h1>Conocé <span class="g">Magic</span></h1>
-      <p>Seleccionás algo, sacudís el mouse y hablás — la IA actúa sobre eso. Una pasada por lo que vas a poder hacer.</p>
-    </div>
+  <div class="stage">
 
     <!-- 1 PREGUNTAR -->
-    <div class="feat" data-step="1">
-      <div class="win light" id="A">
+    <div class="slide" data-i="0">
+      <div class="win light">
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url addr">es.wikipedia.org/wiki/París</span></div>
         <div class="content"><h4>París</h4><p>Entre sus símbolos está la <span class="sel">Torre Eiffel</span>, junto al Louvre y Notre-Dame.</p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
         <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
         <div class="voice">“contame qué es esto”</div>
-        <div class="panel" style="right:14px;top:66px;width:230px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic</span></div>
-          <div class="pbody rev">Monumento de hierro de 330&nbsp;m, inaugurado en 1889. Símbolo de París.<span class="caret"></span></div></div></div>
+        <div class="panel" style="right:14px;top:66px;width:228px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic</span></div><div class="pbody rev">Monumento de hierro de 330&nbsp;m, inaugurado en 1889. Símbolo de París.<span class="caret"></span></div></div></div>
       </div>
-      <div class="txt"><div class="num">Preguntá</div><h3>Cualquier duda, al instante</h3>
-        <p>Seleccioná una palabra o frase en cualquier app y preguntá qué es, qué significa o pedí más contexto. Te responde sin abrir nada.</p>
-        <span class="tag">✦ y si ayuda, te muestra una imagen</span></div>
+      <div class="txt"><div class="num">Preguntá</div><h3>Cualquier duda, al instante</h3><p>Seleccioná una palabra o frase en cualquier app y preguntá qué es o pedí más contexto. Te responde sin abrir nada.</p><span class="tag">✦ y si ayuda, te muestra una imagen</span></div>
     </div>
 
-    <!-- 2 TRANSFORMAR (mail) -->
-    <div class="feat" data-step="2">
-      <div class="win light" id="C">
+    <!-- 2 TRANSFORMAR -->
+    <div class="slide" data-i="1">
+      <div class="win light">
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Mail · Re: propuesta</span></div>
         <div class="content"><p><span class="sel">che, te paso el presupuesto, fijate y me decís</span></p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
         <div class="voice">“hacelo más formal”</div>
-        <div class="panel" style="right:14px;top:64px;width:236px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic</span></div>
-          <div class="pbody rev">Le adjunto el presupuesto para su revisión. Quedo a disposición.</div></div></div>
+        <div class="panel" style="right:14px;top:64px;width:236px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic</span></div><div class="pbody rev">Le adjunto el presupuesto para su revisión. Quedo a disposición.</div></div></div>
       </div>
-      <div class="txt"><div class="num">Transformá</div><h3>Reescribí, traducí, corregí</h3>
-        <p>Cambiá el tono, traducí a otro idioma, corregí la ortografía o resumí — y reemplazá el texto en el lugar, sin copiar y pegar.</p>
-        <span class="tag">↩︎ reemplaza la selección directamente</span></div>
+      <div class="txt"><div class="num">Transformá</div><h3>Reescribí, traducí, corregí</h3><p>Cambiá el tono, traducí, corregí o resumí — y reemplazá el texto en el lugar, sin copiar y pegar.</p><span class="tag">↩︎ reemplaza la selección directamente</span></div>
     </div>
 
-    <!-- 3 RECETA → LISTA -->
-    <div class="feat" data-step="2">
-      <div class="win light" id="R">
+    <!-- 3 RECETA -->
+    <div class="slide" data-i="2">
+      <div class="win light">
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url addr">recetas.com/panqueques</span></div>
-        <div class="content"><h4>Panqueques</h4><p style="font-size:11.5px"><span class="sel">2 huevos · 200 g de harina · 500 ml de leche · 30 g de manteca · una pizca de sal</span></p></div>
+        <div class="content"><h4>Panqueques</h4><p style="font-size:11.5px"><span class="sel">2 huevos · 200 g de harina · 500 ml de leche · 30 g de manteca · sal</span></p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
         <div class="voice">“armame la lista de compras”</div>
-        <div class="panel" style="right:14px;top:60px;width:200px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Lista de compras</span></div>
-          <div class="pbody rev"><div class="chk"><span class="box"></span>Huevos (2)</div><div class="chk"><span class="box"></span>Harina · 200 g</div><div class="chk"><span class="box"></span>Leche · 500 ml</div><div class="chk"><span class="box"></span>Manteca · 30 g</div><div class="chk"><span class="box"></span>Sal</div></div></div></div>
+        <div class="panel" style="right:14px;top:60px;width:198px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Lista de compras</span></div><div class="pbody rev"><div class="chk"><span class="box"></span>Huevos (2)</div><div class="chk"><span class="box"></span>Harina · 200 g</div><div class="chk"><span class="box"></span>Leche · 500 ml</div><div class="chk"><span class="box"></span>Manteca · 30 g</div><div class="chk"><span class="box"></span>Sal</div></div></div></div>
       </div>
-      <div class="txt"><div class="num">Entiende contexto</div><h3>De una receta a tu lista</h3>
-        <p>No es solo texto: comprende lo que seleccionás. Agarrá los ingredientes de una receta y pedile la lista de compras ya ordenada.</p>
-        <span class="tag">🧠 entiende, no solo copia</span></div>
+      <div class="txt"><div class="num">Entiende contexto</div><h3>De una receta a tu lista</h3><p>No es solo texto: comprende lo que seleccionás. Agarrá los ingredientes y pedile la lista de compras ya ordenada.</p><span class="tag">🧠 entiende, no solo copia</span></div>
     </div>
 
-    <!-- 4 ACCIONES (agendar) -->
-    <div class="feat" data-step="3">
-      <div class="win light" id="D">
+    <!-- 4 ACCIONES -->
+    <div class="slide" data-i="3">
+      <div class="win light">
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Notas</span></div>
         <div class="content"><p>Reunión con el equipo el <span class="sel">martes a las 10</span> para revisar el lanzamiento.</p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
         <div class="voice">“agendá esto”</div>
-        <div class="toast" style="left:50%;top:92px;transform:translateX(-50%);width:250px"><div class="badge">📅</div><div><div class="tt">Evento creado</div><div class="ts">Martes · 10:00 · Reunión de equipo</div></div></div>
+        <div class="toast" style="width:250px"><div class="badge">📅</div><div><div class="tt">Evento creado</div><div class="ts">Martes · 10:00 · Reunión de equipo</div></div></div>
       </div>
-      <div class="txt"><div class="num">Accioná</div><h3>Convertí texto en acciones</h3>
-        <p>Agendá un evento, creá un recordatorio, una nota, escribí un mail o mandá un mensaje — todo desde lo que seleccionaste.</p>
-        <span class="tag">📅 Calendario · ✅ Recordatorios · 💬 WhatsApp · ✉️ Mail</span></div>
+      <div class="txt"><div class="num">Accioná</div><h3>Convertí texto en acciones</h3><p>Agendá un evento, creá un recordatorio o una nota, escribí un mail o mandá un mensaje — desde lo que seleccionaste.</p><span class="tag">📅 Calendario · ✅ Recordatorios · 💬 WhatsApp · ✉️ Mail</span></div>
     </div>
 
     <!-- 5 CÓDIGO -->
-    <div class="feat" data-step="3">
-      <div class="win" id="B" style="background:#1b1b24">
+    <div class="slide" data-i="4">
+      <div class="win" style="background:#1b1b24">
         <div class="tab" style="background:#23232e"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn" style="color:#9a9aa6">app.js</span></div>
         <div style="padding:12px 16px;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.8">
           <div><span style="color:#4a4a58;margin-right:10px">1</span><span style="color:#c98bff">function</span> <span style="color:#6cb6ff">total</span>(xs){</div>
@@ -176,37 +152,46 @@
         </div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
         <div class="voice">“arreglá el bug”</div>
-        <div class="panel" style="left:50%;top:72px;transform:translateX(-50%);width:268px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic · código</span></div>
-          <div class="pbody rev" style="font-family:ui-monospace,monospace;font-size:11px;background:#0d0d14;margin:8px 10px;border-radius:7px;padding:9px"><span style="color:#5b5b6b">// usá &lt; no &lt;=</span><br><span style="color:#c98bff">for</span>(<span style="color:#c98bff">let</span> i=<span style="color:#7fd6a0">0</span>; i &lt; xs.length; i++)</div></div></div>
+        <div class="panel" style="left:50%;top:72px;transform:translateX(-50%);width:268px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Magic · código</span></div><div class="pbody rev" style="font-family:ui-monospace,monospace;font-size:11px;background:#0d0d14;margin:8px 10px;border-radius:7px;padding:9px"><span style="color:#5b5b6b">// usá &lt; no &lt;=</span><br><span style="color:#c98bff">for</span>(<span style="color:#c98bff">let</span> i=<span style="color:#7fd6a0">0</span>; i &lt; xs.length; i++)</div></div></div>
       </div>
-      <div class="txt"><div class="num">Programá</div><h3>Arreglá y entendé código</h3>
-        <p>Seleccioná un fragmento y pedile encontrar el bug, optimizarlo o explicarlo. Te lo devuelve con formato, listo para reemplazar.</p>
-        <span class="tag">‹/› con bloques de código resaltados</span></div>
+      <div class="txt"><div class="num">Programá</div><h3>Arreglá y entendé código</h3><p>Seleccioná un fragmento y pedile encontrar el bug, optimizarlo o explicarlo. Te lo devuelve con formato, listo para reemplazar.</p><span class="tag">‹/› bloques de código resaltados</span></div>
     </div>
 
   </div>
 
-  <div class="nav"><button class="btn" id="cta" onclick="next()">Siguiente</button></div>
+  <div class="nav">
+    <button class="arrow" id="back" onclick="go(-1)">‹</button>
+    <div class="dots" id="dots"></div>
+    <button class="arrow" id="fwd" onclick="go(1)">›</button>
+    <button class="btn" id="cta" onclick="go(1)" style="display:none">Empezar</button>
+  </div>
 
 <script>
-  let step=1;const max=3;
-  function reveal(s){document.querySelectorAll('.feat[data-step="'+s+'"]').forEach(f=>{f.classList.add('show');f.classList.remove('dim')})}
-  function next(){
-    if(step<max){
-      // atenuar la tanda actual antes de revelar la siguiente (foco en la nueva)
-      document.querySelectorAll('.feat[data-step="'+step+'"]').forEach(f=>f.classList.add('dim'));
-      step++; reveal(step);
-      const last=document.querySelector('.feat[data-step="'+step+'"]');
-      last && last.scrollIntoView({block:'center'});
-      if(step===max) document.getElementById('cta').textContent='Empezar a usar Magic';
-    } else { finish(); }
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsBox=document.getElementById('dots');
+  slides.forEach((_,k)=>{const d=document.createElement('div');d.className='pd';dotsBox.appendChild(d)});
+  const dots=[...dotsBox.children];
+  let i=0;
+  function render(){
+    slides.forEach((s,k)=>{s.classList.toggle('active',k===i);s.classList.toggle('up',k<i)});
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    document.getElementById('back').disabled=i===0;
+    const last=i===slides.length-1;
+    document.getElementById('fwd').style.display=last?'none':'flex';
+    document.getElementById('cta').style.display=last?'inline-block':'none';
   }
-  function finish(){
-    document.querySelector('.wrap').innerHTML='<div class="hero" style="margin-top:90px"><h1>Listo ✦</h1><p>Probá ahora: seleccioná algo, sacudí el mouse y hablale a Magic.</p></div>';
-    document.getElementById('cta').textContent='Empezar';
-    document.getElementById('cta').onclick=()=>alert('(fin del onboarding)');
+  function go(dir){
+    if(dir>0 && i===slides.length-1){done();return;}
+    i=Math.max(0,Math.min(slides.length-1,i+dir));
+    render();
   }
-  reveal(1); // primero aparece el 1
+  function done(){
+    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.magic){
+      window.webkit.messageHandlers.magic.postMessage('done');
+    }
+  }
+  render();
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
 </script>
 </body>
 </html>

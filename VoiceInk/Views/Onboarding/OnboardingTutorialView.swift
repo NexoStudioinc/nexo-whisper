@@ -60,7 +60,7 @@ struct OnboardingTutorialView: View {
                         Button(action: {
                             withAnimation { showMagic = true }
                         }) {
-                            Text("Complete Setup")
+                            Text("Next")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
                                 .frame(width: 180, height: 40)
@@ -68,12 +68,6 @@ struct OnboardingTutorialView: View {
                                 .cornerRadius(20)
                         }
                         .buttonStyle(ScaleButtonStyle())
-                        .opacity(transcribedText.isEmpty ? 0.5 : 1)
-                        .disabled(transcribedText.isEmpty)
-
-                        SkipButton(text: "Skip for now") {
-                            withAnimation { showMagic = true }
-                        }
                     }
                     .padding(28)
                     .frame(width: geometry.size.width * 0.5)
