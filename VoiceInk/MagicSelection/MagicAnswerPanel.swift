@@ -376,6 +376,11 @@ final class MagicAnswerPanel {
     }
 
     private func buildPanel(model: MagicAnswerModel) {
+        // Cerramos cualquier panel anterior: una nueva Magic Selection REEMPLAZA
+        // el cuadro (no se acumulan ventanas huérfanas).
+        panel?.orderOut(nil)
+        panel = nil
+
         let size = defaultSize
 
         // Ventana `.titled` + `.resizable` + `.fullSizeContentView`: nos da el

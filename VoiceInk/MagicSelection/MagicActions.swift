@@ -1,4 +1,5 @@
 import AppKit
+import EventKit
 import Foundation
 import OSLog
 
@@ -28,8 +29,11 @@ enum MagicActions {
     /// Acciones soportadas (lo que el LLM puede pedir en `tool=`).
     static let supportedTools = ["notes", "mail", "reminders", "calendar"]
 
+    /// Store de EventKit compartido (Calendario + Recordatorios).
+    private static let eventStore = EKEventStore()
+
     @MainActor
-    static func run(tool: String, params: [String: String], content: String) -> Outcome {
+    static func run(tool: String, params: [String: String], content: String) async -> Outcome {
         let body = content.trimmingCharacters(in: .whitespacesAndNewlines)
         switch tool.lowercased() {
         case "notes":
@@ -37,9 +41,9 @@ enum MagicActions {
         case "mail":
             return createMail(subject: params["subject"], body: body)
         case "reminders", "reminder":
-            return createReminder(body)
+            return await createReminder(body)
         case "calendar", "calendario", "event":
-            return createEvent(title: params["title"] ?? body, dateISO: params["date"])
+            return await createEvent(title: params["title"] ?? body, dateISO: params["date"])
         default:
             logger.error("Acción desconocida: \(tool, privacy: .public)")
             return Outcome(success: false, message: "No reconozco esa acción.", appName: nil)
@@ -82,64 +86,89 @@ enum MagicActions {
         return Outcome(success: true, message: "Mail listo para enviar", appName: nil)
     }
 
-    // ── Recordatorios (AppleScript) ─────────────────────────────────────
+    // ── Recordatorios (EventKit) ────────────────────────────────────────
 
     @MainActor
-    private static func createReminder(_ text: String) -> Outcome {
+    private static func createReminder(_ text: String) async -> Outcome {
         guard !text.isEmpty else { return Outcome(success: false, message: "Recordatorio vacío.", appName: nil) }
-        // El recordatorio toma como nombre la primera línea.
-        let name = text.components(separatedBy: "\n").first ?? text
-        let escaped = appleScriptEscaped(name)
-        let script = """
-        tell application "Reminders"
-            make new reminder with properties {name:"\(escaped)"}
-        end tell
-        """
-        if runAppleScript(script) {
-            return Outcome(success: true, message: "Agregado a Recordatorios", appName: "Reminders")
+        guard await requestReminderAccess() else {
+            return Outcome(success: false, message: "Falta permiso de Recordatorios. Concedelo en Ajustes del sistema → Privacidad.", appName: "Reminders")
         }
-        return Outcome(success: false, message: "No pude agregar a Recordatorios (revisá permisos de Automatización).", appName: "Reminders")
+        guard let list = eventStore.defaultCalendarForNewReminders() else {
+            return Outcome(success: false, message: "No hay una lista de Recordatorios disponible.", appName: "Reminders")
+        }
+        let reminder = EKReminder(eventStore: eventStore)
+        // Primera línea = título; el resto (si hay) van como nota.
+        let lines = text.components(separatedBy: "\n")
+        reminder.title = lines.first ?? text
+        if lines.count > 1 {
+            reminder.notes = lines.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        reminder.calendar = list
+        do {
+            try eventStore.save(reminder, commit: true)
+            return Outcome(success: true, message: "Agregado a Recordatorios", appName: "Reminders")
+        } catch {
+            logger.error("EventKit reminder falló: \(error.localizedDescription, privacy: .public)")
+            return Outcome(success: false, message: "No pude crear el recordatorio.", appName: "Reminders")
+        }
     }
 
-    // ── Calendario (AppleScript) ────────────────────────────────────────
+    // ── Calendario (EventKit) ───────────────────────────────────────────
 
     @MainActor
-    private static func createEvent(title: String, dateISO: String?) -> Outcome {
+    private static func createEvent(title: String, dateISO: String?) async -> Outcome {
         let summary = (title.components(separatedBy: "\n").first ?? title)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !summary.isEmpty else {
             return Outcome(success: false, message: "Evento vacío.", appName: "Calendar")
         }
-        // Con fecha → la usamos; sin fecha → placeholder (hoy + 1h) para que el
-        // usuario la ajuste en Calendario.
+        guard await requestEventAccess() else {
+            return Outcome(success: false, message: "Falta permiso de Calendario. Concedelo en Ajustes del sistema → Privacidad.", appName: "Calendar")
+        }
+        guard let cal = eventStore.defaultCalendarForNewEvents else {
+            return Outcome(success: false, message: "No hay un calendario disponible.", appName: "Calendar")
+        }
+        // Con fecha → la usamos; sin fecha → placeholder (hoy + 1h) para ajustar.
         let hadDate = parseDate(dateISO) != nil
-        let date = parseDate(dateISO)
+        let start = parseDate(dateISO)
             ?? Calendar.current.date(byAdding: .hour, value: 1, to: Date())
             ?? Date()
-        let c = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let escaped = appleScriptEscaped(summary)
-        // Construimos la fecha por componentes (robusto, sin depender del locale
-        // de parsing de AppleScript).
-        let script = """
-        set theStart to (current date)
-        set year of theStart to \(c.year ?? 2026)
-        set month of theStart to \(c.month ?? 1)
-        set day of theStart to \(c.day ?? 1)
-        set hours of theStart to \(c.hour ?? 9)
-        set minutes of theStart to \(c.minute ?? 0)
-        set seconds of theStart to 0
-        set theEnd to theStart + (60 * 60)
-        tell application "Calendar"
-            tell calendar 1
-                make new event with properties {summary:"\(escaped)", start date:theStart, end date:theEnd}
-            end tell
-        end tell
-        """
-        if runAppleScript(script) {
+        let event = EKEvent(eventStore: eventStore)
+        event.title = summary
+        event.startDate = start
+        event.endDate = start.addingTimeInterval(3600)
+        event.calendar = cal
+        do {
+            try eventStore.save(event, span: .thisEvent, commit: true)
             let msg = hadDate ? "Evento agregado al Calendario" : "Evento creado (ajustá la fecha en Calendario)"
             return Outcome(success: true, message: msg, appName: "Calendar")
+        } catch {
+            logger.error("EventKit event falló: \(error.localizedDescription, privacy: .public)")
+            return Outcome(success: false, message: "No pude crear el evento.", appName: "Calendar")
         }
-        return Outcome(success: false, message: "No pude crear el evento (revisá permisos de Automatización).", appName: "Calendar")
+    }
+
+    // ── Permisos EventKit ───────────────────────────────────────────────
+
+    private static func requestReminderAccess() async -> Bool {
+        if #available(macOS 14.0, *) {
+            return (try? await eventStore.requestFullAccessToReminders()) ?? false
+        } else {
+            return await withCheckedContinuation { cont in
+                eventStore.requestAccess(to: .reminder) { granted, _ in cont.resume(returning: granted) }
+            }
+        }
+    }
+
+    private static func requestEventAccess() async -> Bool {
+        if #available(macOS 14.0, *) {
+            return (try? await eventStore.requestFullAccessToEvents()) ?? false
+        } else {
+            return await withCheckedContinuation { cont in
+                eventStore.requestAccess(to: .event) { granted, _ in cont.resume(returning: granted) }
+            }
+        }
     }
 
     /// Parsea una fecha ISO o formato común. nil si no hay fecha válida.

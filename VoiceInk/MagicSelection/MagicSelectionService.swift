@@ -565,7 +565,7 @@ final class MagicSelectionService {
             } else {
                 model?.finishTurn(userCommand: command)
                 if let action = pendingAction {
-                    self.runAction(tool: action.tool, params: action.params, content: full)
+                    await self.runAction(tool: action.tool, params: action.params, content: full)
                 }
                 Self.logger.info("Streaming en panel completado (\(full.count) chars)")
             }
@@ -612,8 +612,8 @@ final class MagicSelectionService {
     /// Ejecuta una acción de sistema (Notas / Mail / Recordatorio) con el
     /// contenido generado y avisa el resultado con un toast.
     @MainActor
-    private func runAction(tool: String, params: [String: String], content: String) {
-        let outcome = MagicActions.run(tool: tool, params: params, content: content)
+    private func runAction(tool: String, params: [String: String], content: String) async {
+        let outcome = await MagicActions.run(tool: tool, params: params, content: content)
         NotificationManager.shared.showNotification(
             title: "\(outcome.success ? "✅" : "⚠️") \(outcome.message)",
             type: outcome.success ? .info : .error,

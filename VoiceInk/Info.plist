@@ -58,6 +58,14 @@
 	<string>Nexo Whisper needs to interact with your browser to detect the current website for applying website-specific configurations.</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>Nexo Whisper needs screen recording access to understand context from your screen for improved transcription accuracy.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Nexo Whisper (Magic) necesita acceso a Recordatorios para crear recordatorios desde el texto que seleccionás.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Nexo Whisper (Magic) necesita acceso a Recordatorios para crear recordatorios desde el texto que seleccionás.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Nexo Whisper (Magic) necesita acceso al Calendario para crear eventos desde el texto que seleccionás.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Nexo Whisper (Magic) necesita acceso al Calendario para crear eventos desde el texto que seleccionás.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
