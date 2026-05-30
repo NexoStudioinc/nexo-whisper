@@ -60,7 +60,7 @@ struct OnboardingTutorialView: View {
                         Button(action: {
                             withAnimation { showMagic = true }
                         }) {
-                            Text("Next")
+                            Text("Siguiente")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
                                 .frame(width: 180, height: 40)

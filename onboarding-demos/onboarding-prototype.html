@@ -61,13 +61,15 @@
   .badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--violet),var(--cyan))}
   .tt{font-size:12px;color:rgba(255,255,255,.92);font-weight:600}.ts{font-size:10.5px;color:rgba(255,255,255,.55)}
 
-  @keyframes voiceShow{0%,30%{opacity:0}36%,50%{opacity:1}54%,100%{opacity:0}}
-  @keyframes pillShow{0%,22%{opacity:0}28%,44%{opacity:1}48%,100%{opacity:0}}
-  @keyframes panFade{0%,48%{opacity:0}56%,93%{opacity:1}100%{opacity:0}}
-  @keyframes revShow{0%,58%{opacity:0}64%,93%{opacity:1}100%{opacity:0}}
-  @keyframes toastFade{0%,48%{opacity:0}56%,93%{opacity:1}100%{opacity:0}}
-  @keyframes curM{0%,12%{opacity:0}18%,74%{opacity:1}80%,100%{opacity:0}}
-  @keyframes glowSeq{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0;transform:translate(-50%,-50%) scale(1.12)}40%,70%{opacity:.9}78%,100%{opacity:0}}
+  /* secuencia: glow+wiggle (12-26) · pill escuchando (28-42) · voz (44-58) · resultado (60-93) */
+  @keyframes pillShow{0%,26%{opacity:0}30%,42%{opacity:1}46%,100%{opacity:0}}
+  @keyframes voiceShow{0%,44%{opacity:0}50%,58%{opacity:1}62%,100%{opacity:0}}
+  @keyframes panFade{0%,60%{opacity:0}66%,93%{opacity:1}100%{opacity:0}}
+  @keyframes revShow{0%,64%{opacity:0}70%,93%{opacity:1}100%{opacity:0}}
+  @keyframes toastFade{0%,60%{opacity:0}66%,93%{opacity:1}100%{opacity:0}}
+  /* el cursor (mouse) se mueve JUNTO al aura: mismo wiggle que glowSeq */
+  @keyframes curM{0%,12%{opacity:0;margin-left:0}18%{opacity:1;margin-left:0}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0}74%{opacity:1}80%,100%{opacity:0}}
+  @keyframes glowSeq{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0;transform:translate(-50%,-50%) scale(1.12)}40%,72%{opacity:.9}80%,100%{opacity:0}}
 
   .light{background:linear-gradient(180deg,#fbfbfd,#f2f2f6)}.light .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}.light .addr,.light .fn{color:#7a7a86}
   .content{padding:16px 20px}.content h4{font-size:14px;color:#1c1c22;margin-bottom:8px}.content p{font-size:12.5px;line-height:1.65;color:#54545f}
@@ -110,6 +112,7 @@
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Mail · Re: propuesta</span></div>
         <div class="content"><p><span class="sel">che, te paso el presupuesto, fijate y me decís</span></p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
         <div class="voice">“hacelo más formal”</div>
         <div class="panel" style="right:14px;top:64px;width:236px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Aura</span></div><div class="pbody rev">Le adjunto el presupuesto para su revisión. Quedo a disposición.</div></div></div>
       </div>
@@ -122,6 +125,7 @@
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url addr">recetas.com/panqueques</span></div>
         <div class="content"><h4>Panqueques</h4><p style="font-size:11.5px"><span class="sel">2 huevos · 200 g de harina · 500 ml de leche · 30 g de manteca · sal</span></p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
         <div class="voice">“armame la lista de compras”</div>
         <div class="panel" style="right:14px;top:60px;width:198px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Lista de compras</span></div><div class="pbody rev"><div class="chk"><span class="box"></span>Huevos (2)</div><div class="chk"><span class="box"></span>Harina · 200 g</div><div class="chk"><span class="box"></span>Leche · 500 ml</div><div class="chk"><span class="box"></span>Manteca · 30 g</div><div class="chk"><span class="box"></span>Sal</div></div></div></div>
       </div>
@@ -134,6 +138,7 @@
         <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Notas</span></div>
         <div class="content"><p>Reunión con el equipo el <span class="sel">martes a las 10</span> para revisar el lanzamiento.</p></div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
         <div class="voice">“agendá esto”</div>
         <div class="toast" style="width:250px"><div class="badge">📅</div><div><div class="tt">Evento creado</div><div class="ts">Martes · 10:00 · Reunión de equipo</div></div></div>
       </div>
@@ -151,6 +156,7 @@
           <div><span style="color:#4a4a58;margin-right:10px">4</span>&nbsp;&nbsp;&nbsp;s+=xs[i];</div>
         </div>
         <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
         <div class="voice">“arreglá el bug”</div>
         <div class="panel" style="left:50%;top:72px;transform:translateX(-50%);width:268px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Aura · código</span></div><div class="pbody rev" style="font-family:ui-monospace,monospace;font-size:11px;background:#0d0d14;margin:8px 10px;border-radius:7px;padding:9px"><span style="color:#5b5b6b">// usá &lt; no &lt;=</span><br><span style="color:#c98bff">for</span>(<span style="color:#c98bff">let</span> i=<span style="color:#7fd6a0">0</span>; i &lt; xs.length; i++)</div></div></div>
       </div>
