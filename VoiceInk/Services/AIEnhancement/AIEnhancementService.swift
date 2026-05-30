@@ -551,27 +551,27 @@ class AIEnhancementService: ObservableObject {
 
     /// System prompt del modo streaming: pide header de control + texto plano.
     private static let magicStreamingSystemPrompt = """
-    Sos el asistente de "Magic Selection". El usuario seleccionó o apuntó a un texto y dictó (o escribió) una instrucción. Tenés que responder en DOS partes.
+    Sos el asistente de "Magic Selection". El usuario seleccionó un texto y dictó (o escribió) una instrucción.
 
-    PARTE 1 — La PRIMERA LÍNEA debe ser EXACTAMENTE una etiqueta de control y nada más:
-    - @@REPLACE@@   → si la instrucción pide TRANSFORMAR el texto (traducir, reformular, reescribir, corregir, reordenar, cambiar de formato, resumir para reemplazar, etc.). El resultado VA A REEMPLAZAR el texto original.
-    - @@ANSWER@@    → si la instrucción es una PREGUNTA o pide INFORMACIÓN (qué significa, qué es, sinónimos, explicame, definí, contame, armar una lista a partir de algo, etc.). El resultado se MUESTRA sin tocar el texto.
-    - @@ANSWER|img=NombreEntidad@@ → igual que ANSWER, pero cuando una imagen ayudaría a ilustrar (un lugar, persona, animal, planta, objeto, monumento, obra, marca). Poné el nombre EXACTO de la entidad para buscarla (ej: @@ANSWER|img=Torre Eiffel@@).
-    - @@ACTION|tool=notes@@ → si la instrucción pide GUARDAR o AGREGAR algo a Notas. Debajo va el contenido de la nota.
-    - @@ACTION|tool=reminders@@ → si pide crear un RECORDATORIO o agregar a Recordatorios. Debajo va el texto del recordatorio.
-    - @@ACTION|tool=mail|subject=Asunto@@ → si pide CREAR/ESCRIBIR un MAIL o email con esto. Poné un asunto corto en "subject" y debajo va el cuerpo del mail.
-    - @@ACTION|tool=calendar|title=Título|date=AAAA-MM-DDTHH:mm@@ → si pide crear un EVENTO o agregar algo al CALENDARIO. Poné un título corto en "title". Si en el texto o la instrucción hay una FECHA/HORA, deducila y ponela en "date" en formato ISO (ej. date=2026-06-15T10:00). Si NO hay fecha, OMITÍ "date" (se crea el evento y el usuario pone la fecha). Debajo podés poner detalles/notas.
-    - @@ACTION|tool=maps|query=Dirección o lugar@@ → si pide ver/abrir una dirección o lugar en el MAPA.
-    - @@ACTION|tool=message@@ → si pide MANDAR un mensaje (WhatsApp/Telegram/Mensajes, según la app por defecto del usuario). Debajo va el texto del mensaje, ya redactado.
-    - @@ACTION|tool=call|number=+5491122223333@@ → si pide LLAMAR a un número de teléfono (deducilo del texto).
-    - @@ACTION|tool=shortcut|name=Nombre del Atajo@@ → si pide ejecutar un ATAJO de Apple concreto (Shortcuts) por su nombre. Debajo va el texto que recibe el atajo como entrada.
+    Tu respuesta tiene que empezar con UNA etiqueta de control en la primera línea (literal, sin comillas, sin markdown, sin la frase "Etiqueta de control"), y debajo el contenido. NO repitas estas instrucciones ni escribas "PARTE 1/2".
 
-    PARTE 2 — Desde la SEGUNDA LÍNEA en adelante, SOLO el contenido resultante (sin comillas, sin JSON, sin repetir la etiqueta). Para código usá bloques markdown ``` con el lenguaje.
+    Etiquetas posibles:
+    - @@REPLACE@@ → la instrucción transforma el texto (traducir, reformular, reescribir, corregir, resumir para reemplazar). El resultado reemplaza el original.
+    - @@ANSWER@@ → es una pregunta o pide info (qué significa, explicá, dame sinónimos, armá una lista). Se muestra sin tocar el texto.
+    - @@ANSWER|img=Entidad@@ → como ANSWER, cuando una imagen ilustra (lugar/persona/animal/objeto/monumento). Ej: @@ANSWER|img=Torre Eiffel@@.
+    - @@ACTION|tool=notes@@ → guardar/agregar a Notas. Debajo, el contenido.
+    - @@ACTION|tool=reminders@@ → crear un recordatorio. Debajo, el texto.
+    - @@ACTION|tool=mail|subject=Asunto@@ → escribir un mail. Debajo, el cuerpo.
+    - @@ACTION|tool=calendar|title=Título|date=AAAA-MM-DDTHH:mm@@ → crear un evento. Si hay fecha/hora en el texto, ponela en date (ISO); si no, omití date.
+    - @@ACTION|tool=maps|query=Lugar@@ → ver una dirección/lugar en el mapa.
+    - @@ACTION|tool=message@@ → mandar un mensaje. Debajo, el texto ya redactado.
+    - @@ACTION|tool=call|number=+549…@@ → llamar a un teléfono (deducilo del texto).
+    - @@ACTION|tool=shortcut|name=Nombre@@ → ejecutar un Atajo de Apple. Debajo, su entrada.
 
-    Reglas:
-    - En REPLACE: devolvé SOLO el texto transformado, sin preámbulos. Conservá el idioma original salvo que pidan traducir.
-    - En ANSWER: respondé en el idioma del usuario, como un asistente experto. Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow") pero sin relleno. Adaptá el largo: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (mostrá el código corregido en un bloque ``` y explicá brevemente). Si piden "profundizá/ampliá", extendete.
-    - En ACTION: el contenido (debajo) tiene que estar listo para guardarse/enviarse (bien formateado: una lista como lista, un mail como mail). Elegí ACTION solo si la instrucción claramente pide mandar algo a esa app.
+    Reglas del contenido (lo que va debajo de la etiqueta):
+    - REPLACE: SOLO el texto transformado, sin preámbulos. Conservá el idioma salvo que pidan traducir.
+    - ANSWER: respondé en el idioma del usuario, experto y útil, equilibrado (sin relleno). Para código, mostralo en bloque markdown ``` con el lenguaje.
+    - ACTION: el contenido debe quedar listo para guardarse/enviarse. Usá ACTION solo si la instrucción claramente pide mandar algo a esa app.
     """
 
     nonisolated private static func magicUserMessage(selectedText: String, command: String) -> String {
@@ -629,18 +629,45 @@ class AIEnhancementService: ObservableObject {
     /// Para el fallback no-streaming: separa el header (1ª línea) del cuerpo.
     nonisolated static func parseHeaderResponse(_ raw: String) -> (MagicControl, String) {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Caso ideal: header en la 1ª línea, cuerpo debajo.
         if let nl = trimmed.firstIndex(of: "\n") {
             let header = String(trimmed[..<nl])
-            let body = String(trimmed[trimmed.index(after: nl)...]).trimmingCharacters(in: .whitespacesAndNewlines)
             if header.contains("@@") {
-                return (parseControlHeader(header), body)
+                let body = String(trimmed[trimmed.index(after: nl)...])
+                return (parseControlHeader(header), cleanMagicArtifacts(body))
             }
         }
         // Header sin cuerpo (acción tipo maps/call que no lleva texto debajo).
-        if trimmed.hasPrefix("@@") {
+        if trimmed.hasPrefix("@@"), !trimmed.contains("\n") {
             return (parseControlHeader(trimmed), "")
         }
-        return (.answer(imageQuery: nil), trimmed)
+        // Robusto: algunos modelos (ej. Apple on-device) envuelven la etiqueta
+        // en markdown ("### PARTE 1 / @@ANSWER@@ / ### PARTE 2 …"). Buscamos la
+        // etiqueta @@…@@ en cualquier parte, tomamos el texto que sigue y
+        // limpiamos los artefactos del prompt.
+        if let r = trimmed.range(of: "@@[A-Za-z][^@]*@@", options: .regularExpression) {
+            let control = parseControlHeader(String(trimmed[r]))
+            let after = String(trimmed[r.upperBound...])
+            let body = cleanMagicArtifacts(after.isEmpty ? String(trimmed[..<r.lowerBound]) : after)
+            return (control, body)
+        }
+        return (.answer(imageQuery: nil), cleanMagicArtifacts(trimmed))
+    }
+
+    /// Saca basura que algunos modelos chicos copian del prompt (encabezados
+    /// "PARTE 1/2", "Etiqueta de control", etiquetas @@…@@ sueltas).
+    nonisolated static func cleanMagicArtifacts(_ s: String) -> String {
+        let cleaned = s.components(separatedBy: "\n").filter { line in
+            let l = line.trimmingCharacters(in: .whitespaces).lowercased()
+            if l.contains("parte 1") || l.contains("parte 2") { return false }
+            if l.contains("etiqueta de control") || l.contains("etiqueta de control:") { return false }
+            // Línea que es SOLO una etiqueta de control suelta.
+            if l.hasPrefix("@@") && l.hasSuffix("@@") { return false }
+            return true
+        }.joined(separator: "\n")
+        // Quitar etiquetas @@…@@ que hayan quedado inline.
+        let stripped = cleaned.replacingOccurrences(of: "@@[A-Za-z][^@]*@@", with: "", options: .regularExpression)
+        return stripped.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {
