@@ -64,6 +64,9 @@ final class MagicChipStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([MagicChip].self, from: data),
            !decoded.isEmpty {
             chips = decoded
+            // ORDEN IMPORTANTE: migrar ES→EN ANTES de mergear. mergeNewBuiltins
+            // deduplica por título; si corriera antes, vería "Traducir" (ES) como
+            // distinto de "Translate" (EN) y agregaría el chip duplicado.
             migrateLegacyBuiltins()
             mergeNewBuiltins()
         } else {
@@ -154,9 +157,33 @@ enum MagicTranslation {
         "Japanese", "Chinese", "Korean", "Russian", "Arabic", "Hindi", "Dutch", "Catalan"
     ]
 
-    /// Idioma de traducción preferido (default: English).
+    /// Nombres ES de versiones previas a la i18n → clave inglesa canónica.
+    /// Necesario para migrar el valor guardado en UserDefaults (si el usuario ya
+    /// había elegido un idioma cuando los nombres estaban en español).
+    private static let legacyLanguageNames = [
+        "Inglés": "English", "Español": "Spanish", "Portugués": "Portuguese",
+        "Francés": "French", "Italiano": "Italian", "Alemán": "German",
+        "Japonés": "Japanese", "Chino": "Chinese", "Coreano": "Korean",
+        "Ruso": "Russian", "Árabe": "Arabic", "Holandés": "Dutch", "Catalán": "Catalan"
+    ]
+
+    /// Migra el idioma preferido guardado de un nombre ES legacy al canónico en
+    /// inglés. Idempotente; llamar una vez al arranque. Sin esto, un usuario que
+    /// había elegido "Inglés" vería el Picker en blanco y el comando al LLM
+    /// saldría como "Translate to Inglés" (peor adherencia).
+    static func migrateLegacyLanguageIfNeeded() {
+        guard let raw = UserDefaults.standard.string(forKey: prefKey),
+              let canonical = legacyLanguageNames[raw] else { return }
+        UserDefaults.standard.set(canonical, forKey: prefKey)
+    }
+
+    /// Idioma de traducción preferido (default: English). Normaliza nombres ES
+    /// legacy por si la migración aún no corrió.
     static var preferredLanguage: String {
-        get { UserDefaults.standard.string(forKey: prefKey) ?? "English" }
+        get {
+            let raw = UserDefaults.standard.string(forKey: prefKey) ?? "English"
+            return legacyLanguageNames[raw] ?? raw
+        }
         set { UserDefaults.standard.set(newValue, forKey: prefKey) }
     }
 

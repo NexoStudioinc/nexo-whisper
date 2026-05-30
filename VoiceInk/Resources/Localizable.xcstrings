@@ -7317,6 +7317,16 @@
           }
         }
       }
+    },
+    "No voice command was understood.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se entendió ningún comando de voz."
+          }
+        }
+      }
     }
   }
 }

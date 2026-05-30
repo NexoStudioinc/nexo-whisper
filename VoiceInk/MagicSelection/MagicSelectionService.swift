@@ -153,6 +153,8 @@ final class MagicSelectionService {
     /// no hace nada (el hotkey igual sigue funcionando porque va por
     /// `ShortcutAction`).
     func startIfNeeded() {
+        // Migración i18n: normaliza el idioma de traducción guardado (ES→EN).
+        MagicTranslation.migrateLegacyLanguageIfNeeded()
         Self.logger.info("🔧 startIfNeeded called — isEnabled=\(self.isEnabled, privacy: .public), isWiggleEnabled=\(self.isWiggleEnabled, privacy: .public)")
 
         guard isEnabled else {

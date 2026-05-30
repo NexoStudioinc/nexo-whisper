@@ -381,7 +381,7 @@ class AIEnhancementService: ObservableObject {
                     continuation.finish(throwing: EnhancementError.proBYOKRequired); return
                 }
                 guard !trimmedCommand.isEmpty else {
-                    continuation.finish(throwing: EnhancementError.customError("No se entendió ningún comando de voz.")); return
+                    continuation.finish(throwing: EnhancementError.customError(String(localized: "No voice command was understood."))); return
                 }
 
                 // Provider sin streaming (Local CLI) → fallback directo.
