@@ -478,6 +478,7 @@ private struct MagicAnswerView: View {
             bodyScroll
             statusBar
             presetBar
+            openInBar
             askBar
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -720,6 +721,57 @@ private struct MagicAnswerView: View {
                                     : AnyShapeStyle(.white.opacity(0.06)))
                 .overlay(Capsule().strokeBorder(.white.opacity(0.10), lineWidth: 1))
         )
+    }
+
+    // ── "Abrir en" (lleva la selección a otra app/web) ──────────────────
+
+    @ViewBuilder private var openInBar: some View {
+        if !model.selectedText.isEmpty {
+            HStack(spacing: 12) {
+                Text("Abrir en")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white.opacity(0.4))
+                openButton(logo: "claude-logo", help: "Abrir en Claude") {
+                    openIn("https://claude.ai/new?q={q}")
+                }
+                openButton(logo: "chatgpt-logo", help: "Abrir en ChatGPT") {
+                    openIn("https://chatgpt.com/?q={q}")
+                }
+                openButton(symbol: "magnifyingglass", help: "Buscar en Google") {
+                    openIn("https://www.google.com/search?q={q}")
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 13)
+            .padding(.vertical, 7)
+            .overlay(Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.06)), alignment: .top)
+        }
+    }
+
+    private func openIn(_ template: String) {
+        let text = model.selectedText
+        guard !text.isEmpty,
+              let encoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: template.replacingOccurrences(of: "{q}", with: encoded)) else { return }
+        NSWorkspace.shared.open(url)
+        onInteract()
+    }
+
+    private func openButton(logo: String? = nil, symbol: String? = nil,
+                            help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Group {
+                if let logo {
+                    Image(logo).resizable().renderingMode(.template).scaledToFit()
+                } else if let symbol {
+                    Image(systemName: symbol).resizable().scaledToFit()
+                }
+            }
+            .frame(width: 15, height: 15)
+            .foregroundStyle(.white.opacity(0.75))
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 
     // ── Footer: undo/redo + campo de re-pregunta inline ─────────────────

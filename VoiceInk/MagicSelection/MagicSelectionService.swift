@@ -182,10 +182,19 @@ final class MagicSelectionService {
         let det = MagicSelectionDetector(config: detectorConfig)
         let ok = det.start { [weak self] location in
             guard let self else { return }
-            // ⌥ Option apretada durante el wiggle ⇒ modo continuo.
-            let continuous = NSEvent.modifierFlags.contains(.option)
+            // El modificador apretado durante el wiggle define el modo (ambos
+            // configurables en Settings). Transcribe tiene prioridad si coincide.
+            let flags = NSEvent.modifierFlags
+            let mode: MagicTriggerMode
+            if let tf = Self.modifierFlag(self.transcribeModifierName), flags.contains(tf) {
+                mode = .transcribe
+            } else if let cf = Self.modifierFlag(self.continuousModifierName), flags.contains(cf) {
+                mode = .continuous
+            } else {
+                mode = .normal
+            }
             Task { @MainActor in
-                self.handleTrigger(at: location, source: .wiggle, continuous: continuous)
+                self.handleTrigger(at: location, source: .wiggle, mode: mode)
             }
         }
         if ok {
@@ -229,7 +238,35 @@ final class MagicSelectionService {
         case hotkey
     }
 
-    private func handleTrigger(at location: NSPoint, source: TriggerSource, continuous: Bool = false) {
+    /// Modo del trigger según el modificador apretado durante el wiggle.
+    enum MagicTriggerMode {
+        case normal       // wiggle solo → Magic (un comando por ciclo)
+        case continuous   // modificador continuo → escucha en loop (VAD)
+        case transcribe   // modificador transcribe → dictado puro (+mejora) y pega
+    }
+
+    /// Mapea el nombre del modificador (Settings) a `NSEvent.ModifierFlags`.
+    static func modifierFlag(_ name: String) -> NSEvent.ModifierFlags? {
+        switch name {
+        case "option": return .option
+        case "control": return .control
+        case "command": return .command
+        case "shift": return .shift
+        default: return nil
+        }
+    }
+
+    var continuousModifierName: String {
+        UserDefaults.standard.string(forKey: "magicSelection.continuousModifier") ?? "option"
+    }
+    var transcribeModifierName: String {
+        UserDefaults.standard.string(forKey: "magicSelection.transcribeModifier") ?? "control"
+    }
+
+    /// Modo dictado puro (transcribe + mejora si está activa, y pega). No Magic.
+    private var isTranscribe = false
+
+    private func handleTrigger(at location: NSPoint, source: TriggerSource, mode: MagicTriggerMode = .normal) {
         // Re-entrancy guard para el manejo síncrono del trigger.
         guard !isActivating else {
             Self.logger.debug("Already activating, ignoring trigger from \(source.rawValue)")
@@ -238,12 +275,13 @@ final class MagicSelectionService {
         isActivating = true
         defer { isActivating = false }
 
-        Self.logger.info("🪄 Magic triggered by \(source.rawValue) continuous=\(continuous) at \(String(format: "(%.0f, %.0f)", location.x, location.y))")
+        Self.logger.info("🪄 Magic triggered by \(source.rawValue) mode=\(String(describing: mode)) at \(String(format: "(%.0f, %.0f)", location.x, location.y))")
 
         switch modeState {
         case .off:
             // Primer trigger: enciende el modo y arranca a escuchar.
-            isContinuous = continuous
+            isContinuous = (mode == .continuous)
+            isTranscribe = (mode == .transcribe)
             activateMode()
             startListening()
         case .ready:
@@ -304,6 +342,7 @@ final class MagicSelectionService {
         }
         modeState = .off
         isContinuous = false
+        isTranscribe = false
         overlay.hide()
         if hideAnswer { answerPanel.hide() }
         removeEscMonitor()
@@ -466,6 +505,22 @@ final class MagicSelectionService {
                     if !self.isContinuous {
                         self.notifyError("No te escuché ningún comando. Probá de nuevo.")
                     }
+                    self.cleanupTempFile(audioURL)
+                    return
+                }
+
+                // MODO TRANSCRIPTOR: el dictado se transcribe, se mejora (si la
+                // mejora de IA está activada) y se PEGA donde está el cursor.
+                // No es Magic: no hay selección ni panel.
+                if self.isTranscribe {
+                    var output = trimmedCommand
+                    if enhancement.isEnhancementEnabled {
+                        if let enhanced = try? await enhancement.enhance(trimmedCommand) {
+                            output = enhanced.0
+                        }
+                    }
+                    CursorPaster.pasteReactivating(output, appPID: context.sourcePID)
+                    Self.logger.info("Modo transcriptor → pegado (\(output.count) chars)")
                     self.cleanupTempFile(audioURL)
                     return
                 }

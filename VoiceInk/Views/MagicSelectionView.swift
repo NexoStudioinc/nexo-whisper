@@ -13,6 +13,14 @@ struct MagicSelectionView: View {
     @AppStorage("magicSelection.windowDurationMs") private var windowDurationMs = 600
     @AppStorage("magicSelection.cooldownSec") private var cooldownSec: Double = 2.0
 
+    @AppStorage("magicSelection.continuousModifier") private var continuousModifier = "option"
+    @AppStorage("magicSelection.transcribeModifier") private var transcribeModifier = "control"
+
+    private let modifiers: [(id: String, label: String)] = [
+        ("option", "⌥ Option"), ("control", "⌃ Control"),
+        ("command", "⌘ Command"), ("shift", "⇧ Shift")
+    ]
+
     @State private var showAdvanced = false
 
     var body: some View {
@@ -97,10 +105,40 @@ struct MagicSelectionView: View {
                     .onChange(of: wiggleEnabled) { _, newValue in
                         Task { @MainActor in MagicSelectionService.shared.isWiggleEnabled = newValue }
                     }
-                Text("Sacudí el mouse de lado a lado para activar. Mantené ⌥ Option durante el wiggle para el modo continuo (escucha por silencio).")
+                Text("Sacudí el mouse de lado a lado para activar Magic.")
                     .font(.caption).foregroundStyle(.secondary)
+
+                Divider()
+
+                // Modificadores de los modos (configurables, no hardcodeados).
+                modifierRow(
+                    title: "Tecla para modo continuo",
+                    help: "Mantené esta tecla mientras hacés el wiggle para que Magic quede escuchando en loop (corta cada comando por silencio). Soltás la tecla normal y seguís dando comandos hasta cerrar con Esc.",
+                    selection: $continuousModifier
+                )
+                modifierRow(
+                    title: "Tecla para modo transcriptor",
+                    help: "Mantené esta tecla durante el wiggle para dictar texto: graba tu voz, la transcribe (y la mejora si tenés la mejora de IA activada) y la pega donde está el cursor. Como el dictado normal, pero invocado con el wiggle.",
+                    selection: $transcribeModifier
+                )
             }
             .padding(6)
+        }
+    }
+
+    private func modifierRow(title: String, help: String, selection: Binding<String>) -> some View {
+        HStack {
+            Text(title)
+            Image(systemName: "info.circle")
+                .foregroundStyle(.secondary)
+                .help(help)
+            Spacer()
+            Picker("", selection: selection) {
+                Text("Ninguna").tag("none")
+                ForEach(modifiers, id: \.id) { Text($0.label).tag($0.id) }
+            }
+            .labelsHidden()
+            .frame(width: 150)
         }
     }
 
