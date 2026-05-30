@@ -9,7 +9,7 @@ struct MagicSelectionSection: View {
 
     var body: some View {
         Section {
-            Toggle("Activar Magic (preview)", isOn: $enabled)
+            Toggle("Activar Magic Aura (preview)", isOn: $enabled)
                 .onChange(of: enabled) { _, newValue in
                     Task { @MainActor in
                         MagicSelectionService.shared.isEnabled = newValue
@@ -25,7 +25,7 @@ struct MagicSelectionSection: View {
             }
         } header: {
             HStack(spacing: 6) {
-                Label("Magic", systemImage: "cursorarrow.rays")
+                Label("Magic Aura", systemImage: "cursorarrow.rays")
                 Text("PREVIEW")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
                     .padding(.horizontal, 5)

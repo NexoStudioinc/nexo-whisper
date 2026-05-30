@@ -145,9 +145,9 @@ private struct MagicGlowView: View {
     @ObservedObject var model: MagicOverlayStateModel
     @State private var pulse = false
 
-    // Paleta Nexo: violeta → cyan.
-    private let violet = Color(red: 0.55, green: 0.36, blue: 0.96)
-    private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
+    // Color del aura (configurable en Settings; default violeta → cyan).
+    private var violet: Color { MagicAura.primary }
+    private var cyan: Color { MagicAura.secondary }
 
     var body: some View {
         ZStack {

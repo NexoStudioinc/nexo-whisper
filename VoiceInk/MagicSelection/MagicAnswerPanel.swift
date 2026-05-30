@@ -521,7 +521,7 @@ private struct MagicAnswerView: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing))
-            Text("Magic")
+            Text("Aura")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.85))
             if model.isStreaming {

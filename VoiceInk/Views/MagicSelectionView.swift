@@ -23,6 +23,8 @@ struct MagicSelectionView: View {
     ]
 
     @State private var showAdvanced = false
+    @State private var auraColor: Color = MagicAura.customColor ?? MagicAura.defaultPrimary
+    @State private var usingCustomAura: Bool = MagicAura.customColor != nil
 
     var body: some View {
         ScrollView {
@@ -30,7 +32,7 @@ struct MagicSelectionView: View {
                 hero
 
                 Toggle(isOn: $enabled) {
-                    Text("Activar Magic").font(.headline)
+                    Text("Activar Magic Aura").font(.headline)
                 }
                 .toggleStyle(.switch)
                 .onChange(of: enabled) { _, newValue in
@@ -39,6 +41,7 @@ struct MagicSelectionView: View {
 
                 if enabled {
                     activationCard
+                    auraCard
                     MagicPanelSettingsView()
                     advancedCard
                 } else {
@@ -66,7 +69,7 @@ struct MagicSelectionView: View {
                 )
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("Magic").font(.title2).bold()
+                    Text("Magic Aura").font(.title2).bold()
                     Text("PREVIEW")
                         .font(.system(size: 9, weight: .bold, design: .rounded))
                         .padding(.horizontal, 5).padding(.vertical, 2)
@@ -167,6 +170,41 @@ struct MagicSelectionView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .help(help)
+    }
+
+    // ── Aura (color del glow del cursor) ────────────────────────────────
+
+    private var auraCard: some View {
+        GroupBox(label: Label("Aura", systemImage: "paintpalette")) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    // Vista previa del aura.
+                    Circle()
+                        .fill(RadialGradient(colors: [auraColor, auraColor.opacity(0)],
+                                             center: .center, startRadius: 1, endRadius: 18))
+                        .frame(width: 34, height: 34)
+                    Text("Color del aura")
+                    Spacer()
+                    ColorPicker("", selection: $auraColor, supportsOpacity: false)
+                        .labelsHidden()
+                        .onChange(of: auraColor) { _, newColor in
+                            MagicAura.setColor(newColor)
+                            usingCustomAura = true
+                        }
+                }
+                Text("El halo que rodea el cursor cuando Magic Aura está activo. Por defecto es violeta → cyan.")
+                    .font(.caption).foregroundStyle(.secondary)
+                if usingCustomAura {
+                    Button("Restaurar degradé por defecto") {
+                        MagicAura.setColor(nil)
+                        usingCustomAura = false
+                        auraColor = MagicAura.defaultPrimary
+                    }
+                    .controlSize(.small)
+                }
+            }
+            .padding(6)
+        }
     }
 
     // ── Avanzado (sensibilidad del wiggle) ──────────────────────────────

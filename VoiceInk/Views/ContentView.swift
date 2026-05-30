@@ -9,7 +9,7 @@ enum ViewType: String, CaseIterable, Identifiable {
     case history = "History"
     case models = "AI Models"
     case enhancement = "Enhancement"
-    case magicSelection = "Magic"
+    case magicSelection = "Magic Aura"
     case powerMode = "Power Mode"
     case permissions = "Permissions"
     case audioInput = "Audio Input"
