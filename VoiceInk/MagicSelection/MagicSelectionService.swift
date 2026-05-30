@@ -482,22 +482,35 @@ final class MagicSelectionService {
                     return
                 }
 
+                // Acción de "Reemplazar / Pegar" reutilizable: reactiva la app
+                // de origen (por PID) y fuerza el pegado. Clave en Chrome/
+                // Electron, que no exponen su árbol AX y donde no detectamos el
+                // input editable automáticamente.
+                let resultText = result.text
+                let sourcePID = context.sourcePID
+                let forcePaste: () -> Void = {
+                    CursorPaster.pasteReactivating(resultText, appPID: sourcePID, force: true)
+                }
+
                 switch result.action {
                 case .replace:
                     // Criterio: ¿la SELECCIÓN vino de un campo editable? (se
                     // decidió al capturar, no por dónde quedó el cursor). Si la
-                    // selección es editable → pega. Si es de solo lectura
-                    // (mail recibido, output de Claude Code, web, o vino por
-                    // clipboard) → muestra el resultado en el panel.
+                    // selección es editable → pega (reactivando el origen). Si
+                    // es de solo lectura o no la pudimos detectar (mail recibido,
+                    // output de Claude Code, web, Electron, o vino por clipboard)
+                    // → panel con botón "Reemplazar" para forzar el pegado.
                     if context.isSelectionEditable {
-                        CursorPaster.pasteAtCursor(result.text)
+                        CursorPaster.pasteReactivating(result.text, appPID: sourcePID)
                         Self.logger.info("Selección editable → reemplazo pegado (\(result.text.count) chars)")
                     } else {
-                        self.answerPanel.show(text: result.text, near: NSEvent.mouseLocation)
-                        Self.logger.info("Selección NO editable → reemplazo mostrado en panel")
+                        self.answerPanel.show(text: result.text, near: NSEvent.mouseLocation, onReplace: forcePaste)
+                        Self.logger.info("Selección NO editable → panel con botón Reemplazar")
                     }
                 case .answer:
-                    self.answerPanel.show(text: result.text, imageQuery: result.imageQuery, near: NSEvent.mouseLocation)
+                    // Respuesta (pregunta): no toca el texto, pero igual ofrece
+                    // "Reemplazar" por si el usuario quiere insertarla (modo confío).
+                    self.answerPanel.show(text: result.text, imageQuery: result.imageQuery, near: NSEvent.mouseLocation, onReplace: forcePaste)
                     Self.logger.info("Respuesta en panel (\(result.text.count) chars, image=\(result.imageQuery ?? "none", privacy: .public))")
                 }
             } catch {

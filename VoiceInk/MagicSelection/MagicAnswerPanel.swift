@@ -144,11 +144,20 @@ final class MagicAnswerPanel {
     private var currentText: String = ""
     private var lastAnchor: NSPoint = .zero
 
+    /// Acción "Reemplazar / Pegar en el origen" del comando actual. Se setea en
+    /// `show()` (texto recién generado, con contexto vivo) y se limpia al
+    /// reabrir desde el historial (texto viejo, sin app de origen viva).
+    private var currentOnReplace: (() -> Void)?
+
     /// Historial observable (reactivo) de respuestas.
     private let historyStore = MagicHistoryStore()
 
     /// Muestra la respuesta cerca de `anchor` y la guarda en el historial.
-    func show(text: String, imageQuery: String? = nil, near anchor: NSPoint) {
+    /// `onReplace`: si se provee, el panel muestra un botón "Reemplazar / Pegar"
+    /// que fuerza el pegado en la app de origen (clave para Chrome/Electron,
+    /// donde no detectamos el campo editable automáticamente).
+    func show(text: String, imageQuery: String? = nil, near anchor: NSPoint, onReplace: (() -> Void)? = nil) {
+        currentOnReplace = onReplace
         historyStore.add(text: text, imageQuery: imageQuery)
         showInternal(text: text, imageQuery: imageQuery, near: anchor)
     }
@@ -213,12 +222,24 @@ final class MagicAnswerPanel {
         newPanel.hidesOnDeactivate = false
 
         currentText = text
+        // El botón "Reemplazar / Pegar" solo aparece si hay una acción viva
+        // (texto recién generado). Al reabrir desde el historial no hay app de
+        // origen, así que no se ofrece.
+        let onReplace: (() -> Void)? = currentOnReplace.map { action in
+            { [weak self] in
+                action()
+                Task { @MainActor in self?.hide() }
+            }
+        }
         let view = MagicAnswerView(
             text: text,
             imageQuery: imageQuery,
             historyStore: historyStore,
+            onReplace: onReplace,
             onSelectHistory: { [weak self] item in
                 guard let self else { return }
+                // Texto histórico: sin contexto de origen vivo → sin Reemplazar.
+                self.currentOnReplace = nil
                 self.showInternal(text: item.text, imageQuery: item.imageQuery, near: self.lastAnchor)
             },
             onShare: { [weak self] in self?.presentShare() },
@@ -290,6 +311,9 @@ private struct MagicAnswerView: View {
     let text: String
     var imageQuery: String? = nil
     @ObservedObject var historyStore: MagicHistoryStore
+    /// Si no es nil, muestra el botón "Reemplazar / Pegar" (fuerza el pegado en
+    /// la app de origen — caso Chrome/Electron donde no detectamos el input).
+    var onReplace: (() -> Void)? = nil
     var onSelectHistory: (MagicHistoryStore.Item) -> Void = { _ in }
     let onShare: () -> Void
     let onClose: () -> Void
@@ -332,6 +356,9 @@ private struct MagicAnswerView: View {
 
                 Spacer()
 
+                if let onReplace {
+                    replaceButton(action: onReplace)
+                }
                 historyMenu
                 iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
                     NSPasteboard.general.clearContents()
@@ -443,6 +470,30 @@ private struct MagicAnswerView: View {
         .menuIndicator(.hidden)
         .fixedSize()
         .help("Historial")
+    }
+
+    /// Botón "Reemplazar / Pegar" DESTACADO (relleno gradient): es la acción
+    /// principal cuando el resultado debía reemplazar pero no detectamos el
+    /// input (Chrome/Electron). Fuerza el pegado en la app de origen.
+    private func replaceButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.down.doc.fill")
+                    .font(.system(size: 9, weight: .bold))
+                Text("Reemplazar")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 8)
+            .frame(height: 22)
+            .background(
+                Capsule().fill(
+                    LinearGradient(colors: [violet, cyan], startPoint: .leading, endPoint: .trailing)
+                )
+            )
+        }
+        .buttonStyle(.plain)
+        .help("Reemplazar / Pegar en el origen")
     }
 
     /// Botón de solo-icono, chiquito, con el color de la marca.

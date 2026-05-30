@@ -42,17 +42,46 @@ class CursorPaster {
         }
     }
 
+    /// Pega `text` REACTIVANDO primero la app de origen (por PID). Pensado para
+    /// Magic Selection: cuando capturamos la selección en Chrome/Electron (que
+    /// no exponen su árbol AX) o cuando el panel de respuesta se interpuso, el
+    /// foco puede haberse movido. Traer la app de origen al frente antes del
+    /// Cmd+V garantiza que el pegado caiga donde el usuario lo espera.
+    ///
+    /// Si `appPID` es nil o la app ya está activa, se comporta como un paste
+    /// normal (no roba foco innecesariamente).
+    ///
+    /// `force`: si es true, saltea la detección de campo de texto y pega sí o sí
+    /// (Cmd+V). Pensado para el botón "Reemplazar" del panel, donde el usuario
+    /// YA decidió pegar — en Chrome/Electron la detección AX suele fallar y no
+    /// queremos que el texto termine en el clipboard en vez de pegarse.
+    @MainActor
+    static func pasteReactivating(_ text: String, appPID: pid_t?, force: Bool = false) {
+        Task { @MainActor in
+            if let pid = appPID,
+               let app = NSRunningApplication(processIdentifier: pid),
+               !app.isActive {
+                app.activate()
+                // Darle tiempo a venir al frente antes de postear el Cmd+V,
+                // sino el evento iría a la app equivocada.
+                await wait(0.18)
+            }
+            _ = await performPasteSession(text, skipFocusCheck: force)
+        }
+    }
+
     @MainActor
     static func pasteAtCursorAndWaitUntilPosted(_ text: String) async -> PasteResult {
         await startPasteAtCursor(text).value
     }
 
     @MainActor
-    private static func performPasteSession(_ text: String) async -> PasteResult {
+    private static func performPasteSession(_ text: String, skipFocusCheck: Bool = false) async -> PasteResult {
         // Fallback: si no hay text field con foco, evitamos el Cmd+V (iría a
         // la nada o a un botón random) y dejamos el texto en clipboard como
         // persistente para que el usuario pueda hacerlo manualmente.
-        if !hasFocusedTextInputField() {
+        // `skipFocusCheck` lo saltea cuando el usuario pidió pegar explícitamente.
+        if !skipFocusCheck, !hasFocusedTextInputField() {
             logger.notice("No text input focused — saving transcription to clipboard as fallback")
             // Fix defensivo (reporte usuario: a veces la primera escritura
             // del clipboard se pierde y solo aparece tras la segunda grabación).

@@ -32,6 +32,10 @@ struct MagicContext {
     var appBundleId: String?
     /// Nombre de la app activa (ej. "Mail").
     var appName: String?
+    /// PID de la app activa AL CAPTURAR. Lo usamos para REACTIVAR la app de
+    /// origen antes de pegar (Chrome/Electron, o cuando el panel se interpuso)
+    /// y que el Cmd+V caiga donde tenía que caer.
+    var sourcePID: pid_t?
     /// Coordenadas globales del cursor cuando se hizo la captura.
     var cursorLocation: NSPoint = .zero
 
@@ -68,6 +72,7 @@ enum MagicContextExtractor {
         if let activeApp = NSWorkspace.shared.frontmostApplication {
             ctx.appBundleId = activeApp.bundleIdentifier
             ctx.appName = activeApp.localizedName
+            ctx.sourcePID = activeApp.processIdentifier
         }
 
         // 2. Necesitamos permiso AX para todo lo demás
