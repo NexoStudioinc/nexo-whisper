@@ -17,8 +17,11 @@ struct MagicPanelSettingsView: View {
     @State private var showingAddChip = false
 
     var body: some View {
-        GroupBox(label: Label("Response panel", systemImage: "rectangle.and.text.magnifyingglass")) {
-            VStack(alignment: .leading, spacing: 14) {
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
+                NexoSectionHeader("Response panel", systemImage: "rectangle.and.text.magnifyingglass",
+                                  subtitle: "The floating card that shows answers — its buttons, translation and behavior.")
+                Divider()
                 chipsSection
                 Divider()
                 translateSection
@@ -29,7 +32,6 @@ struct MagicPanelSettingsView: View {
                 Divider()
                 chromeNote
             }
-            .padding(6)
         }
         .sheet(isPresented: $showingAddChip) {
             MagicChipEditor { chip in chipStore.add(chip) }

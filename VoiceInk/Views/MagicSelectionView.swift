@@ -70,8 +70,12 @@ struct MagicSelectionView: View {
     // ── Activación ──────────────────────────────────────────────────────
 
     private var activationCard: some View {
-        GroupBox(label: Label("Activation", systemImage: "hand.tap")) {
-            VStack(alignment: .leading, spacing: 12) {
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Activation", systemImage: "hand.tap",
+                                  subtitle: "How you trigger Magic Aura and what each modifier key does.")
+                Divider()
+
                 LabeledContent("Keyboard shortcut") {
                     ShortcutRecorder(action: .magicSelection) {}
                         .controlSize(.small)
@@ -123,7 +127,6 @@ struct MagicSelectionView: View {
                     }
                 }
             }
-            .padding(6)
         }
     }
 
@@ -159,8 +162,11 @@ struct MagicSelectionView: View {
     // ── Aura (color del glow del cursor) ────────────────────────────────
 
     private var auraCard: some View {
-        GroupBox(label: Label("Aura", systemImage: "paintpalette")) {
-            VStack(alignment: .leading, spacing: 10) {
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.sm) {
+                NexoSectionHeader("Aura", systemImage: "paintpalette",
+                                  subtitle: "The glow around the cursor while Magic Aura is listening.")
+                Divider()
                 HStack {
                     // Vista previa del aura.
                     Circle()
@@ -187,14 +193,13 @@ struct MagicSelectionView: View {
                     .controlSize(.small)
                 }
             }
-            .padding(6)
         }
     }
 
     // ── Avanzado (sensibilidad del wiggle) ──────────────────────────────
 
     private var advancedCard: some View {
-        GroupBox {
+        NexoCard {
             DisclosureGroup(isExpanded: $showAdvanced) {
                 VStack(alignment: .leading, spacing: 12) {
                     sliderRow("Sensitivity (direction changes)",

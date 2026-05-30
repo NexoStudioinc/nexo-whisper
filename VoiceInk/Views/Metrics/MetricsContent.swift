@@ -266,7 +266,7 @@ struct MetricsContent: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Nexo Whisper")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                Text("Dictá. Soltá. Listo.")
+                Text("Dictate. Release. Done.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.secondary)
             }

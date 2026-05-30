@@ -7327,6 +7327,46 @@
           }
         }
       }
+    },
+    "Dictate. Release. Done.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dictá. Soltá. Listo."
+          }
+        }
+      }
+    },
+    "How you trigger Magic Aura and what each modifier key does.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo activás Magic Aura y qué hace cada tecla modificadora."
+          }
+        }
+      }
+    },
+    "The glow around the cursor while Magic Aura is listening.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El halo alrededor del cursor mientras Magic Aura escucha."
+          }
+        }
+      }
+    },
+    "The floating card that shows answers — its buttons, translation and behavior.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tarjeta flotante que muestra las respuestas — sus botones, traducción y comportamiento."
+          }
+        }
+      }
     }
   }
 }
