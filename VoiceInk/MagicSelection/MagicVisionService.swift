@@ -17,8 +17,9 @@ enum MagicVisionService {
     )
 
     /// Extrae texto por OCR de una región alrededor de `point` (coords NSScreen).
-    /// `box` es el lado de la región cuadrada a capturar.
-    static func textUnderCursor(at point: NSPoint, box: CGFloat = 520) async -> String? {
+    /// `box` es el lado de la región a capturar (ancho × alto*0.6). Área amplia
+    /// para que lea suficiente contexto alrededor del cursor.
+    static func textUnderCursor(at point: NSPoint, box: CGFloat = 900) async -> String? {
         guard let image = captureRegion(around: point, box: box) else {
             logger.info("Vision: no pude capturar la región bajo el cursor")
             return nil
@@ -33,11 +34,14 @@ enum MagicVisionService {
         // `point` viene en NSScreen (abajo-izquierda) → flip de Y.
         guard let primary = NSScreen.screens.first else { return nil }
         let flippedY = primary.frame.height - point.y
+        // Región más ancha que alta (el texto fluye horizontal).
+        let w = box
+        let h = box * 0.6
         let rect = CGRect(
-            x: point.x - box / 2,
-            y: flippedY - box / 2,
-            width: box,
-            height: box
+            x: point.x - w / 2,
+            y: flippedY - h / 2,
+            width: w,
+            height: h
         )
         return CGWindowListCreateImage(rect, .optionOnScreenOnly, kCGNullWindowID, [.bestResolution])
     }

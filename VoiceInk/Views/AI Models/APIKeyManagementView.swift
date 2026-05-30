@@ -57,6 +57,14 @@ struct APIKeyManagementView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
+                } else if aiService.selectedProvider == .apple {
+                    Spacer()
+                    Circle()
+                        .fill(AppleFoundationService.isAvailable ? Color.green : Color.orange)
+                        .frame(width: 8, height: 8)
+                    Text(AppleFoundationService.isAvailable ? "Connected" : "Unavailable")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
             }
             .onChange(of: aiService.selectedProvider) { oldValue, newValue in
@@ -245,7 +253,28 @@ struct APIKeyManagementView: View {
                         }
                         .disabled(aiService.customBaseURL.isEmpty || aiService.customModel.isEmpty || apiKey.isEmpty)
                     }
-                    
+
+                } else if aiService.selectedProvider == .apple {
+                    // Apple Intelligence (Foundation Models): on-device, gratis,
+                    // privado. NO requiere API key — solo que esté disponible.
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: AppleFoundationService.isAvailable ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                            .foregroundStyle(AppleFoundationService.isAvailable ? .green : .orange)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(AppleFoundationService.isAvailable
+                                 ? "Apple Intelligence está listo — no necesita API key."
+                                 : "Apple Intelligence no está disponible.")
+                                .font(.subheadline)
+                            if let reason = AppleFoundationService.unavailableReason {
+                                Text(reason).font(.caption).foregroundStyle(.secondary)
+                            } else {
+                                Text("Modelo on-device de Apple: gratis, privado y sin conexión.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer()
+                    }
+
                 } else {
                     if aiService.isAPIKeyValid {
                         HStack {

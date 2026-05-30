@@ -537,6 +537,9 @@ private struct MagicAnswerView: View {
         .padding(.horizontal, 13)
         .padding(.top, 11)
         .padding(.bottom, 9)
+        // Evita el "cuadrito" de foco que aparecía sobre un botón (Compartir)
+        // al hacerse key el panel.
+        .focusEffectDisabled()
     }
 
     // ── Cuerpo (texto en streaming + imagen + error) ────────────────────
