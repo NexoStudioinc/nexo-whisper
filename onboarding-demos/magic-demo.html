@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic — demos</title>
+<style>
+  :root{--violet:#8c5cf5;--cyan:#5ccbf2;--bg:#0c0c12;--ink:#e9e9f1}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 560px at 78% -15%, rgba(140,92,245,.16), transparent 60%),
+      radial-gradient(900px 500px at 6% 115%, rgba(92,203,242,.12), transparent 60%),
+      var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;
+    color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+    padding:30px;overflow:hidden;
+  }
+  .row{display:flex;gap:30px;flex-wrap:wrap;justify-content:center}
+  .heading{font-size:15px;color:rgba(233,233,241,.55)}
+
+  /* ===== Marco de la "app" (ventana Mac compacta) ===== */
+  .win{position:relative;width:440px;height:286px;border-radius:14px;overflow:hidden;
+    box-shadow:0 26px 70px rgba(0,0,0,.5)}
+  .caption{margin-top:11px;text-align:center;font-size:12.5px;color:rgba(233,233,241,.55)}
+  .tab{height:34px;display:flex;align-items:center;gap:7px;padding:0 12px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .tab .addr{margin-left:8px;flex:1;height:19px;border-radius:6px;font-size:11px;display:flex;align-items:center;padding:0 9px;opacity:.85}
+
+  /* glow + cursor + pill compartidos */
+  .glow{position:absolute;width:92px;height:92px;pointer-events:none;opacity:0;
+    transform:translate(-50%,-50%) scale(.6);
+    background:radial-gradient(closest-side,rgba(140,92,245,.85),rgba(140,92,245,0) 70%),
+      radial-gradient(closest-side,rgba(92,203,242,.5),rgba(92,203,242,0) 75%);
+    filter:blur(5px);z-index:4}
+  .cursor{position:absolute;width:14px;height:14px;opacity:0;z-index:6}
+  .cursor svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+  .pill{position:absolute;display:flex;align-items:center;gap:8px;
+    background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.13);border-radius:999px;
+    padding:6px 12px;font-size:11.5px;color:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(0,0,0,.45);
+    opacity:0;z-index:7}
+  .bars{display:flex;gap:3px;align-items:center;height:13px}
+  .bars span{width:3px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;animation:wave .9s ease-in-out infinite}
+  .bars span:nth-child(2){animation-delay:.1s}.bars span:nth-child(3){animation-delay:.2s}.bars span:nth-child(4){animation-delay:.3s}
+  @keyframes wave{0%,100%{height:4px}50%{height:13px}}
+  .voice{position:absolute;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;padding:6px 12px;font-size:11.5px;color:rgba(255,255,255,.82);font-style:italic;
+    white-space:nowrap;opacity:0;z-index:7;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+
+  /* panel de respuesta */
+  .panel{position:absolute;border-radius:13px;padding:1px;opacity:0;transform:translateY(8px) scale(.97);z-index:5}
+  .panel::before{content:"";position:absolute;inset:-1px;border-radius:13px;padding:1px;
+    background:linear-gradient(135deg,var(--violet),var(--cyan));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .pin{position:relative;background:#12121b;border-radius:12px;overflow:hidden;box-shadow:0 0 34px rgba(140,92,245,.26),0 16px 40px rgba(0,0,0,.5)}
+  .ph{display:flex;align-items:center;gap:6px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .sp{font-size:11px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+  .pt{font-size:11px;color:rgba(255,255,255,.82);font-weight:600}
+  .pbody{padding:11px 12px;font-size:12px;line-height:1.55;color:rgba(255,255,255,.92)}
+  .chips{display:flex;gap:6px;padding:0 12px 11px}
+  .chip{font-size:10px;color:rgba(255,255,255,.82);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 9px}
+  .caret{display:inline-block;width:6px;height:13px;vertical-align:-2px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;margin-left:2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ============ DEMO A · NAVEGADOR (preguntar) ============ */
+  #A{background:linear-gradient(180deg,#fbfbfd,#f2f2f6);color:#3a3a44}
+  #A .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}
+  #A .addr{background:#fff;color:#7a7a86;border:1px solid #e0e0e6}
+  #A .content{padding:20px 22px}
+  #A .content h3{font-size:16px;color:#1c1c22;margin-bottom:9px}
+  #A .content p{font-size:13px;line-height:1.7;color:#54545f;max-width:330px}
+  #A .sel{background:linear-gradient(90deg,rgba(140,92,245,.26),rgba(92,203,242,.26));border-radius:4px;padding:0 3px;box-shadow:none;animation:selA 13s infinite}
+  @keyframes selA{0%,15%{background:transparent}20%,72%{background:linear-gradient(90deg,rgba(140,92,245,.28),rgba(92,203,242,.28))}78%,100%{background:transparent}}
+  #A .glow{left:150px;top:120px;animation:gA 13s infinite}
+  #A .cursor{left:138px;top:114px;animation:cA 13s infinite}
+  #A .pill{left:120px;top:150px;transform:translateX(-50%);animation:pillA 13s infinite}
+  #A .voice{left:120px;top:185px;transform:translateX(-50%);animation:voiceA 13s infinite}
+  #A .panel{right:16px;top:74px;width:248px;animation:panA 13s infinite}
+  #A .pbody{opacity:0;animation:revA 13s infinite}
+  @keyframes gA{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:130px}22%{left:165px}24%{left:142px}26%{left:150px;transform:translate(-50%,-50%) scale(1.12)}40%,70%{opacity:.9}78%,100%{opacity:0}}
+  @keyframes cA{0%,12%{opacity:0}18%{opacity:1;left:142px}20%{left:130px}22%{left:165px}24%{left:142px}26%,70%{left:150px}76%,100%{opacity:0}}
+  @keyframes pillA{0%,22%{opacity:0}28%,40%{opacity:1}44%,100%{opacity:0}}
+  @keyframes voiceA{0%,30%{opacity:0}36%,46%{opacity:1}50%,100%{opacity:0}}
+  @keyframes panA{0%,44%{opacity:0;transform:translateY(8px) scale(.97)}52%,90%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0}}
+  @keyframes revA{0%,54%{opacity:0}60%,90%{opacity:1}100%{opacity:0}}
+
+  /* ============ DEMO B · CÓDIGO (arreglar) ============ */
+  #B{background:#1b1b24}
+  #B .tab{background:#23232e}
+  #B .tab .fn{margin-left:8px;font-size:11px;color:#9a9aa6}
+  #B .code{padding:14px 16px;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.85}
+  #B .ln{color:#4a4a58;margin-right:12px;user-select:none}
+  #B .kw{color:#c98bff}.str{color:#7fd6a0}.fnname{color:#6cb6ff}.cm{color:#5b5b6b}
+  #B .bug{background:rgba(140,92,245,.16);border-radius:4px;padding:0 2px;animation:selB 13s infinite}
+  @keyframes selB{0%,16%{background:transparent}22%,68%{background:rgba(140,92,245,.18)}74%,100%{background:transparent}}
+  #B .glow{left:160px;top:118px;animation:gB 13s infinite}
+  #B .cursor{left:148px;top:112px;animation:cA 13s infinite}
+  #B .voice{left:130px;top:158px;transform:translateX(-50%);animation:voiceA 13s infinite}
+  #B .panel{left:50%;top:78px;transform:translateX(-50%) translateY(8px) scale(.97);width:300px;animation:panB 13s infinite}
+  #B .pbody{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11px;background:#0d0d14;margin:10px 12px;border-radius:8px;padding:10px;opacity:0;animation:revA 13s infinite}
+  @keyframes gB{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:140px}22%{left:175px}24%{left:152px}26%{left:160px;transform:translate(-50%,-50%) scale(1.12)}40%,66%{opacity:.9}74%,100%{opacity:0}}
+  @keyframes panB{0%,44%{opacity:0;transform:translateX(-50%) translateY(8px) scale(.97)}52%,90%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.97)}}
+</style>
+</head>
+<body>
+  <div class="heading">El mismo Magic, en cada app — una pasada por lo que hace</div>
+  <div class="row">
+
+    <!-- DEMO A: navegador -->
+    <div>
+      <div class="win" id="A">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="addr">es.wikipedia.org/wiki/París</span></div>
+        <div class="content">
+          <h3>París</h3>
+          <p>Entre sus símbolos está la <span class="sel">Torre Eiffel</span>, junto al Museo del Louvre y la catedral de Notre-Dame, a orillas del Sena.</p>
+        </div>
+        <div class="glow"></div>
+        <div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“contame qué es esto”</div>
+        <div class="panel"><div class="pin">
+          <div class="ph"><span class="sp">✦</span><span class="pt">Magic</span></div>
+          <div class="pbody">Monumento de hierro de 330&nbsp;m inaugurado en 1889. Es el símbolo de París.<span class="caret"></span></div>
+          <div class="chips"><span class="chip">💡 Explicar</span><span class="chip">🌐 Traducir</span></div>
+        </div></div>
+      </div>
+      <div class="caption">En el navegador · preguntá sobre lo que leés</div>
+    </div>
+
+    <!-- DEMO B: código -->
+    <div>
+      <div class="win" id="B">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="fn">app.js</span></div>
+        <div class="code">
+          <div><span class="ln">1</span><span class="cm">// suma de un array</span></div>
+          <div><span class="ln">2</span><span class="kw">function</span> <span class="fnname">total</span>(xs){</div>
+          <div><span class="ln">3</span>&nbsp;&nbsp;<span class="kw">let</span> s=<span class="str">0</span>;</div>
+          <div><span class="ln">4</span>&nbsp;&nbsp;<span class="bug"><span class="kw">for</span>(i=<span class="str">0</span>;i&lt;=xs.length;i++)</span></div>
+          <div><span class="ln">5</span>&nbsp;&nbsp;&nbsp;&nbsp;s+=xs[i];</div>
+          <div><span class="ln">6</span>&nbsp;&nbsp;<span class="kw">return</span> s;</div>
+          <div><span class="ln">7</span>}</div>
+        </div>
+        <div class="glow"></div>
+        <div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="voice">“encontrá el bug y arreglalo”</div>
+        <div class="panel"><div class="pin">
+          <div class="ph"><span class="sp">✦</span><span class="pt">Magic · código</span></div>
+          <div class="pbody"><span style="color:#5b5b6b">// off-by-one: usá &lt; no &lt;=</span><br><span style="color:#c98bff">for</span>(<span style="color:#c98bff">let</span> i=<span style="color:#7fd6a0">0</span>; i<span style="color:#7fd6a0">&lt;</span> xs.length; i++)</div>
+          <div class="chips"><span class="chip">📋 Copiar</span><span class="chip">↩︎ Reemplazar</span></div>
+        </div></div>
+      </div>
+      <div class="caption">En el editor · arreglá y entendé código</div>
+    </div>
+
+  </div>
+</body>
+</html>

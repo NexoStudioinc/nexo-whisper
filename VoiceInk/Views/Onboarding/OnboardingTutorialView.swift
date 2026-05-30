@@ -9,8 +9,15 @@ struct OnboardingTutorialView: View {
     @State private var isTextFieldFocused: Bool = false
     @State private var showingShortcutHint: Bool = true
     @FocusState private var isFocused: Bool
-    
+    @State private var showMagic = false
+
     var body: some View {
+        if showMagic {
+            // Tras el tutorial de Whisper, presentamos "Conocé Magic" y al
+            // terminar/saltear se completa el onboarding.
+            OnboardingMagicView(onDone: { hasCompletedOnboarding = true })
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+        } else {
         GeometryReader { geometry in
             ZStack {
                 // Reusable background
@@ -51,7 +58,7 @@ struct OnboardingTutorialView: View {
                         Spacer(minLength: 0)
 
                         Button(action: {
-                            hasCompletedOnboarding = true
+                            withAnimation { showMagic = true }
                         }) {
                             Text("Complete Setup")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
@@ -65,7 +72,7 @@ struct OnboardingTutorialView: View {
                         .disabled(transcribedText.isEmpty)
 
                         SkipButton(text: "Skip for now") {
-                            hasCompletedOnboarding = true
+                            withAnimation { showMagic = true }
                         }
                     }
                     .padding(28)
@@ -146,8 +153,9 @@ struct OnboardingTutorialView: View {
             animateIn()
             isFocused = true
         }
+        }
     }
-    
+
     private func getInstructionText(for step: Int) -> LocalizedStringKey {
         switch step {
         case 1: return "Click the text area on the right"

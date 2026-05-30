@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic — set de demos</title>
+<style>
+  :root{--violet:#8c5cf5;--cyan:#5ccbf2;--bg:#0c0c12;--ink:#e9e9f1}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(140,92,245,.15), transparent 60%),
+      radial-gradient(1000px 560px at 4% 110%, rgba(92,203,242,.11), transparent 60%),
+      var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;
+    color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:30px;padding:42px 24px}
+  h1{font-size:21px;font-weight:700}
+  h1 .g{background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:13.5px;color:rgba(233,233,241,.5);margin-top:-18px}
+  .grid{display:flex;flex-wrap:wrap;gap:34px 30px;justify-content:center;max-width:980px}
+
+  .win{position:relative;width:440px;height:286px;border-radius:14px;overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.5)}
+  .caption{margin-top:11px;text-align:center;font-size:12.5px;color:rgba(233,233,241,.55)}
+  .tab{height:34px;display:flex;align-items:center;gap:7px;padding:0 12px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .addr,.fn{margin-left:8px;font-size:11px}
+
+  .glow{position:absolute;width:92px;height:92px;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.6);
+    background:radial-gradient(closest-side,rgba(140,92,245,.85),rgba(140,92,245,0) 70%),radial-gradient(closest-side,rgba(92,203,242,.5),rgba(92,203,242,0) 75%);
+    filter:blur(5px);z-index:4}
+  .cursor{position:absolute;width:14px;height:14px;opacity:0;z-index:6}
+  .cursor svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+  .pill{position:absolute;display:flex;align-items:center;gap:8px;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:6px 12px;font-size:11.5px;color:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(0,0,0,.45);opacity:0;z-index:7}
+  .bars{display:flex;gap:3px;align-items:center;height:13px}
+  .bars span{width:3px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;animation:wave .9s ease-in-out infinite}
+  .bars span:nth-child(2){animation-delay:.1s}.bars span:nth-child(3){animation-delay:.2s}.bars span:nth-child(4){animation-delay:.3s}
+  @keyframes wave{0%,100%{height:4px}50%{height:13px}}
+  .voice{position:absolute;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 12px;font-size:11.5px;color:rgba(255,255,255,.82);font-style:italic;white-space:nowrap;opacity:0;z-index:7;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+
+  .panel{position:absolute;border-radius:13px;padding:1px;opacity:0;z-index:5}
+  .panel::before{content:"";position:absolute;inset:-1px;border-radius:13px;padding:1px;background:linear-gradient(135deg,var(--violet),var(--cyan));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .pin{position:relative;background:#12121b;border-radius:12px;overflow:hidden;box-shadow:0 0 34px rgba(140,92,245,.26),0 16px 40px rgba(0,0,0,.5)}
+  .ph{display:flex;align-items:center;gap:6px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .sp{font-size:11px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+  .pt{font-size:11px;color:rgba(255,255,255,.82);font-weight:600}
+  .pbody{padding:11px 12px;font-size:12px;line-height:1.55;color:rgba(255,255,255,.92)}
+  .chips{display:flex;gap:6px;padding:0 12px 11px;flex-wrap:wrap}
+  .chip{font-size:10px;color:rgba(255,255,255,.82);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 9px}
+  .chip.grad{background:linear-gradient(90deg,rgba(140,92,245,.4),rgba(92,203,242,.4));border-color:transparent;color:#fff}
+  .caret{display:inline-block;width:6px;height:13px;vertical-align:-2px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;margin-left:2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .toast{position:absolute;display:flex;align-items:center;gap:9px;background:#12121b;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px 12px;box-shadow:0 0 26px rgba(92,203,242,.22),0 12px 30px rgba(0,0,0,.45);opacity:0;z-index:5}
+  .badge{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;background:linear-gradient(135deg,var(--violet),var(--cyan))}
+  .tt{font-size:12.5px;color:rgba(255,255,255,.92);font-weight:600}
+  .ts{font-size:11px;color:rgba(255,255,255,.55)}
+
+  /* timings reutilizables (solo opacidad) */
+  @keyframes voiceShow{0%,30%{opacity:0}36%,48%{opacity:1}52%,100%{opacity:0}}
+  @keyframes pillShow{0%,22%{opacity:0}28%,42%{opacity:1}46%,100%{opacity:0}}
+  @keyframes panShow{0%,46%{opacity:0;transform:translateY(8px) scale(.97)}54%,92%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0}}
+  @keyframes revShow{0%,56%{opacity:0}62%,92%{opacity:1}100%{opacity:0}}
+  @keyframes toastShow{0%,46%{opacity:0;transform:translateY(8px) scale(.96)}54%,92%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0}}
+  @keyframes curMove{0%,12%{opacity:0}18%{opacity:1}74%{opacity:1}80%,100%{opacity:0}}
+
+  /* ===== A · NAVEGADOR (preguntar) ===== */
+  #A{background:linear-gradient(180deg,#fbfbfd,#f2f2f6)}
+  #A .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}#A .addr{color:#7a7a86;background:#fff;padding:3px 9px;border-radius:6px;border:1px solid #e0e0e6;flex:1}
+  #A .content{padding:18px 22px}#A h3{font-size:16px;color:#1c1c22;margin-bottom:9px}#A p{font-size:13px;line-height:1.7;color:#54545f;max-width:330px}
+  .sel{background:linear-gradient(90deg,rgba(140,92,245,.27),rgba(92,203,242,.27));border-radius:4px;padding:0 3px}
+  #A .glow{left:150px;top:118px;animation:gA 13s infinite}#A .cursor{left:148px;top:112px;animation:curMove 13s infinite}
+  #A .pill{left:120px;top:148px;transform:translateX(-50%);animation:pillShow 13s infinite}
+  #A .voice{left:120px;top:182px;transform:translateX(-50%);animation:voiceShow 13s infinite}
+  #A .panel{right:16px;top:72px;width:250px;animation:panShow 13s infinite}#A .pbody{opacity:0;animation:revShow 13s infinite}
+  @keyframes gA{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:130px}22%{left:166px}24%{left:142px}26%{left:150px;transform:translate(-50%,-50%) scale(1.12)}40%,70%{opacity:.9}78%,100%{opacity:0}}
+
+  /* ===== B · CÓDIGO (arreglar) ===== */
+  #B{background:#1b1b24}#B .tab{background:#23232e}#B .fn{color:#9a9aa6}
+  #B .code{padding:13px 16px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.8}
+  #B .ln{color:#4a4a58;margin-right:12px}.kw{color:#c98bff}.str{color:#7fd6a0}.fnname{color:#6cb6ff}.cm{color:#5b5b6b}
+  #B .bug{background:rgba(140,92,245,.18);border-radius:4px;padding:0 2px}
+  #B .glow{left:160px;top:116px;animation:gB 13s infinite}#B .cursor{left:158px;top:110px;animation:curMove 13s infinite}
+  #B .voice{left:130px;top:152px;transform:translateX(-50%);animation:voiceShow 13s infinite}
+  #B .panel{left:50%;top:78px;transform:translateX(-50%);width:300px;animation:panShowC 13s infinite}
+  #B .pbody{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#0d0d14;margin:10px 12px;border-radius:8px;padding:10px;opacity:0;animation:revShow 13s infinite}
+  @keyframes gB{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:140px}22%{left:176px}24%{left:152px}26%{left:160px;transform:translate(-50%,-50%) scale(1.12)}40%,66%{opacity:.9}74%,100%{opacity:0}}
+  @keyframes panShowC{0%,46%{opacity:0;transform:translateX(-50%) translateY(8px) scale(.97)}54%,92%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(6px)}}
+
+  /* ===== C · MAIL (reescribir formal) ===== */
+  #C{background:linear-gradient(180deg,#fdfdff,#f3f4f8)}
+  #C .tab{background:#ececf2;border-bottom:1px solid #dcdce4}#C .fn{color:#8a8a96}
+  #C .mail{padding:16px 20px}#C .mh{font-size:11px;color:#9a9aa6;margin-bottom:4px}#C .ms{font-size:14px;color:#1c1c22;font-weight:600;margin-bottom:10px}
+  #C p{font-size:13px;line-height:1.7;color:#54545f;max-width:330px}
+  #C .glow{left:140px;top:140px;animation:gC 13s infinite}#C .cursor{left:138px;top:134px;animation:curMove 13s infinite}
+  #C .voice{left:120px;top:176px;transform:translateX(-50%);animation:voiceShow 13s infinite}
+  #C .panel{right:14px;top:70px;width:262px;animation:panShow 13s infinite}#C .pbody{opacity:0;animation:revShow 13s infinite}
+  @keyframes gC{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:120px}22%{left:156px}24%{left:132px}26%{left:140px;transform:translate(-50%,-50%) scale(1.12)}40%,70%{opacity:.9}78%,100%{opacity:0}}
+
+  /* ===== D · NOTAS (acción: agendar) ===== */
+  #D{background:#fffdf4}#D .tab{background:#f3efdf;border-bottom:1px solid #e7e0c4}#D .fn{color:#a99a5e}
+  #D .note{padding:18px 20px}#D .nh{font-size:11px;color:#b0a468;margin-bottom:6px;font-weight:600}#D p{font-size:14px;line-height:1.7;color:#54513f}
+  #D .selw{background:linear-gradient(90deg,rgba(140,92,245,.22),rgba(92,203,242,.22));border-radius:4px;padding:0 3px}
+  #D .glow{left:150px;top:120px;animation:gA 13s infinite}#D .cursor{left:148px;top:114px;animation:curMove 13s infinite}
+  #D .voice{left:120px;top:160px;transform:translateX(-50%);animation:voiceShow 13s infinite}
+  #D .toast{left:50%;top:96px;transform:translateX(-50%);width:264px;animation:toastShow 13s infinite}
+  @keyframes gAd{0%{opacity:0}100%{opacity:0}}
+
+  /* ===== E · MENSAJE (abrir en / mandar) ===== */
+  #E{background:linear-gradient(180deg,#fbfbfd,#eef0f4)}
+  #E .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}#E .fn{color:#8a8a96}
+  #E .chat{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+  #E .bub{align-self:flex-start;background:#fff;border:1px solid #e6e6ee;border-radius:13px;padding:9px 12px;font-size:13px;color:#3a3a44;max-width:80%}
+  #E .bub.me{align-self:flex-end;background:linear-gradient(135deg,#8c5cf5,#5ccbf2);color:#fff;border:none}
+  #E .selm{background:rgba(140,92,245,.18);border-radius:4px;padding:0 2px}
+  #E .glow{left:150px;top:96px;animation:gE 13s infinite}#E .cursor{left:148px;top:90px;animation:curMove 13s infinite}
+  #E .voice{left:120px;top:138px;transform:translateX(-50%);animation:voiceShow 13s infinite}
+  #E .panel{left:50%;top:150px;transform:translateX(-50%);width:300px;animation:panShowC 13s infinite}
+  #E .openrow{display:flex;gap:10px;padding:12px;align-items:center}
+  #E .obtn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;font-size:15px}
+  #E .olabel{font-size:11px;color:rgba(255,255,255,.5);margin-right:4px}
+  @keyframes gE{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{left:130px}22%{left:166px}24%{left:142px}26%{left:150px;transform:translate(-50%,-50%) scale(1.12)}40%,68%{opacity:.9}76%,100%{opacity:0}}
+
+  /* ===== F · WHISPER (dictado puro) ===== */
+  #F{background:linear-gradient(180deg,#fbfbfd,#f1f2f6)}
+  #F .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}#F .fn{color:#8a8a96}
+  #F .field{margin:18px 20px;background:#fff;border:1px solid #e3e3ea;border-radius:11px;min-height:130px;padding:14px;font-size:13.5px;line-height:1.7;color:#3a3a44;box-shadow:inset 0 1px 3px rgba(0,0,0,.03)}
+  #F .typed{opacity:0;animation:fType 13s infinite}
+  #F .icaret{display:inline-block;width:2px;height:16px;background:#8c5cf5;vertical-align:-3px;animation:blink 1s steps(2) infinite}
+  #F .pill{left:50%;bottom:18px;transform:translateX(-50%);animation:fPill 13s infinite}
+  @keyframes fType{0%,24%{opacity:0}34%,90%{opacity:1}100%{opacity:0}}
+  @keyframes fPill{0%,10%{opacity:0}16%,86%{opacity:1}92%,100%{opacity:0}}
+</style>
+</head>
+<body>
+  <h1>Magic, en <span class="g">cada app</span></h1>
+  <div class="sub">Seleccionás · sacudís el mouse · hablás — y la IA actúa sobre eso.</div>
+
+  <div class="grid">
+
+    <!-- A NAVEGADOR -->
+    <div><div class="win" id="A">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="addr">es.wikipedia.org/wiki/París</span></div>
+      <div class="content"><h3>París</h3><p>Entre sus símbolos está la <span class="sel">Torre Eiffel</span>, junto al Louvre y Notre-Dame, a orillas del Sena.</p></div>
+      <div class="glow"></div><div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+      <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+      <div class="voice">“contame qué es esto”</div>
+      <div class="panel"><div class="pin"><div class="ph"><span class="sp">✦</span><span class="pt">Magic</span></div>
+        <div class="pbody">Monumento de hierro de 330&nbsp;m inaugurado en 1889. Símbolo de París.<span class="caret"></span></div>
+        <div class="chips"><span class="chip">💡 Explicar</span><span class="chip">🌐 Traducir</span></div></div></div>
+    </div><div class="caption">Navegador · preguntá sobre lo que leés</div></div>
+
+    <!-- B CÓDIGO -->
+    <div><div class="win" id="B">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">app.js</span></div>
+      <div class="code">
+        <div><span class="ln">1</span><span class="cm">// suma de un array</span></div>
+        <div><span class="ln">2</span><span class="kw">function</span> <span class="fnname">total</span>(xs){</div>
+        <div><span class="ln">3</span>&nbsp;&nbsp;<span class="kw">let</span> s=<span class="str">0</span>;</div>
+        <div><span class="ln">4</span>&nbsp;&nbsp;<span class="bug"><span class="kw">for</span>(i=<span class="str">0</span>;i&lt;=xs.length;i++)</span></div>
+        <div><span class="ln">5</span>&nbsp;&nbsp;&nbsp;&nbsp;s+=xs[i];</div>
+        <div><span class="ln">6</span>&nbsp;&nbsp;<span class="kw">return</span> s;</div>
+      </div>
+      <div class="glow"></div><div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+      <div class="voice">“encontrá el bug y arreglalo”</div>
+      <div class="panel"><div class="pin"><div class="ph"><span class="sp">✦</span><span class="pt">Magic · código</span></div>
+        <div class="pbody"><span class="cm">// off-by-one: usá &lt; no &lt;=</span><br><span class="kw">for</span>(<span class="kw">let</span> i=<span class="str">0</span>; i <span class="str">&lt;</span> xs.length; i++)</div>
+        <div class="chips"><span class="chip">📋 Copiar</span><span class="chip grad">↩︎ Reemplazar</span></div></div></div>
+    </div><div class="caption">Editor · arreglá y entendé código</div></div>
+
+    <!-- C MAIL -->
+    <div><div class="win" id="C">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Mail</span></div>
+      <div class="mail"><div class="mh">Para: cliente@empresa.com</div><div class="ms">Re: propuesta</div>
+        <p><span class="sel">che, te paso el presupuesto, fijate y me decís</span></p></div>
+      <div class="glow"></div><div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+      <div class="voice">“hacelo más formal”</div>
+      <div class="panel"><div class="pin"><div class="ph"><span class="sp">✦</span><span class="pt">Magic</span></div>
+        <div class="pbody">Le adjunto el presupuesto para su revisión. Quedo a disposición por cualquier consulta.</div>
+        <div class="chips"><span class="chip grad">↩︎ Reemplazar</span><span class="chip">📋 Copiar</span></div></div></div>
+    </div><div class="caption">Mail · reescribí en otro tono</div></div>
+
+    <!-- D NOTAS / ACCIÓN -->
+    <div><div class="win" id="D">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Notas</span></div>
+      <div class="note"><div class="nh">PENDIENTES</div><p>Reunión con el equipo el <span class="selw">martes a las 10</span> para revisar el lanzamiento.</p></div>
+      <div class="glow"></div><div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+      <div class="voice">“agendá esto”</div>
+      <div class="toast"><div class="badge">📅</div><div><div class="tt">Evento creado</div><div class="ts">Martes · 10:00 · Reunión de equipo</div></div></div>
+    </div><div class="caption">Cualquier app · convertí texto en acciones</div></div>
+
+    <!-- E MENSAJE / ABRIR EN -->
+    <div><div class="win" id="E">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Mensajes</span></div>
+      <div class="chat"><div class="bub">¿Me explicás qué es un <span class="selm">holding empresarial</span>?</div><div class="bub me">Dale, ahí va 👇</div></div>
+      <div class="glow"></div><div class="cursor"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+      <div class="voice">“abrí esto en ChatGPT”</div>
+      <div class="panel"><div class="pin"><div class="openrow"><span class="olabel">Abrir en</span>
+        <span class="obtn">✦</span><span class="obtn">⊙</span><span class="obtn">✦</span><span class="obtn">G</span></div></div></div>
+    </div><div class="caption">Llevá la selección a Claude, ChatGPT o Google</div></div>
+
+    <!-- F WHISPER / DICTADO -->
+    <div><div class="win" id="F">
+      <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Documento</span></div>
+      <div class="field"><span class="typed">Hola equipo, les escribo para coordinar la reunión del jueves y repasar los pendientes del proyecto.</span><span class="icaret"></span></div>
+      <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div> Transcribiendo…</div>
+    </div><div class="caption">Whisper · dictá y escribí en cualquier lado</div></div>
+
+  </div>
+</body>
+</html>
