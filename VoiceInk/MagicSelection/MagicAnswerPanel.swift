@@ -119,11 +119,33 @@ final class MagicAnswerPanel {
     private var autoHideTask: Task<Void, Never>?
     private var hostingView: NSView?
     private var currentText: String = ""
+    private var lastAnchor: NSPoint = .zero
 
-    /// Muestra la respuesta cerca de `anchor` (típicamente el cursor, en
-    /// coords de pantalla con origen abajo-izquierda). `imageQuery` opcional:
-    /// el panel busca y muestra esa imagen arriba del texto (sin bloquear).
+    /// Item del historial de respuestas (por si se cierra la ventana y quedó
+    /// algo sin copiar). Vive en memoria; se puede limpiar.
+    struct HistoryItem: Identifiable {
+        let id = UUID()
+        let text: String
+        let imageQuery: String?
+        let date: Date
+        var preview: String {
+            let t = text.replacingOccurrences(of: "\n", with: " ")
+            return t.count > 48 ? String(t.prefix(48)) + "…" : t
+        }
+    }
+    private var history: [HistoryItem] = []
+    private let maxHistory = 25
+
+    /// Muestra la respuesta cerca de `anchor` y la guarda en el historial.
     func show(text: String, imageQuery: String? = nil, near anchor: NSPoint) {
+        history.insert(HistoryItem(text: text, imageQuery: imageQuery, date: Date()), at: 0)
+        if history.count > maxHistory { history.removeLast(history.count - maxHistory) }
+        showInternal(text: text, imageQuery: imageQuery, near: anchor)
+    }
+
+    /// Muestra sin agregar al historial (usado al reabrir desde el historial).
+    private func showInternal(text: String, imageQuery: String?, near anchor: NSPoint) {
+        lastAnchor = anchor
         buildPanelIfNeeded(text: text, imageQuery: imageQuery)
         positionPanel(near: anchor)
         panel?.orderFrontRegardless()
@@ -184,6 +206,12 @@ final class MagicAnswerPanel {
             text: text,
             imageQuery: imageQuery,
             cardSize: cardSize,
+            history: history,
+            onSelectHistory: { [weak self] item in
+                guard let self else { return }
+                self.showInternal(text: item.text, imageQuery: item.imageQuery, near: self.lastAnchor)
+            },
+            onClearHistory: { [weak self] in self?.history.removeAll() },
             onShare: { [weak self] in self?.presentShare() },
             onClose: { [weak self] in
                 Task { @MainActor in self?.hide() }
@@ -252,6 +280,9 @@ private struct MagicAnswerView: View {
     let text: String
     var imageQuery: String? = nil
     var cardSize: NSSize = NSSize(width: 360, height: 300)
+    var history: [MagicAnswerPanel.HistoryItem] = []
+    var onSelectHistory: (MagicAnswerPanel.HistoryItem) -> Void = { _ in }
+    var onClearHistory: () -> Void = {}
     let onShare: () -> Void
     let onClose: () -> Void
 
@@ -293,6 +324,7 @@ private struct MagicAnswerView: View {
 
                 Spacer()
 
+                historyMenu
                 iconButton(copied ? "checkmark" : "doc.on.doc", help: "Copiar") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(text, forType: .string)
@@ -310,6 +342,14 @@ private struct MagicAnswerView: View {
             // Cuerpo scrollable (imagen opcional arriba + texto).
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
+                    // Texto primero, imagen después.
+                    Text(text)
+                        .font(looksLikeCode ? .system(size: 12, design: .monospaced)
+                                            : .system(size: 13))
+                        .foregroundStyle(.white.opacity(0.92))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
                     if searchingImage {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .fill(.white.opacity(0.05))
@@ -336,12 +376,6 @@ private struct MagicAnswerView: View {
                             }
                         }
                     }
-                    Text(text)
-                        .font(looksLikeCode ? .system(size: 12, design: .monospaced)
-                                            : .system(size: 13))
-                        .foregroundStyle(.white.opacity(0.92))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(14)
             }
@@ -366,6 +400,41 @@ private struct MagicAnswerView: View {
         )
         .shadow(color: violet.opacity(0.35), radius: 14)
         .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+    }
+
+    /// Menú de historial de respuestas (por si se cerró la ventana).
+    private var historyMenu: some View {
+        Menu {
+            if history.isEmpty {
+                Text("Sin historial")
+            } else {
+                ForEach(history) { item in
+                    Button(item.preview) { onSelectHistory(item) }
+                }
+                Divider()
+                Button("Limpiar historial", role: .destructive, action: onClearHistory)
+            }
+        } label: {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.88))
+                .frame(width: 22, height: 22)
+                .background(
+                    Circle()
+                        .fill(.white.opacity(0.07))
+                        .overlay(
+                            Circle().strokeBorder(
+                                LinearGradient(colors: [violet.opacity(0.7), cyan.opacity(0.7)],
+                                               startPoint: .leading, endPoint: .trailing),
+                                lineWidth: 1
+                            )
+                        )
+                )
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help("Historial")
     }
 
     /// Botón de solo-icono, chiquito, con el color de la marca.
