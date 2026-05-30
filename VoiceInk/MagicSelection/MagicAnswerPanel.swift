@@ -800,7 +800,7 @@ private struct MagicAnswerView: View {
     private var messagingName: String {
         switch messagingApp {
         case "telegram": return "Telegram"
-        case "imessage", "messages": return "Mensajes"
+        case "imessage", "messages": return "iMessage"
         default: return "WhatsApp"
         }
     }

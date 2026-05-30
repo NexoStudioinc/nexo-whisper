@@ -476,9 +476,17 @@ class AIEnhancementService: ObservableObject {
                         }
                     }
                     if !headerDone {
-                        // El stream terminó antes del salto: lo que haya es la respuesta.
-                        continuation.yield(.control(.answer(imageQuery: nil)))
-                        if !buffer.isEmpty { continuation.yield(.token(buffer)) }
+                        // El stream terminó antes del salto de línea. Puede ser:
+                        // (a) una ACCIÓN sin cuerpo (ej. @@ACTION|tool=maps|query=…@@,
+                        //     que no lleva texto debajo) → parsear como control;
+                        // (b) una respuesta corta sin header → mostrarla como texto.
+                        let trimmed = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if trimmed.hasPrefix("@@") {
+                            continuation.yield(.control(Self.parseControlHeader(trimmed)))
+                        } else {
+                            continuation.yield(.control(.answer(imageQuery: nil)))
+                            if !buffer.isEmpty { continuation.yield(.token(buffer)) }
+                        }
                     }
                     continuation.finish()
                 } catch is CancellationError {
@@ -627,6 +635,10 @@ class AIEnhancementService: ObservableObject {
             if header.contains("@@") {
                 return (parseControlHeader(header), body)
             }
+        }
+        // Header sin cuerpo (acción tipo maps/call que no lleva texto debajo).
+        if trimmed.hasPrefix("@@") {
+            return (parseControlHeader(trimmed), "")
         }
         return (.answer(imageQuery: nil), trimmed)
     }

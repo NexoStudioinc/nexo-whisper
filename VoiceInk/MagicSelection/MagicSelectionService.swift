@@ -535,9 +535,17 @@ final class MagicSelectionService {
                 if self.isTranscribe {
                     var output = trimmedCommand
                     if enhancement.isEnhancementEnabled {
-                        if let enhanced = try? await enhancement.enhance(trimmedCommand) {
+                        do {
+                            let enhanced = try await enhancement.enhance(trimmedCommand)
                             output = enhanced.0
+                            Self.logger.info("Transcriptor: mejora aplicada (\(output.count) chars)")
+                        } catch {
+                            // No rompemos el dictado: pegamos el texto crudo y
+                            // logueamos por qué no se pudo mejorar.
+                            Self.logger.error("Transcriptor: la mejora falló, pego sin mejorar: \(error.localizedDescription, privacy: .public)")
                         }
+                    } else {
+                        Self.logger.info("Transcriptor: mejora desactivada, pego crudo")
                     }
                     CursorPaster.pasteReactivating(output, appPID: context.sourcePID)
                     Self.logger.info("Modo transcriptor → pegado (\(output.count) chars)")
@@ -647,9 +655,12 @@ final class MagicSelectionService {
             } else {
                 model?.finishTurn(userCommand: command)
                 if let action = pendingAction {
-                    if MagicActionConfirmer.isEnabled {
-                        // Mostrar el form de confirmación pre-cargado; al dar OK
-                        // (con los datos eventualmente editados) se ejecuta.
+                    // Solo pedimos confirmación cuando aporta: un EVENTO SIN FECHA
+                    // (hay que ponerle la fecha). Todo lo demás (mail, mensaje,
+                    // maps, llamar, evento CON fecha, nota, recordatorio) se
+                    // ejecuta directo.
+                    let eventNoDate = action.tool == "calendar" && (action.params["date"]?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
+                    if eventNoDate && MagicActionConfirmer.isEnabled {
                         MagicActionConfirmer.shared.confirm(tool: action.tool, params: action.params, content: full) { [weak self] t, p, c in
                             Task { @MainActor in await self?.runAction(tool: t, params: p, content: c) }
                         }

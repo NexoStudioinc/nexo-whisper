@@ -82,8 +82,9 @@ enum MagicActions {
         let enc = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let (urlStr, name): (String, String) = {
             switch app {
-            case "telegram": return ("tg://msg?text=\(enc)", "Telegram")
-            case "imessage", "messages": return ("sms:&body=\(enc)", "Mensajes")
+            // El share URL de Telegram SÍ lleva el texto (tg://msg?text= no es fiable).
+            case "telegram": return ("https://t.me/share/url?url=&text=\(enc)", "Telegram")
+            case "imessage", "messages": return ("sms:&body=\(enc)", "iMessage")
             default: return ("https://wa.me/?text=\(enc)", "WhatsApp")
             }
         }()

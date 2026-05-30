@@ -156,9 +156,9 @@ struct MagicPanelSettingsView: View {
     private var actionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Acciones").font(.system(size: 12, weight: .semibold))
-            Toggle("Confirmar antes de crear (evento / nota / recordatorio)", isOn: $confirmActions)
+            Toggle("Confirmar eventos sin fecha antes de crear", isOn: $confirmActions)
                 .toggleStyle(.switch)
-            Text("Muestra los datos preseleccionados para revisar y editar antes de crear.")
+            Text("Si pedís un evento y no se detecta una fecha, muestra un formulario para ponerla. El resto de las acciones (mail, mensaje, mapa, recordatorio, evento con fecha) se ejecutan directo.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Text("App de mensajería por defecto")
@@ -166,7 +166,7 @@ struct MagicPanelSettingsView: View {
                 Picker("", selection: $messagingApp) {
                     Text("WhatsApp").tag("whatsapp")
                     Text("Telegram").tag("telegram")
-                    Text("Mensajes").tag("imessage")
+                    Text("iMessage").tag("imessage")
                 }
                 .labelsHidden()
                 .frame(width: 150)
