@@ -9,7 +9,7 @@ struct MagicSelectionSection: View {
 
     var body: some View {
         Section {
-            Toggle("Activar Magic Aura (preview)", isOn: $enabled)
+            Toggle("Enable Magic Aura (preview)", isOn: $enabled)
                 .onChange(of: enabled) { _, newValue in
                     Task { @MainActor in
                         MagicSelectionService.shared.isEnabled = newValue
@@ -19,7 +19,7 @@ struct MagicSelectionSection: View {
             HStack(spacing: 6) {
                 Image(systemName: "sidebar.squares.left")
                     .foregroundStyle(.secondary)
-                Text("Configurá los botones de acción, la traducción y el comportamiento del panel desde **Magic** en la barra lateral.")
+                Text("Configure the action buttons, translation and panel behavior from **Magic** in the sidebar.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

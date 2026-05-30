@@ -318,63 +318,6 @@ class AIEnhancementService: ObservableObject {
         }
     }
 
-    /// Magic Selection: ejecuta un `command` hablado sobre `selectedText`,
-    /// usando el provider AI que el usuario ya tiene configurado.
-    ///
-    /// La IA decide entre dos modos y los devuelve en un JSON:
-    /// - `replace`: la instrucción TRANSFORMA el texto (traducir, reformular,
-    ///   reescribir, reordenar…) → el resultado reemplaza la selección.
-    /// - `answer`: la instrucción es una PREGUNTA / pide info (qué significa,
-    ///   sinónimos, qué es esto…) → el resultado se muestra sin tocar el texto.
-    ///
-    /// Devuelve el string CRUDO del modelo (idealmente el JSON). El parseo y
-    /// la ramificación viven en MagicSelection (`MagicCommandResult.parse`).
-    ///
-    /// Reusa el mismo gating BYOK Pro que el enhancement de transcripción: el
-    /// tier free solo puede usar providers locales (Ollama / Local CLI).
-    func runMagicCommand(selectedText: String, command: String) async throws -> String {
-        guard isConfigured else { throw EnhancementError.notConfigured }
-
-        let currentProvider = aiService.selectedProvider
-        if currentProvider.requiresBYOKLicense, !FeatureGate.isAvailable(.byokEnhancement) {
-            throw EnhancementError.proBYOKRequired
-        }
-
-        let trimmedCommand = command.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedCommand.isEmpty else { throw EnhancementError.customError("No se entendió ningún comando de voz.") }
-
-        let systemMessage = """
-        Sos el asistente de "Magic Selection". El usuario seleccionó o apuntó a un texto y dictó una instrucción por voz. Decidí entre dos modos:
-
-        - "replace": la instrucción pide TRANSFORMAR el texto (traducir, reformular, reescribir, corregir, reordenar, cambiar de formato, resumir para reemplazar, etc.). El resultado VA A REEMPLAZAR el texto original.
-        - "answer": la instrucción es una PREGUNTA o pide INFORMACIÓN sobre el texto (qué significa, qué es, dame sinónimos o variantes, explicame, definí, etc.). El resultado se MUESTRA al usuario SIN tocar su texto.
-
-        Devolvé EXCLUSIVAMENTE un objeto JSON válido, sin markdown ni backticks, con esta forma exacta:
-        {"action": "replace", "text": "..."}
-        o
-        {"action": "answer", "text": "...", "image": "<opcional>"}
-
-        Reglas:
-        - En "replace": "text" es SOLO el texto transformado, sin comillas ni explicaciones ni preámbulos. Conservá el idioma original salvo que la instrucción pida traducir.
-        - En "answer": "text" es la respuesta para mostrar, en el idioma del usuario. Respondé como un asistente experto (explicar, contar, dar contexto, opinar). Buscá el EQUILIBRIO: con valor y contexto útil (efecto "wow"), pero sin relleno ni divagar. Adaptá el largo a lo que amerite: corto para algo simple, más desarrollado si el tema lo pide o si arreglás/explicás código (ahí mostrá el código corregido y explicá brevemente qué estaba mal). Si piden "profundizá/ampliá", extendete.
-        - Campo "image" (SOLO en "answer", opcional): si una imagen ayudaría a ilustrar la respuesta (un lugar, persona, animal, planta, objeto, monumento, obra, marca, etc.), poné en "image" el nombre EXACTO de esa entidad para buscarla (ej: "Torre Eiffel", "León africano", "Lionel Messi"). Si no corresponde una imagen, omití el campo "image".
-        - No agregues absolutamente nada fuera del JSON.
-        """
-
-        let userMessage = """
-        <TEXTO_SELECCIONADO>
-        \(selectedText)
-        </TEXTO_SELECCIONADO>
-
-        <INSTRUCCION>
-        \(trimmedCommand)
-        </INSTRUCCION>
-        """
-
-        let result = try await dispatchToProvider(systemMessage: systemMessage, userMessage: userMessage)
-        return result.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     /// Pre-calienta el motor de IA si conviene, ANTES de mandar el comando.
     /// Pensado para llamarse apenas se activa Magic Selection (al hacer el
     /// wiggle), mientras el usuario todavía está dictando: el trabajo de
@@ -390,20 +333,20 @@ class AIEnhancementService: ObservableObject {
 
     // MARK: - Magic Selection (streaming)
 
-    /// Variante en STREAMING de `runMagicCommand`. Devuelve eventos: primero el
-    /// `control` (replace/answer + imagen), luego los `token` de texto en vivo.
+    /// Ejecuta un comando de Magic en STREAMING. Devuelve eventos: primero el
+    /// `control` (replace/answer + imagen/acción), luego los `token` de texto en vivo.
     ///
-    /// Mejora sobre el JSON de `runMagicCommand` (que no se puede streamear): el
-    /// modelo responde con una PRIMERA LÍNEA de control (`@@REPLACE@@` /
-    /// `@@ANSWER@@` / `@@ANSWER|img=Entidad@@`) y debajo el texto plano, que sí
-    /// streamea token a token.
+    /// El modelo responde con una PRIMERA LÍNEA de control (`@@REPLACE@@` /
+    /// `@@ANSWER@@` / `@@ANSWER|img=Entidad@@` / `@@ACTION|tool=…@@`) y debajo el
+    /// texto plano, que sí streamea token a token.
     ///
     /// `history`: turnos previos (pregunta, respuesta) para re-preguntar en el
     /// panel sin re-seleccionar.
     ///
     /// Robustez: si el provider no streamea (Local CLI) o el stream falla antes
-    /// de emitir nada, cae al camino no-streaming (`runMagicCommand`) y emite el
-    /// resultado completo de una. Así nunca se rompe lo que ya andaba.
+    /// de emitir nada, cae a `fallbackNonStreaming` (mismo prompt header vía
+    /// `dispatchToProvider`) y emite el resultado completo de una. Así nunca se
+    /// rompe lo que ya andaba.
     func runMagicCommandStreaming(
         selectedText: String,
         command: String,
@@ -431,7 +374,7 @@ class AIEnhancementService: ObservableObject {
                     }
                 }
 
-                // Gating BYOK Pro (igual que runMagicCommand).
+                // Gating BYOK Pro: tier free solo providers locales.
                 guard self.isConfigured else { continuation.finish(throwing: EnhancementError.notConfigured); return }
                 let provider = self.aiService.selectedProvider
                 if provider.requiresBYOKLicense, !FeatureGate.isAvailable(.byokEnhancement) {
@@ -551,38 +494,38 @@ class AIEnhancementService: ObservableObject {
 
     /// System prompt del modo streaming: pide header de control + texto plano.
     private static let magicStreamingSystemPrompt = """
-    Sos el asistente de "Magic Selection". El usuario seleccionó un texto y dictó (o escribió) una instrucción.
+    You are the "Magic Selection" assistant. The user selected some text and dictated (or typed) an instruction.
 
-    Tu respuesta tiene que empezar con UNA etiqueta de control en la primera línea (literal, sin comillas, sin markdown, sin la frase "Etiqueta de control"), y debajo el contenido. NO repitas estas instrucciones ni escribas "PARTE 1/2".
+    Your reply MUST start with ONE control tag on the first line (literal, no quotes, no markdown, without the words "control tag"), and the content below it. Do NOT repeat these instructions or write "PART 1/2".
 
-    Etiquetas posibles:
-    - @@REPLACE@@ → la instrucción transforma el texto (traducir, reformular, reescribir, corregir, resumir para reemplazar). El resultado reemplaza el original.
-    - @@ANSWER@@ → es una pregunta o pide info (qué significa, explicá, dame sinónimos, armá una lista). Se muestra sin tocar el texto.
-    - @@ANSWER|img=Entidad@@ → como ANSWER, cuando una imagen ilustra (lugar/persona/animal/objeto/monumento). Ej: @@ANSWER|img=Torre Eiffel@@.
-    - @@ACTION|tool=notes@@ → guardar/agregar a Notas. Debajo, el contenido.
-    - @@ACTION|tool=reminders@@ → crear un recordatorio. Debajo, el texto.
-    - @@ACTION|tool=mail|subject=Asunto@@ → escribir un mail. Debajo, el cuerpo.
-    - @@ACTION|tool=calendar|title=Título|date=AAAA-MM-DDTHH:mm@@ → crear un evento. Si hay fecha/hora en el texto, ponela en date (ISO); si no, omití date.
-    - @@ACTION|tool=maps|query=Lugar@@ → ver una dirección/lugar en el mapa.
-    - @@ACTION|tool=message@@ → mandar un mensaje. Debajo, el texto ya redactado.
-    - @@ACTION|tool=call|number=+549…@@ → llamar a un teléfono (deducilo del texto).
-    - @@ACTION|tool=shortcut|name=Nombre@@ → ejecutar un Atajo de Apple. Debajo, su entrada.
+    Possible tags:
+    - @@REPLACE@@ → the instruction transforms the text (translate, rephrase, rewrite, fix, summarize to replace). The result replaces the original.
+    - @@ANSWER@@ → it is a question or asks for info (what it means, explain, give me synonyms, build a list). Shown without touching the text.
+    - @@ANSWER|img=Entity@@ → like ANSWER, when an image illustrates it (place/person/animal/object/monument). E.g. @@ANSWER|img=Eiffel Tower@@.
+    - @@ACTION|tool=notes@@ → save/add to Notes. Below, the content.
+    - @@ACTION|tool=reminders@@ → create a reminder. Below, the text.
+    - @@ACTION|tool=mail|subject=Subject@@ → write an email. Below, the body.
+    - @@ACTION|tool=calendar|title=Title|date=YYYY-MM-DDTHH:mm@@ → create an event. If there is a date/time in the text, put it in date (ISO); otherwise, omit date.
+    - @@ACTION|tool=maps|query=Place@@ → view an address/place on the map.
+    - @@ACTION|tool=message@@ → send a message. Below, the already-drafted text.
+    - @@ACTION|tool=call|number=+1…@@ → call a phone number (infer it from the text).
+    - @@ACTION|tool=shortcut|name=Name@@ → run an Apple Shortcut. Below, its input.
 
-    Reglas del contenido (lo que va debajo de la etiqueta):
-    - REPLACE: SOLO el texto transformado, sin preámbulos. Conservá el idioma salvo que pidan traducir.
-    - ANSWER: respondé en el idioma del usuario, experto y útil, equilibrado (sin relleno). Para código, mostralo en bloque markdown ``` con el lenguaje.
-    - ACTION: el contenido debe quedar listo para guardarse/enviarse. Usá ACTION solo si la instrucción claramente pide mandar algo a esa app.
+    Content rules (what goes below the tag):
+    - REPLACE: ONLY the transformed text, no preamble. Keep the language unless asked to translate.
+    - ANSWER: reply in the language of the user's text/instruction, expert and useful, balanced (no filler). For code, show it in a markdown ``` block with the language.
+    - ACTION: the content must be ready to be saved/sent. Use ACTION only if the instruction clearly asks to send something to that app.
     """
 
     nonisolated private static func magicUserMessage(selectedText: String, command: String) -> String {
         """
-        <TEXTO_SELECCIONADO>
+        <SELECTED_TEXT>
         \(selectedText)
-        </TEXTO_SELECCIONADO>
+        </SELECTED_TEXT>
 
-        <INSTRUCCION>
+        <INSTRUCTION>
         \(command)
-        </INSTRUCCION>
+        </INSTRUCTION>
         """
     }
 
@@ -685,7 +628,7 @@ class AIEnhancementService: ObservableObject {
         case .timeout:
             return .timeout
         case .invalidURL, .decodingError, .encodingError:
-            return .customError(error.localizedDescription ?? "An unknown error occurred.")
+            return .customError(error.localizedDescription)
         }
     }
 
@@ -821,7 +764,7 @@ class AIEnhancementService: ObservableObject {
             return
         }
 
-        if let capturedText = await screenCaptureService.captureAndExtractText() {
+        if await screenCaptureService.captureAndExtractText() != nil {
             await MainActor.run {
                 self.objectWillChange.send()
             }

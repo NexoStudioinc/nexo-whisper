@@ -8,7 +8,7 @@ struct MagicPanelSettingsView: View {
     @ObservedObject private var chipStore = MagicChipStore.shared
 
     @AppStorage("magicSelection.panelAutoHideSeconds") private var autoHideSeconds: Double = 0
-    @AppStorage("magicSelection.translateLanguage") private var translateLanguage = "Inglés"
+    @AppStorage("magicSelection.translateLanguage") private var translateLanguage = "English"
     @AppStorage("magicSelection.translateAutoDetect") private var translateAutoDetect = true
     @AppStorage("magicSelection.confirmActions") private var confirmActions = true
     @AppStorage("magicSelection.messagingApp") private var messagingApp = "whatsapp"
@@ -17,7 +17,7 @@ struct MagicPanelSettingsView: View {
     @State private var showingAddChip = false
 
     var body: some View {
-        GroupBox(label: Label("Panel de respuesta", systemImage: "rectangle.and.text.magnifyingglass")) {
+        GroupBox(label: Label("Response panel", systemImage: "rectangle.and.text.magnifyingglass")) {
             VStack(alignment: .leading, spacing: 14) {
                 chipsSection
                 Divider()
@@ -41,12 +41,12 @@ struct MagicPanelSettingsView: View {
     private var chipsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Botones de acción").font(.system(size: 12, weight: .semibold))
+                Text("Action buttons").font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Button {
                     showingAddChip = true
                 } label: {
-                    Label("Agregar", systemImage: "plus.circle")
+                    Label("Add", systemImage: "plus.circle")
                 }
                 .controlSize(.small)
                 Button {
@@ -55,9 +55,9 @@ struct MagicPanelSettingsView: View {
                     Image(systemName: "arrow.counterclockwise")
                 }
                 .controlSize(.small)
-                .help("Restaurar los chips por defecto")
+                .help("Restore the default chips")
             }
-            Text("Elegí cuáles ves en el panel, ordenalos o creá los tuyos.")
+            Text("Choose which ones you see in the panel, reorder them or create your own.")
                 .font(.caption).foregroundStyle(.secondary)
 
             ForEach(Array(chipStore.chips.enumerated()), id: \.element.id) { index, chip in
@@ -72,7 +72,7 @@ struct MagicPanelSettingsView: View {
             Image(systemName: chip.systemImage)
                 .frame(width: 18)
                 .foregroundStyle(.purple)
-            Text(chip.title).font(.system(size: 12))
+            Text(AppText.t(chip.title)).font(.system(size: 12))
             if chip.isCustom {
                 Text("custom")
                     .font(.system(size: 9, weight: .bold))
@@ -119,21 +119,21 @@ struct MagicPanelSettingsView: View {
 
     private var translateSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Traducir").font(.system(size: 12, weight: .semibold))
+            Text("Translate").font(.system(size: 12, weight: .semibold))
             HStack {
-                Text("Idioma preferido")
+                Text("Preferred language")
                 Spacer()
                 Picker("", selection: $translateLanguage) {
-                    ForEach(MagicTranslation.languages, id: \.self) { Text($0).tag($0) }
+                    ForEach(MagicTranslation.languages, id: \.self) { Text(AppText.t($0)).tag($0) }
                 }
                 .labelsHidden()
                 .frame(width: 160)
             }
-            Toggle("Detectar el idioma de destino automáticamente", isOn: $translateAutoDetect)
+            Toggle("Detect the target language automatically", isOn: $translateAutoDetect)
                 .toggleStyle(.switch)
             Text(translateAutoDetect
-                 ? "Si el texto ya está en tu idioma preferido, lo traduce a tu idioma; si no, al preferido. Igual podés elegir otro idioma desde el chip."
-                 : "Siempre traduce al idioma preferido. Podés elegir otro puntual desde el chip.")
+                 ? "If the text is already in your preferred language, it translates to your language; otherwise, to the preferred one. You can still pick another language from the chip."
+                 : "Always translates to the preferred language. You can pick another one from the chip.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -144,7 +144,7 @@ struct MagicPanelSettingsView: View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.blue)
-            Text("En apps que no son nativas de Mac (Chrome, Slack, Discord, VS Code y otras basadas en Chromium/Electron), por una limitación del propio macOS, Magic no puede detectar el campo de texto. Para pegar el resultado, tocá el botón **“Reemplazar texto”** del panel.")
+            Text("On non-native Mac apps (Chrome, Slack, Discord, VS Code and others based on Chromium/Electron), due to a macOS limitation, Magic can't detect the text field. To paste the result, tap the **“Replace text”** button in the panel.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -155,13 +155,13 @@ struct MagicPanelSettingsView: View {
 
     private var actionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Acciones").font(.system(size: 12, weight: .semibold))
-            Toggle("Confirmar eventos sin fecha antes de crear", isOn: $confirmActions)
+            Text("Actions").font(.system(size: 12, weight: .semibold))
+            Toggle("Confirm events without a date before creating", isOn: $confirmActions)
                 .toggleStyle(.switch)
-            Text("Si pedís un evento y no se detecta una fecha, muestra un formulario para ponerla. El resto de las acciones (mail, mensaje, mapa, recordatorio, evento con fecha) se ejecutan directo.")
+            Text("If you ask for an event and no date is detected, it shows a form to set it. The rest of the actions (email, message, map, reminder, event with a date) run directly.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
-                Text("App de mensajería por defecto")
+                Text("Default messaging app")
                 Spacer()
                 Picker("", selection: $messagingApp) {
                     Text("WhatsApp").tag("whatsapp")
@@ -171,14 +171,14 @@ struct MagicPanelSettingsView: View {
                 .labelsHidden()
                 .frame(width: 150)
             }
-            Text("Para “mandá esto por mensaje”. El ícono de la app elegida aparece en el panel.")
+            Text("For “send this as a message”. The chosen app's icon appears in the panel.")
                 .font(.caption).foregroundStyle(.secondary)
 
             Divider()
 
-            Toggle("Leer texto bajo el cursor con visión (OCR)", isOn: $visionFallback)
+            Toggle("Read text under the cursor with vision (OCR)", isOn: $visionFallback)
                 .toggleStyle(.switch)
-            Text("Cuando una app no expone su texto (terminales, imágenes, PDFs), Magic captura la zona bajo el cursor y la lee con reconocimiento on-device de Apple. Gratis y privado.")
+            Text("When an app doesn't expose its text (terminals, images, PDFs), Magic captures the area under the cursor and reads it with Apple's on-device recognition. Free and private.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -187,10 +187,10 @@ struct MagicPanelSettingsView: View {
 
     private var autoHideSection: some View {
         HStack {
-            Text("El panel se cierra solo")
+            Text("The panel closes on its own")
             Spacer()
             Picker("", selection: $autoHideSeconds) {
-                Text("Nunca").tag(0.0)
+                Text("Never").tag(0.0)
                 Text("30 s").tag(30.0)
                 Text("1 min").tag(60.0)
                 Text("2 min").tag(120.0)
@@ -219,23 +219,23 @@ private struct MagicChipEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Nuevo chip").font(.title3).bold()
+            Text("New chip").font(.title3).bold()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Nombre").font(.caption).foregroundStyle(.secondary)
-                TextField("Ej: Tono formal", text: $title)
+                Text("Name").font(.caption).foregroundStyle(.secondary)
+                TextField("e.g. Formal tone", text: $title)
                     .textFieldStyle(.roundedBorder)
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Instrucción (lo que se le pide a la IA)").font(.caption).foregroundStyle(.secondary)
-                TextField("Ej: Reescribí esto en un tono formal y profesional.", text: $command, axis: .vertical)
+                Text("Instruction (what you ask the AI)").font(.caption).foregroundStyle(.secondary)
+                TextField("e.g. Rewrite this in a formal, professional tone.", text: $command, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(2...4)
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Ícono").font(.caption).foregroundStyle(.secondary)
+                Text("Icon").font(.caption).foregroundStyle(.secondary)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 8) {
                     ForEach(icons, id: \.self) { sym in
                         Image(systemName: sym)
@@ -255,8 +255,8 @@ private struct MagicChipEditor: View {
 
             HStack {
                 Spacer()
-                Button("Cancelar") { dismiss() }
-                Button("Agregar") {
+                Button("Cancel") { dismiss() }
+                Button("Add") {
                     let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
                     let c = command.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !t.isEmpty, !c.isEmpty else { return }

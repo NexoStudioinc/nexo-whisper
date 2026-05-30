@@ -38,17 +38,17 @@ enum AppleFoundationService {
             case .available:
                 return nil
             case .unavailable(.deviceNotEligible):
-                return "Tu Mac no es compatible con Apple Intelligence."
+                return String(localized: "Your Mac isn't compatible with Apple Intelligence.")
             case .unavailable(.appleIntelligenceNotEnabled):
-                return "Activá Apple Intelligence en Ajustes del sistema."
+                return String(localized: "Enable Apple Intelligence in System Settings.")
             case .unavailable(.modelNotReady):
-                return "El modelo de Apple se está descargando o no está listo."
+                return String(localized: "Apple's model is downloading or not ready yet.")
             case .unavailable:
-                return "Apple Intelligence no está disponible."
+                return String(localized: "Apple Intelligence isn't available.")
             }
         }
         #endif
-        return "Apple Intelligence requiere macOS 26 o superior."
+        return String(localized: "Apple Intelligence requires macOS 26 or later.")
     }
 
     /// Genera una respuesta con el modelo on-device de Apple.
@@ -63,7 +63,7 @@ enum AppleFoundationService {
         throw NSError(
             domain: "AppleFoundationService",
             code: -1,
-            userInfo: [NSLocalizedDescriptionKey: "Apple Intelligence no está disponible en este equipo."]
+            userInfo: [NSLocalizedDescriptionKey: String(localized: "Apple Intelligence isn't available on this device.")]
         )
     }
 }

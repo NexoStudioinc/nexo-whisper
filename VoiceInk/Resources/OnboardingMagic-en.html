@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meet Magic Aura</title>
+<style>
+  :root{--violet:#8c5cf5;--cyan:#5ccbf2;--bg:#0b0b11;--ink:#e9e9f1}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden}
+  body{background:
+      radial-gradient(1200px 640px at 82% -8%, rgba(140,92,245,.16), transparent 60%),
+      radial-gradient(1000px 560px at 2% 108%, rgba(92,203,242,.12), transparent 60%),
+      var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;color:var(--ink)}
+
+  .top{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;z-index:50}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .brand .sp{font-size:15px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .skip{font-size:13px;color:rgba(233,233,241,.55);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:7px 15px;cursor:pointer;transition:.2s}
+  .skip:hover{color:#fff;background:rgba(255,255,255,.1)}
+
+  /* slides: one per screen, no scroll */
+  .stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .slide{position:absolute;width:100%;max-width:860px;padding:0 50px;display:flex;align-items:center;gap:50px;
+    opacity:0;transform:translateY(34px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+  .slide.active{opacity:1;transform:none;pointer-events:auto}
+  .slide.up{transform:translateY(-34px)}
+  .slide .txt{flex:1}
+  .slide .num{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:9px}
+  .slide .txt h3{font-size:27px;font-weight:700;margin-bottom:12px;line-height:1.15}
+  .slide .txt p{font-size:15.5px;line-height:1.65;color:rgba(233,233,241,.64);max-width:340px}
+  .slide .tag{display:inline-block;margin-top:14px;font-size:12px;color:rgba(255,255,255,.82);background:rgba(140,92,245,.16);border:1px solid rgba(140,92,245,.3);border-radius:999px;padding:6px 12px}
+
+  /* demo window */
+  .win{position:relative;width:420px;height:272px;border-radius:14px;overflow:hidden;box-shadow:0 28px 72px rgba(0,0,0,.55);flex-shrink:0}
+  .tab{height:32px;display:flex;align-items:center;gap:7px;padding:0 12px}
+  .dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .addr,.fn{margin-left:8px;font-size:11px}
+  .glow{position:absolute;left:130px;top:110px;width:88px;height:88px;opacity:0;transform:translate(-50%,-50%) scale(.6);
+    background:radial-gradient(closest-side,rgba(140,92,245,.85),rgba(140,92,245,0) 70%),radial-gradient(closest-side,rgba(92,203,242,.5),rgba(92,203,242,0) 75%);filter:blur(5px);z-index:4;animation:glowSeq 12s infinite}
+  .cursor{position:absolute;left:128px;top:106px;width:13px;height:13px;opacity:0;z-index:6;animation:curM 12s infinite}
+  .pill{position:absolute;left:112px;top:152px;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(0,0,0,.45);opacity:0;z-index:7;animation:pillShow 12s infinite}
+  .bars{display:flex;gap:3px;align-items:center;height:12px}.bars span{width:3px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;animation:wave .9s ease-in-out infinite}
+  .bars span:nth-child(2){animation-delay:.1s}.bars span:nth-child(3){animation-delay:.2s}.bars span:nth-child(4){animation-delay:.3s}
+  @keyframes wave{0%,100%{height:4px}50%{height:12px}}
+  .voice{position:absolute;left:112px;top:152px;transform:translateX(-50%);background:rgba(18,18,28,.94);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.82);font-style:italic;white-space:nowrap;opacity:0;z-index:7;box-shadow:0 8px 22px rgba(0,0,0,.4);animation:voiceShow 12s infinite}
+  .panel{position:absolute;border-radius:12px;padding:1px;opacity:0;z-index:5;animation:panFade 12s infinite}
+  .panel::before{content:"";position:absolute;inset:-1px;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--violet),var(--cyan));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .pin{position:relative;background:#12121b;border-radius:11px;overflow:hidden;box-shadow:0 0 30px rgba(140,92,245,.25),0 14px 36px rgba(0,0,0,.5)}
+  .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .sp2{font-size:10.5px;background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+  .pt{font-size:10.5px;color:rgba(255,255,255,.82);font-weight:600}
+  .pbody{padding:10px 11px;font-size:11.5px;line-height:1.5;color:rgba(255,255,255,.92)}
+  .rev{animation:revShow 12s infinite}
+  .caret{display:inline-block;width:6px;height:12px;vertical-align:-2px;background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:2px;margin-left:2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .chk{display:flex;align-items:center;gap:7px;margin:3px 0;font-size:11.5px;color:rgba(255,255,255,.9)}
+  .box{width:13px;height:13px;border-radius:4px;border:1.5px solid rgba(140,92,245,.7)}
+  .toast{position:absolute;left:50%;top:96px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:#12121b;border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:10px 11px;box-shadow:0 0 24px rgba(92,203,242,.22),0 12px 28px rgba(0,0,0,.45);opacity:0;z-index:5;animation:toastFade 12s infinite}
+  .badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--violet),var(--cyan))}
+  .tt{font-size:12px;color:rgba(255,255,255,.92);font-weight:600}.ts{font-size:10.5px;color:rgba(255,255,255,.55)}
+
+  /* sequence: glow+wiggle (12-26) · listening pill (28-42) · voice (44-58) · result (60-93) */
+  @keyframes pillShow{0%,26%{opacity:0}30%,42%{opacity:1}46%,100%{opacity:0}}
+  @keyframes voiceShow{0%,44%{opacity:0}50%,58%{opacity:1}62%,100%{opacity:0}}
+  @keyframes panFade{0%,60%{opacity:0}66%,93%{opacity:1}100%{opacity:0}}
+  @keyframes revShow{0%,64%{opacity:0}70%,93%{opacity:1}100%{opacity:0}}
+  @keyframes toastFade{0%,60%{opacity:0}66%,93%{opacity:1}100%{opacity:0}}
+  /* the cursor (mouse) moves WITH the aura: same wiggle as glowSeq */
+  @keyframes curM{0%,12%{opacity:0;margin-left:0}18%{opacity:1;margin-left:0}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0}74%{opacity:1}80%,100%{opacity:0}}
+  @keyframes glowSeq{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.5)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}20%{margin-left:-18px}22%{margin-left:14px}24%{margin-left:-6px}26%{margin-left:0;transform:translate(-50%,-50%) scale(1.12)}40%,72%{opacity:.9}80%,100%{opacity:0}}
+
+  .light{background:linear-gradient(180deg,#fbfbfd,#f2f2f6)}.light .tab{background:#e9e9ee;border-bottom:1px solid #dadae1}.light .addr,.light .fn{color:#7a7a86}
+  .content{padding:16px 20px}.content h4{font-size:14px;color:#1c1c22;margin-bottom:8px}.content p{font-size:12.5px;line-height:1.65;color:#54545f}
+  .sel{background:linear-gradient(90deg,rgba(140,92,245,.27),rgba(92,203,242,.27));border-radius:4px;padding:0 3px}
+  .url{background:#fff;border:1px solid #e0e0e6;border-radius:6px;padding:2px 8px;flex:1;color:#7a7a86}
+
+  /* bottom navigation */
+  .nav{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:20px;padding:22px;z-index:50}
+  .arrow{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .arrow:hover{background:rgba(255,255,255,.12)}
+  .arrow:disabled{opacity:.25;cursor:default}
+  .dots{display:flex;gap:8px}
+  .pd{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:.3s}
+  .pd.on{background:linear-gradient(90deg,var(--violet),var(--cyan));width:22px;border-radius:5px}
+  .btn{font-size:15px;font-weight:600;color:#fff;border:none;border-radius:999px;padding:12px 26px;cursor:pointer;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 10px 28px rgba(140,92,245,.38);transition:.2s}
+  .btn:hover{transform:translateY(-1px)}
+</style>
+</head>
+<body>
+  <div class="top"><div class="brand"><span class="sp">✦</span> Magic Aura</div><div class="skip" onclick="done()">Skip ›</div></div>
+
+  <div class="stage">
+
+    <!-- 1 ASK -->
+    <div class="slide" data-i="0">
+      <div class="win light">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url addr">en.wikipedia.org/wiki/Paris</span></div>
+        <div class="content"><h4>Paris</h4><p>Among its landmarks is the <span class="sel">Eiffel Tower</span>, alongside the Louvre and Notre-Dame.</p></div>
+        <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“tell me what this is”</div>
+        <div class="panel" style="right:14px;top:66px;width:228px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Aura</span></div><div class="pbody rev">An iron monument 330&nbsp;m tall, opened in 1889. A symbol of Paris.<span class="caret"></span></div></div></div>
+      </div>
+      <div class="txt"><div class="num">Ask</div><h3>Any question, instantly</h3><p>Select a word or phrase in any app and ask what it is or for more context. It answers without opening anything.</p><span class="tag">✦ and if it helps, it shows you an image</span></div>
+    </div>
+
+    <!-- 2 TRANSFORM -->
+    <div class="slide" data-i="1">
+      <div class="win light">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Mail · Re: proposal</span></div>
+        <div class="content"><p><span class="sel">hey, here's the quote, take a look and let me know</span></p></div>
+        <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“make it more formal”</div>
+        <div class="panel" style="right:14px;top:64px;width:236px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Aura</span></div><div class="pbody rev">Please find attached the quote for your review. I remain at your disposal.</div></div></div>
+      </div>
+      <div class="txt"><div class="num">Transform</div><h3>Rewrite, translate, fix</h3><p>Change the tone, translate, fix or summarize — and replace the text in place, without copy-paste.</p><span class="tag">↩︎ replaces the selection directly</span></div>
+    </div>
+
+    <!-- 3 RECIPE -->
+    <div class="slide" data-i="2">
+      <div class="win light">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url addr">recipes.com/pancakes</span></div>
+        <div class="content"><h4>Pancakes</h4><p style="font-size:11.5px"><span class="sel">2 eggs · 200 g flour · 500 ml milk · 30 g butter · salt</span></p></div>
+        <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“make me the shopping list”</div>
+        <div class="panel" style="right:14px;top:60px;width:198px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Shopping list</span></div><div class="pbody rev"><div class="chk"><span class="box"></span>Eggs (2)</div><div class="chk"><span class="box"></span>Flour · 200 g</div><div class="chk"><span class="box"></span>Milk · 500 ml</div><div class="chk"><span class="box"></span>Butter · 30 g</div><div class="chk"><span class="box"></span>Salt</div></div></div></div>
+      </div>
+      <div class="txt"><div class="num">Understands context</div><h3>From a recipe to your list</h3><p>It's not just text: it understands what you select. Grab the ingredients and ask for the shopping list, already organized.</p><span class="tag">🧠 it understands, not just copies</span></div>
+    </div>
+
+    <!-- 4 ACTIONS -->
+    <div class="slide" data-i="3">
+      <div class="win light">
+        <div class="tab"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn">Notes</span></div>
+        <div class="content"><p>Team meeting on <span class="sel">Tuesday at 10</span> to review the launch.</p></div>
+        <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“schedule this”</div>
+        <div class="toast" style="width:250px"><div class="badge">📅</div><div><div class="tt">Event created</div><div class="ts">Tuesday · 10:00 · Team meeting</div></div></div>
+      </div>
+      <div class="txt"><div class="num">Take action</div><h3>Turn text into actions</h3><p>Schedule an event, create a reminder or a note, write an email or send a message — from what you selected.</p><span class="tag">📅 Calendar · ✅ Reminders · 💬 WhatsApp · ✉️ Mail</span></div>
+    </div>
+
+    <!-- 5 CODE -->
+    <div class="slide" data-i="4">
+      <div class="win" style="background:#1b1b24">
+        <div class="tab" style="background:#23232e"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fn" style="color:#9a9aa6">app.js</span></div>
+        <div style="padding:12px 16px;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.8">
+          <div><span style="color:#4a4a58;margin-right:10px">1</span><span style="color:#c98bff">function</span> <span style="color:#6cb6ff">total</span>(xs){</div>
+          <div><span style="color:#4a4a58;margin-right:10px">2</span>&nbsp;<span style="color:#c98bff">let</span> s=<span style="color:#7fd6a0">0</span>;</div>
+          <div><span style="color:#4a4a58;margin-right:10px">3</span>&nbsp;<span class="sel" style="border-radius:4px"><span style="color:#c98bff">for</span>(i=<span style="color:#7fd6a0">0</span>;i&lt;=xs.length;i++)</span></div>
+          <div><span style="color:#4a4a58;margin-right:10px">4</span>&nbsp;&nbsp;&nbsp;s+=xs[i];</div>
+        </div>
+        <div class="glow"></div><div class="cursor"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M1 1l5 13 2-5 5-2L1 1z" fill="#fff"/></svg></div>
+        <div class="pill"><div class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="voice">“fix the bug”</div>
+        <div class="panel" style="left:50%;top:72px;transform:translateX(-50%);width:268px"><div class="pin"><div class="ph"><span class="sp2">✦</span><span class="pt">Aura · code</span></div><div class="pbody rev" style="font-family:ui-monospace,monospace;font-size:11px;background:#0d0d14;margin:8px 10px;border-radius:7px;padding:9px"><span style="color:#5b5b6b">// use &lt; not &lt;=</span><br><span style="color:#c98bff">for</span>(<span style="color:#c98bff">let</span> i=<span style="color:#7fd6a0">0</span>; i &lt; xs.length; i++)</div></div></div>
+      </div>
+      <div class="txt"><div class="num">Code</div><h3>Fix and understand code</h3><p>Select a snippet and ask it to find the bug, optimize it or explain it. It returns it formatted, ready to replace.</p><span class="tag">‹/› highlighted code blocks</span></div>
+    </div>
+
+  </div>
+
+  <div class="nav">
+    <button class="arrow" id="back" onclick="go(-1)">‹</button>
+    <div class="dots" id="dots"></div>
+    <button class="arrow" id="fwd" onclick="go(1)">›</button>
+    <button class="btn" id="cta" onclick="go(1)" style="display:none">Get started</button>
+  </div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsBox=document.getElementById('dots');
+  slides.forEach((_,k)=>{const d=document.createElement('div');d.className='pd';dotsBox.appendChild(d)});
+  const dots=[...dotsBox.children];
+  let i=0;
+  function render(){
+    slides.forEach((s,k)=>{s.classList.toggle('active',k===i);s.classList.toggle('up',k<i)});
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    document.getElementById('back').disabled=i===0;
+    const last=i===slides.length-1;
+    document.getElementById('fwd').style.display=last?'none':'flex';
+    document.getElementById('cta').style.display=last?'inline-block':'none';
+  }
+  function go(dir){
+    if(dir>0 && i===slides.length-1){done();return;}
+    i=Math.max(0,Math.min(slides.length-1,i+dir));
+    render();
+  }
+  function done(){
+    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.magic){
+      window.webkit.messageHandlers.magic.postMessage('done');
+    }
+  }
+  render();
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+</script>
+</body>
+</html>

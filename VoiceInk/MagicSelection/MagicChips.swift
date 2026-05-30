@@ -64,10 +64,36 @@ final class MagicChipStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([MagicChip].self, from: data),
            !decoded.isEmpty {
             chips = decoded
+            migrateLegacyBuiltins()
             mergeNewBuiltins()
         } else {
             chips = Self.defaults
         }
+    }
+
+    /// Migra los chips de fábrica guardados con títulos/comandos en español
+    /// (versiones previas a la internacionalización) a las claves en inglés.
+    /// Así el título se localiza en runtime (NSLocalizedString) y muestra el
+    /// idioma correcto. No toca los chips custom ni el orden ni el on/off.
+    private func migrateLegacyBuiltins() {
+        let legacy = ["Explicar": "Explain", "Reescribir": "Rewrite",
+                      "Resumir": "Summarize", "Traducir": "Translate",
+                      "Sinónimos": "Synonyms", "Responder": "Reply",
+                      "Ortografía": "Spelling", "Código": "Code"]
+        var changed = false
+        for i in chips.indices where !chips[i].isCustom {
+            if let en = legacy[chips[i].title],
+               let def = Self.defaults.first(where: { $0.title == en }) {
+                let wasEnabled = chips[i].enabled
+                chips[i].title = def.title
+                chips[i].systemImage = def.systemImage
+                chips[i].command = def.command
+                chips[i].isTranslate = def.isTranslate
+                chips[i].enabled = wasEnabled
+                changed = true
+            }
+        }
+        if changed { save() }
     }
 
     /// Agrega los chips de fábrica nuevos (que no estaban cuando el usuario
@@ -88,24 +114,26 @@ final class MagicChipStore: ObservableObject {
         }
     }
 
-    /// Los 7 chips de fábrica (en español rioplatense).
+    /// Los 8 chips de fábrica. El `title` es la clave en inglés (se localiza en
+    /// runtime vía NSLocalizedString); el `command` va al LLM en inglés (mejor
+    /// adherencia; el modelo responde en el idioma del texto del usuario).
     static var defaults: [MagicChip] {
         [
-            MagicChip(title: "Explicar", systemImage: "lightbulb",
-                      command: "Explicá este texto de forma clara y simple."),
-            MagicChip(title: "Reescribir", systemImage: "pencil.and.scribble",
-                      command: "Reescribí este texto para que quede más claro y pulido. Devolvé solo la versión reescrita."),
-            MagicChip(title: "Resumir", systemImage: "text.alignleft",
-                      command: "Resumí este texto en los puntos más importantes."),
-            MagicChip(title: "Traducir", systemImage: "globe", command: "", isTranslate: true),
-            MagicChip(title: "Sinónimos", systemImage: "textformat.abc",
-                      command: "Dame sinónimos y variantes de esto."),
-            MagicChip(title: "Responder", systemImage: "arrowshape.turn.up.left",
-                      command: "Redactá una respuesta breve y útil a esto, manteniendo el tono."),
-            MagicChip(title: "Ortografía", systemImage: "text.badge.checkmark",
-                      command: "Corregí la ortografía y la gramática. Devolvé solo el texto corregido."),
-            MagicChip(title: "Código", systemImage: "chevron.left.forwardslash.chevron.right",
-                      command: "Analizá este código: detectá errores o bugs, explicá brevemente el problema y devolvé el código corregido en un bloque de código markdown (```), indicando el lenguaje.")
+            MagicChip(title: "Explain", systemImage: "lightbulb",
+                      command: "Explain this text clearly and simply."),
+            MagicChip(title: "Rewrite", systemImage: "pencil.and.scribble",
+                      command: "Rewrite this text so it is clearer and more polished. Return only the rewritten version."),
+            MagicChip(title: "Summarize", systemImage: "text.alignleft",
+                      command: "Summarize this text into its most important points."),
+            MagicChip(title: "Translate", systemImage: "globe", command: "", isTranslate: true),
+            MagicChip(title: "Synonyms", systemImage: "textformat.abc",
+                      command: "Give me synonyms and alternatives for this."),
+            MagicChip(title: "Reply", systemImage: "arrowshape.turn.up.left",
+                      command: "Draft a short, useful reply to this, keeping the tone."),
+            MagicChip(title: "Spelling", systemImage: "text.badge.checkmark",
+                      command: "Fix the spelling and grammar. Return only the corrected text."),
+            MagicChip(title: "Code", systemImage: "chevron.left.forwardslash.chevron.right",
+                      command: "Analyze this code: find errors or bugs, briefly explain the problem, and return the corrected code in a markdown code block (```), indicating the language.")
         ]
     }
 }
@@ -118,15 +146,17 @@ enum MagicTranslation {
     private static let prefKey = "magicSelection.translateLanguage"
     private static let autoKey = "magicSelection.translateAutoDetect"
 
-    /// Idiomas ofrecidos en el submenú / picker de Settings.
+    /// Idiomas ofrecidos en el submenú / picker de Settings. Claves en inglés
+    /// (se localizan al mostrarse vía NSLocalizedString) y se usan tal cual en
+    /// el comando que va al LLM.
     static let languages = [
-        "Inglés", "Español", "Portugués", "Francés", "Italiano", "Alemán",
-        "Japonés", "Chino", "Coreano", "Ruso", "Árabe", "Hindi", "Holandés", "Catalán"
+        "English", "Spanish", "Portuguese", "French", "Italian", "German",
+        "Japanese", "Chinese", "Korean", "Russian", "Arabic", "Hindi", "Dutch", "Catalan"
     ]
 
-    /// Idioma de traducción preferido (default: Inglés).
+    /// Idioma de traducción preferido (default: English).
     static var preferredLanguage: String {
-        get { UserDefaults.standard.string(forKey: prefKey) ?? "Inglés" }
+        get { UserDefaults.standard.string(forKey: prefKey) ?? "English" }
         set { UserDefaults.standard.set(newValue, forKey: prefKey) }
     }
 
@@ -136,10 +166,11 @@ enum MagicTranslation {
         set { UserDefaults.standard.set(newValue, forKey: autoKey) }
     }
 
-    /// Nombre del idioma del sistema (ej. "Español"), capitalizado.
+    /// Nombre del idioma del sistema en inglés canónico (ej. "Spanish"), para
+    /// que coincida con `languages` y con el comando que va al LLM.
     static var systemLanguageName: String {
         let code = Locale.current.language.languageCode?.identifier ?? "es"
-        let name = Locale.current.localizedString(forLanguageCode: code) ?? "Español"
+        let name = Locale(identifier: "en").localizedString(forLanguageCode: code) ?? "Spanish"
         return name.prefix(1).uppercased() + name.dropFirst()
     }
 
@@ -147,7 +178,7 @@ enum MagicTranslation {
     /// (submenú); si es nil, resuelve el destino (auto o preferido).
     static func command(for text: String, override: String? = nil) -> String {
         let target = override ?? resolveTarget(for: text)
-        return "Traducí este texto al \(target). Devolvé SOLO la traducción, sin notas."
+        return "Translate this text to \(target). Return ONLY the translation, no notes."
     }
 
     /// Resuelve el idioma destino. Con auto-detección: si el texto YA está en el
@@ -159,17 +190,18 @@ enum MagicTranslation {
         if detected.caseInsensitiveCompare(preferredLanguage) == .orderedSame {
             // El texto ya está en el preferido → traducir al idioma del usuario.
             let sys = systemLanguageName
-            return sys.caseInsensitiveCompare(preferredLanguage) == .orderedSame ? "Inglés" : sys
+            return sys.caseInsensitiveCompare(preferredLanguage) == .orderedSame ? "English" : sys
         }
         return preferredLanguage
     }
 
     /// Detecta el idioma dominante del texto con NaturalLanguage (on-device).
+    /// Devuelve el nombre en inglés canónico para comparar con `preferredLanguage`.
     private static func detectedLanguageName(_ text: String) -> String? {
         let recognizer = NLLanguageRecognizer()
         recognizer.processString(text)
         guard let lang = recognizer.dominantLanguage else { return nil }
-        let name = Locale.current.localizedString(forLanguageCode: lang.rawValue)
+        let name = Locale(identifier: "en").localizedString(forLanguageCode: lang.rawValue)
         return name.map { $0.prefix(1).uppercased() + $0.dropFirst() }
     }
 }

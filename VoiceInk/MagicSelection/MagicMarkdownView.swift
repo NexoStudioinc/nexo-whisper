@@ -58,7 +58,7 @@ private struct CodeBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text((language?.isEmpty == false ? language! : "código").lowercased())
+                Text((language?.isEmpty == false ? language! : "code").lowercased())
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.45))
                 Spacer()
@@ -72,7 +72,7 @@ private struct CodeBlock: View {
                         .foregroundStyle(.white.opacity(0.6))
                 }
                 .buttonStyle(.plain)
-                .help("Copiar código")
+                .help("Copy code")
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)

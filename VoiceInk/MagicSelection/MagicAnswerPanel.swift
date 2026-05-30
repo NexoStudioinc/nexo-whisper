@@ -2,54 +2,6 @@ import AppKit
 import SwiftUI
 import OSLog
 
-/// Resultado de un comando Magic, parseado del JSON que devuelve la IA (camino
-/// NO-streaming / fallback). El camino de streaming usa el header de control
-/// (`@@REPLACE@@` / `@@ANSWER@@`), ver `AIEnhancementService`.
-struct MagicCommandResult {
-    enum Action {
-        /// Reemplazar la selección con `text`.
-        case replace
-        /// Mostrar `text` en el panel flotante, sin tocar el texto del usuario.
-        case answer
-    }
-
-    let action: Action
-    let text: String
-    /// Término de entidad para buscar una imagen (solo en `answer`, opcional).
-    let imageQuery: String?
-
-    static func parse(_ raw: String) -> MagicCommandResult {
-        let cleaned = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Extraer el primer bloque {...} (tolerante a texto extra o backticks).
-        if let start = cleaned.firstIndex(of: "{"),
-           let end = cleaned.lastIndex(of: "}"),
-           start < end {
-            let jsonSlice = String(cleaned[start...end])
-            if let data = jsonSlice.data(using: .utf8),
-               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let text = obj["text"] as? String {
-                let actionStr = (obj["action"] as? String)?.lowercased() ?? "replace"
-                let action: Action = (actionStr == "answer") ? .answer : .replace
-                let image = (obj["image"] as? String).flatMap { $0.isEmpty ? nil : $0 }
-                return MagicCommandResult(
-                    action: action,
-                    text: text.trimmingCharacters(in: .whitespacesAndNewlines),
-                    imageQuery: action == .answer ? image : nil
-                )
-            }
-        }
-
-        // Fallback: no vino JSON → tratamos todo como reemplazo.
-        return MagicCommandResult(action: .replace, text: cleaned, imageQuery: nil)
-    }
-}
-
-/// Acciones rápidas del panel (botones). Disparan un comando sin necesidad de
-/// (Los chips de acción ahora son configurables: ver `MagicChip` /
-/// `MagicChipStore` en MagicChips.swift — built-in + custom, on/off y orden
-/// desde Settings.)
-
 /// Busca la imagen (thumbnail) de una entidad en Wikipedia. Gratis, sin API
 /// key. Prueba primero en español y cae a inglés.
 enum MagicImageSearch {
@@ -201,9 +153,9 @@ final class MagicAnswerModel: ObservableObject {
         imageTask?.cancel()
         if let q = imageQuery {
             searchingImage = true
-            imageTask = Task { @MainActor in
+            imageTask = Task { @MainActor [weak self] in
                 let url = await MagicImageSearch.thumbnailURL(for: q)
-                guard !Task.isCancelled else { return }
+                guard let self, !Task.isCancelled else { return }
                 self.imageURL = url
                 self.searchingImage = false
                 self.hasImage = (url != nil)
@@ -531,8 +483,8 @@ private struct MagicAnswerView: View {
             Spacer()
 
             historyMenu
-            iconButton("square.and.arrow.up", help: "Compartir") { onShare(); onInteract() }
-            iconButton("xmark", help: "Cerrar") { model.onClose?() }
+            iconButton("square.and.arrow.up", help: "Share") { onShare(); onInteract() }
+            iconButton("xmark", help: "Close") { model.onClose?() }
         }
         .padding(.horizontal, 13)
         .padding(.top, 11)
@@ -558,7 +510,7 @@ private struct MagicAnswerView: View {
                     // Primer turno sin texto previo: "Pensando…" en el cuerpo.
                     HStack(spacing: 8) {
                         thinkingDots
-                        Text("Pensando…")
+                        Text("Thinking…")
                             .font(.system(size: 13))
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -599,14 +551,14 @@ private struct MagicAnswerView: View {
                 if !model.isStreaming, !model.responseText.isEmpty {
                     HStack(spacing: 8) {
                         if model.onReplace != nil {
-                            actionPill(icon: "arrow.down.doc", text: "Reemplazar texto",
-                                       help: "Reemplazar / Pegar en el origen") {
+                            actionPill(icon: "arrow.down.doc", text: "Replace text",
+                                       help: "Replace / Paste into source") {
                                 model.onReplace?(); onInteract()
                             }
                         }
                         actionPill(icon: copied ? "checkmark" : "doc.on.doc",
-                                   text: copied ? "Copiado" : "Copiar",
-                                   help: "Copiar el resultado") {
+                                   text: copied ? "Copied" : "Copy",
+                                   help: "Copy the result") {
                             model.copyToPasteboard()
                             withAnimation { copied = true }
                             onInteract()
@@ -621,7 +573,7 @@ private struct MagicAnswerView: View {
     }
 
     /// Pastilla de acción discreta (Reemplazar / Copiar) al pie de la respuesta.
-    private func actionPill(icon: String, text: String, help: String, action: @escaping () -> Void) -> some View {
+    private func actionPill(icon: String, text: LocalizedStringKey, help: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.system(size: 10, weight: .semibold))
@@ -645,7 +597,7 @@ private struct MagicAnswerView: View {
         if model.isThinking && !model.responseText.isEmpty {
             HStack(spacing: 8) {
                 thinkingDots
-                Text("Pensando…")
+                Text("Thinking…")
                     .font(.system(size: 11))
                     .foregroundStyle(.white.opacity(0.55))
                 Spacer()
@@ -692,7 +644,7 @@ private struct MagicAnswerView: View {
             // Globo → menú de idiomas.
             Menu {
                 ForEach(MagicTranslation.languages, id: \.self) { lang in
-                    Button(lang) { model.runChip(chip, overrideLanguage: lang); onInteract() }
+                    Button(AppText.t(lang)) { model.runChip(chip, overrideLanguage: lang); onInteract() }
                 }
             } label: {
                 if isActive {
@@ -708,7 +660,7 @@ private struct MagicAnswerView: View {
 
             // Texto → traduce.
             Button { model.runChip(chip); onInteract() } label: {
-                Text(chip.title).font(.system(size: 10, weight: .medium))
+                Text(AppText.t(chip.title)).font(.system(size: 10, weight: .medium))
             }
             .buttonStyle(.plain)
         }
@@ -732,7 +684,7 @@ private struct MagicAnswerView: View {
             } else {
                 Image(systemName: chip.systemImage).font(.system(size: 9, weight: .semibold))
             }
-            Text(chip.title).font(.system(size: 10, weight: .medium))
+            Text(AppText.t(chip.title)).font(.system(size: 10, weight: .medium))
         }
         .foregroundStyle(.white.opacity(model.isStreaming && !isActive ? 0.4 : 0.85))
         .padding(.horizontal, 8)
@@ -749,39 +701,39 @@ private struct MagicAnswerView: View {
     @ViewBuilder private var openInBar: some View {
         if !model.selectedText.isEmpty {
             HStack(spacing: 12) {
-                Text("Abrir en")
+                Text("Open in")
                     .font(.system(size: 10))
                     .foregroundStyle(.white.opacity(0.4))
-                openButton(logo: "claude-logo", help: "Abrir en Claude") {
+                openButton(logo: "claude-logo", help: "Open in Claude") {
                     openIn("https://claude.ai/new?q={q}")
                 }
-                openButton(logo: "chatgpt-logo", help: "Abrir en ChatGPT") {
+                openButton(logo: "chatgpt-logo", help: "Open in ChatGPT") {
                     openIn("https://chatgpt.com/?q={q}")
                 }
-                openButton(logo: "gemini-logo", help: "Abrir en Gemini (copia el texto para pegar)") {
+                openButton(logo: "gemini-logo", help: "Open in Gemini (copies the text to paste)") {
                     // Gemini no acepta ?q= en la URL: copiamos la selección y
                     // avisamos para pegar con ⌘V.
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(model.selectedText, forType: .string)
                     NSWorkspace.shared.open(URL(string: "https://gemini.google.com/app")!)
                     NotificationManager.shared.showNotification(
-                        title: "📋 Texto copiado — pegalo con ⌘V en Gemini",
+                        title: String(localized: "📋 Text copied — paste it with ⌘V in Gemini"),
                         type: .info, duration: 4.0
                     )
                     onInteract()
                 }
-                openButton(logo: "google-logo", help: "Buscar en Google") {
+                openButton(logo: "google-logo", help: "Search on Google") {
                     openIn("https://www.google.com/search?q={q}")
                 }
 
                 Spacer()
 
                 // Acciones rápidas sobre la selección.
-                openButton(logo: messagingLogo, symbol: messagingSymbol, help: "Mandar por \(messagingName)") {
+                openButton(logo: messagingLogo, symbol: messagingSymbol, help: "Send via \(messagingName)") {
                     _ = MagicActions.sendMessage(model.selectedText)
                     onInteract()
                 }
-                openButton(symbol: "map.fill", help: "Ver en Maps") {
+                openButton(symbol: "map.fill", help: "View in Maps") {
                     _ = MagicActions.openMaps(model.selectedText)
                     onInteract()
                 }
@@ -818,7 +770,7 @@ private struct MagicAnswerView: View {
     }
 
     private func openButton(logo: String? = nil, symbol: String? = nil,
-                            help: String, action: @escaping () -> Void) -> some View {
+                            help: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Group {
                 if let logo {
@@ -838,7 +790,7 @@ private struct MagicAnswerView: View {
 
     private var askBar: some View {
         HStack(spacing: 8) {
-            TextField("Seguí preguntando…", text: $model.question)
+            TextField("Keep asking…", text: $model.question)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12))
                 .foregroundStyle(.white.opacity(0.92))
@@ -859,10 +811,10 @@ private struct MagicAnswerView: View {
 
             // Undo / Redo al FINAL (derecha), como pidió Maxi.
             Divider().frame(height: 16).overlay(Color.white.opacity(0.12))
-            footerIcon("arrow.uturn.backward", help: "Deshacer", enabled: model.canUndo) {
+            footerIcon("arrow.uturn.backward", help: "Undo", enabled: model.canUndo) {
                 model.undo(); onInteract()
             }
-            footerIcon("arrow.uturn.forward", help: "Rehacer", enabled: model.canRedo) {
+            footerIcon("arrow.uturn.forward", help: "Redo", enabled: model.canRedo) {
                 model.redo(); onInteract()
             }
         }
@@ -872,7 +824,7 @@ private struct MagicAnswerView: View {
         .overlay(Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.06)), alignment: .top)
     }
 
-    private func footerIcon(_ icon: String, help: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+    private func footerIcon(_ icon: String, help: LocalizedStringKey, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
@@ -889,7 +841,7 @@ private struct MagicAnswerView: View {
     private var historyMenu: some View {
         Menu {
             if model.historyStore.items.isEmpty {
-                Text("Sin historial")
+                Text("No history")
             } else {
                 ForEach(model.historyStore.items) { item in
                     Button(item.preview) {
@@ -897,7 +849,7 @@ private struct MagicAnswerView: View {
                     }
                 }
                 Divider()
-                Button("Limpiar historial", role: .destructive) { model.historyStore.clear() }
+                Button("Clear history", role: .destructive) { model.historyStore.clear() }
             }
         } label: {
             Image(systemName: "clock.arrow.circlepath")
@@ -909,10 +861,10 @@ private struct MagicAnswerView: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("Historial")
+        .help("History")
     }
 
-    private func iconButton(_ icon: String, help: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(_ icon: String, help: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .semibold))

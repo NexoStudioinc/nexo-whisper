@@ -12,15 +12,6 @@ enum MagicVisualState: Equatable {
     case listening
     /// Procesando (transcripción + IA + reemplazo).
     case thinking
-
-    var pillText: String {
-        switch self {
-        case .off: return ""
-        case .ready: return "Modo Magic · tocá para hablar · Esc para salir"
-        case .listening: return "Escuchando tu comando…"
-        case .thinking: return "Pensando…"
-        }
-    }
 }
 
 /// Overlay flotante que dibuja un aura (glow) violeta→cyan alrededor del
@@ -47,7 +38,6 @@ final class MagicModeOverlay {
     private let stateModel = MagicOverlayStateModel()
 
     func show(state: MagicVisualState) {
-        stateModel.showLabels = UserDefaults.standard.integer(forKey: "magicSelection.introShownCount") <= 2
         stateModel.state = state
         if panel == nil {
             buildPanel()
@@ -134,9 +124,6 @@ final class MagicModeOverlay {
 @MainActor
 final class MagicOverlayStateModel: ObservableObject {
     @Published var state: MagicVisualState = .off
-    /// Solo las primeras veces mostramos texto ("Escuchando…") junto al
-    /// waveform. Después alcanza el waveform encapsulado.
-    @Published var showLabels: Bool = false
 }
 
 // ── La vista del glow + pill ────────────────────────────────────────────
@@ -266,7 +253,7 @@ private struct MagicGlowView: View {
 
     private var shortLabel: String {
         switch model.state {
-        case .thinking: return "Pensando…"
+        case .thinking: return String(localized: "Thinking…")
         default: return ""   // listening: solo el waveform, sin texto
         }
     }

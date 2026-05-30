@@ -32,7 +32,7 @@ struct MagicSelectionView: View {
                 hero
 
                 Toggle(isOn: $enabled) {
-                    Text("Activar Magic Aura").font(.headline)
+                    Text("Enable Magic Aura").font(.headline)
                 }
                 .toggleStyle(.switch)
                 .onChange(of: enabled) { _, newValue in
@@ -45,7 +45,7 @@ struct MagicSelectionView: View {
                     MagicPanelSettingsView()
                     advancedCard
                 } else {
-                    Text("Activá Magic para configurar los botones de acción, la traducción y el comportamiento del panel.")
+                    Text("Enable Magic to configure the action buttons, translation and panel behavior.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -76,7 +76,7 @@ struct MagicSelectionView: View {
                         .background(RoundedRectangle(cornerRadius: 4).fill(.purple.opacity(0.2)))
                         .foregroundStyle(.purple)
                 }
-                Text("Seleccioná texto, dictá o tocá un botón, y la IA actúa sobre eso al instante.")
+                Text("Select text, dictate or tap a button, and the AI acts on it instantly.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             Spacer()
@@ -86,9 +86,9 @@ struct MagicSelectionView: View {
     // ── Activación ──────────────────────────────────────────────────────
 
     private var activationCard: some View {
-        GroupBox(label: Label("Activación", systemImage: "hand.tap")) {
+        GroupBox(label: Label("Activation", systemImage: "hand.tap")) {
             VStack(alignment: .leading, spacing: 12) {
-                LabeledContent("Atajo de teclado") {
+                LabeledContent("Keyboard shortcut") {
                     ShortcutRecorder(action: .magicSelection) {}
                         .controlSize(.small)
                 }
@@ -97,44 +97,44 @@ struct MagicSelectionView: View {
                    shortcut.kind == .modifierOnly {
                     HStack(spacing: 6) {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                        Text("El atajo (\(shortcut.displayString)) es solo un modificador. Combinalo con una tecla, ej. ⌥M o ⌃⌥Z.")
+                        Text("The shortcut (\(shortcut.displayString)) is only a modifier. Combine it with a key, e.g. ⌥M or ⌃⌥Z.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
 
                 Divider()
 
-                Toggle("Activar también con el gesto wiggle del mouse", isOn: $wiggleEnabled)
+                Toggle("Also activate with the mouse wiggle gesture", isOn: $wiggleEnabled)
                     .toggleStyle(.switch)
                     .onChange(of: wiggleEnabled) { _, newValue in
                         Task { @MainActor in MagicSelectionService.shared.isWiggleEnabled = newValue }
                     }
-                Text("Sacudí el mouse de lado a lado para activar Magic.")
+                Text("Shake the mouse side to side to activate Magic.")
                     .font(.caption).foregroundStyle(.secondary)
 
                 Divider()
 
                 // Modificadores de los modos (configurables, no hardcodeados).
                 modifierRow(
-                    title: "Tecla para modo continuo",
-                    help: "Mantené esta tecla mientras hacés el wiggle para que Magic quede escuchando en loop (corta cada comando por silencio). Soltás la tecla normal y seguís dando comandos hasta cerrar con Esc.",
+                    title: "Key for continuous mode",
+                    help: "Hold this key while you wiggle so Magic keeps listening in a loop (it cuts each command on silence). Release the key and keep giving commands until you close with Esc.",
                     selection: $continuousModifier
                 )
                 modifierRow(
-                    title: "Tecla para modo transcriptor",
-                    help: "Mantené esta tecla durante el wiggle para dictar texto: graba tu voz, la transcribe (y la mejora si tenés la mejora de IA activada) y la pega donde está el cursor. Como el dictado normal, pero invocado con el wiggle.",
+                    title: "Key for transcriber mode",
+                    help: "Hold this key during the wiggle to dictate text: it records your voice, transcribes it (and enhances it if you have AI enhancement enabled) and pastes it where the cursor is. Like regular dictation, but triggered with the wiggle.",
                     selection: $transcribeModifier
                 )
                 modifierRow(
-                    title: "Tecla para reemplazo directo",
-                    help: "Mantené esta tecla durante el wiggle para que el resultado se pegue DIRECTO sobre la selección, sin abrir el panel (modo \"confío en la respuesta\").",
+                    title: "Key for direct replace",
+                    help: "Hold this key during the wiggle so the result is pasted DIRECTLY over the selection, without opening the panel (\"I trust the answer\" mode).",
                     selection: $replaceDirectModifier
                 )
 
                 if let conflict = modifierConflict {
                     HStack(spacing: 6) {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                        Text("La tecla \(conflict) está asignada a más de un modo. Elegí teclas distintas para cada uno.")
+                        Text("The \(conflict) key is assigned to more than one mode. Choose different keys for each.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -151,13 +151,13 @@ struct MagicSelectionView: View {
         return dup.flatMap { id in modifiers.first { $0.id == id }?.label }
     }
 
-    private func modifierRow(title: String, help: String, selection: Binding<String>) -> some View {
+    private func modifierRow(title: LocalizedStringKey, help: LocalizedStringKey, selection: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Text(title)
                 Spacer()
                 Picker("", selection: selection) {
-                    Text("Ninguna").tag("none")
+                    Text("None").tag("none")
                     ForEach(modifiers, id: \.id) { Text($0.label).tag($0.id) }
                 }
                 .labelsHidden()
@@ -183,7 +183,7 @@ struct MagicSelectionView: View {
                         .fill(RadialGradient(colors: [auraColor, auraColor.opacity(0)],
                                              center: .center, startRadius: 1, endRadius: 18))
                         .frame(width: 34, height: 34)
-                    Text("Color del aura")
+                    Text("Aura color")
                     Spacer()
                     ColorPicker("", selection: $auraColor, supportsOpacity: false)
                         .labelsHidden()
@@ -192,10 +192,10 @@ struct MagicSelectionView: View {
                             usingCustomAura = true
                         }
                 }
-                Text("El halo que rodea el cursor cuando Magic Aura está activo. Por defecto es violeta → cyan.")
+                Text("The halo around the cursor when Magic Aura is active. Violet → cyan by default.")
                     .font(.caption).foregroundStyle(.secondary)
                 if usingCustomAura {
-                    Button("Restaurar degradé por defecto") {
+                    Button("Restore default gradient") {
                         MagicAura.setColor(nil)
                         usingCustomAura = false
                         auraColor = MagicAura.defaultPrimary
@@ -213,31 +213,31 @@ struct MagicSelectionView: View {
         GroupBox {
             DisclosureGroup(isExpanded: $showAdvanced) {
                 VStack(alignment: .leading, spacing: 12) {
-                    sliderRow("Sensibilidad (cambios de dirección)",
+                    sliderRow("Sensitivity (direction changes)",
                               value: Binding(get: { Double(directionChangesThreshold) },
                                              set: { directionChangesThreshold = Int($0) }),
-                              range: 3...7, step: 1, display: "\(directionChangesThreshold) cambios")
-                    sliderRow("Velocidad mínima del wiggle",
+                              range: 3...7, step: 1, display: String(localized: "\(directionChangesThreshold) changes"))
+                    sliderRow("Minimum wiggle speed",
                               value: $minVelocityPxPerSec,
                               range: 100...500, step: 25, display: "\(Int(minVelocityPxPerSec)) px/s")
-                    sliderRow("Ventana de detección",
+                    sliderRow("Detection window",
                               value: Binding(get: { Double(windowDurationMs) },
                                              set: { windowDurationMs = Int($0) }),
                               range: 200...800, step: 50, display: "\(windowDurationMs) ms")
-                    sliderRow("Cooldown entre activaciones",
+                    sliderRow("Cooldown between activations",
                               value: $cooldownSec,
                               range: 1.0...5.0, step: 0.5, display: String(format: "%.1f s", cooldownSec))
                 }
                 .padding(.top, 8)
             } label: {
-                Label("Sensibilidad del wiggle (avanzado)", systemImage: "slider.horizontal.3")
+                Label("Wiggle sensitivity (advanced)", systemImage: "slider.horizontal.3")
                     .font(.system(size: 12, weight: .semibold))
             }
             .padding(6)
         }
     }
 
-    private func sliderRow(_ label: String, value: Binding<Double>,
+    private func sliderRow(_ label: LocalizedStringKey, value: Binding<Double>,
                            range: ClosedRange<Double>, step: Double, display: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {

@@ -50,7 +50,7 @@ final class MagicActionConfirmer {
         let hosting = NSHostingController(rootView: view)
         let win = NSWindow(contentViewController: hosting)
         win.styleMask = [.titled, .closable]
-        win.title = "Confirmar acción"
+        win.title = String(localized: "Confirm action")
         win.titlebarAppearsTransparent = true
         win.isReleasedWhenClosed = false
         win.level = .floating
@@ -90,10 +90,10 @@ private struct MagicActionConfirmView: View {
 
     private var meta: (icon: String, name: String) {
         switch tool {
-        case "calendar": return ("calendar", "Evento de Calendario")
-        case "reminders": return ("checklist", "Recordatorio")
-        case "mail": return ("envelope", "Mail")
-        default: return ("note.text", "Nota")
+        case "calendar": return ("calendar", String(localized: "Calendar event"))
+        case "reminders": return ("checklist", String(localized: "Reminder"))
+        case "mail": return ("envelope", String(localized: "Mail"))
+        default: return ("note.text", String(localized: "Note"))
         }
     }
 
@@ -102,14 +102,14 @@ private struct MagicActionConfirmView: View {
             Label(meta.name, systemImage: meta.icon).font(.headline)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(tool == "mail" ? "Asunto" : "Título").font(.caption).foregroundStyle(.secondary)
+                Text(tool == "mail" ? String(localized: "Subject") : String(localized: "Title")).font(.caption).foregroundStyle(.secondary)
                 TextField("", text: tool == "mail" ? $subject : $title)
                     .textFieldStyle(.roundedBorder)
             }
 
             if tool == "calendar" {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Fecha y hora (AAAA-MM-DDTHH:mm, vacío = ajustar después)")
+                    Text("Date and time (YYYY-MM-DDTHH:mm, empty = set later)")
                         .font(.caption).foregroundStyle(.secondary)
                     TextField("2026-06-15T10:00", text: $dateISO)
                         .textFieldStyle(.roundedBorder)
@@ -117,7 +117,7 @@ private struct MagicActionConfirmView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(tool == "mail" ? "Cuerpo" : (tool == "calendar" || tool == "reminders" ? "Notas" : "Contenido"))
+                Text(tool == "mail" ? String(localized: "Body") : (tool == "calendar" || tool == "reminders" ? String(localized: "Notes") : String(localized: "Content")))
                     .font(.caption).foregroundStyle(.secondary)
                 TextEditor(text: $bodyText)
                     .font(.system(size: 12))
@@ -127,8 +127,8 @@ private struct MagicActionConfirmView: View {
 
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Crear") {
+                Button("Cancel", action: onCancel)
+                Button("Create") {
                     onConfirm(title.trimmingCharacters(in: .whitespacesAndNewlines),
                               bodyText.trimmingCharacters(in: .whitespacesAndNewlines),
                               subject.trimmingCharacters(in: .whitespacesAndNewlines),

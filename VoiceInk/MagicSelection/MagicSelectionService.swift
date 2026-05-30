@@ -224,15 +224,6 @@ final class MagicSelectionService {
         handleTrigger(at: location, source: .hotkey)
     }
 
-    /// Trigger manual desde Settings → "Force trigger now".
-    /// Útil para confirmar que el pipeline completo (extractor + service) funciona
-    /// sin depender del detector ni del shortcut monitor.
-    func triggerManually() {
-        Self.logger.info("🧪 Manual trigger from Settings")
-        let location = NSEvent.mouseLocation
-        handleTrigger(at: location, source: .hotkey)
-    }
-
     // ── Trigger handling ────────────────────────────────────────────────
 
     enum TriggerSource: String {
@@ -327,7 +318,7 @@ final class MagicSelectionService {
         guard count < 2 else { return }
         UserDefaults.standard.set(count + 1, forKey: key)
         NotificationManager.shared.showNotification(
-            title: "🪄 Modo Magic. Seleccioná, dictá tu comando y hacé wiggle de nuevo para aplicar. Con ⌥+wiggle queda escuchando solo (corta por silencio). Esc para salir.",
+            title: String(localized: "🪄 Magic mode. Select, dictate your command and wiggle again to apply. With ⌥+wiggle it keeps listening on its own (cuts on silence). Esc to exit."),
             type: .info,
             duration: 9.0
         )
@@ -423,7 +414,7 @@ final class MagicSelectionService {
             } catch {
                 self.endMagicMode(hideAnswer: true)
                 NotificationManager.shared.showNotification(
-                    title: "🪄 No pude empezar a grabar. Revisá el permiso de micrófono.",
+                    title: String(localized: "🪄 Couldn't start recording. Check the microphone permission."),
                     type: .error,
                     duration: 6.0
                 )
@@ -510,7 +501,7 @@ final class MagicSelectionService {
             guard let engine = self.engine,
                   let model = engine.transcriptionModelManager.currentTranscriptionModel,
                   let enhancement = engine.enhancementService else {
-                self.notifyError("Magic no está listo (modelo o IA sin configurar).")
+                self.notifyError(String(localized: "Magic isn't ready (model or AI not configured)."))
                 self.cleanupTempFile(audioURL)
                 return
             }
@@ -523,7 +514,7 @@ final class MagicSelectionService {
                 guard !trimmedCommand.isEmpty else {
                     // En continuo, un silencio sin comando es normal: no spamear.
                     if !self.isContinuous {
-                        self.notifyError("No te escuché ningún comando. Probá de nuevo.")
+                        self.notifyError(String(localized: "I didn't catch any command. Try again."))
                     }
                     self.cleanupTempFile(audioURL)
                     return
@@ -554,7 +545,7 @@ final class MagicSelectionService {
                 }
 
                 guard let selectedText = context.bestText, !selectedText.isEmpty else {
-                    self.notifyError("No encontré texto seleccionado para aplicar el comando.")
+                    self.notifyError(String(localized: "No selected text found to apply the command."))
                     self.cleanupTempFile(audioURL)
                     return
                 }
@@ -570,7 +561,7 @@ final class MagicSelectionService {
                     freshPanel: true
                 )
             } catch {
-                self.notifyError("No pude procesar el comando: \(error.localizedDescription)")
+                self.notifyError(String(localized: "Couldn't process the command: \(error.localizedDescription)"))
                 Self.logger.error("Pipeline error: \(error.localizedDescription, privacy: .public)")
             }
 
@@ -672,9 +663,9 @@ final class MagicSelectionService {
             }
         } catch {
             if let model {
-                model.failTurn("No pude completar: \(error.localizedDescription)")
+                model.failTurn(String(localized: "Couldn't complete: \(error.localizedDescription)"))
             } else {
-                self.notifyError("No pude procesar el comando: \(error.localizedDescription)")
+                self.notifyError(String(localized: "Couldn't process the command: \(error.localizedDescription)"))
             }
             Self.logger.error("Streaming error: \(error.localizedDescription, privacy: .public)")
         }

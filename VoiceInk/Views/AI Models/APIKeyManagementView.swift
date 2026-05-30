@@ -262,13 +262,13 @@ struct APIKeyManagementView: View {
                             .foregroundStyle(AppleFoundationService.isAvailable ? .green : .orange)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(AppleFoundationService.isAvailable
-                                 ? "Apple Intelligence está listo — no necesita API key."
-                                 : "Apple Intelligence no está disponible.")
+                                 ? "Apple Intelligence is ready — no API key needed."
+                                 : "Apple Intelligence isn't available.")
                                 .font(.subheadline)
                             if let reason = AppleFoundationService.unavailableReason {
                                 Text(reason).font(.caption).foregroundStyle(.secondary)
                             } else {
-                                Text("Modelo on-device de Apple: gratis, privado y sin conexión.")
+                                Text("Apple's on-device model: free, private and offline.")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }

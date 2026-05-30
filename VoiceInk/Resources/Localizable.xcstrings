@@ -5887,6 +5887,1436 @@
           }
         }
       }
+    },
+    "Explain": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explicar"
+          }
+        }
+      }
+    },
+    "Rewrite": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reescribir"
+          }
+        }
+      }
+    },
+    "Summarize": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resumir"
+          }
+        }
+      }
+    },
+    "Translate": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traducir"
+          }
+        }
+      }
+    },
+    "Synonyms": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinónimos"
+          }
+        }
+      }
+    },
+    "Reply": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Responder"
+          }
+        }
+      }
+    },
+    "Spelling": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ortografía"
+          }
+        }
+      }
+    },
+    "Code": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código"
+          }
+        }
+      }
+    },
+    "Portuguese": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portugués"
+          }
+        }
+      }
+    },
+    "French": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Francés"
+          }
+        }
+      }
+    },
+    "Italian": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Italiano"
+          }
+        }
+      }
+    },
+    "German": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alemán"
+          }
+        }
+      }
+    },
+    "Japanese": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Japonés"
+          }
+        }
+      }
+    },
+    "Chinese": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chino"
+          }
+        }
+      }
+    },
+    "Korean": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coreano"
+          }
+        }
+      }
+    },
+    "Russian": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruso"
+          }
+        }
+      }
+    },
+    "Arabic": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Árabe"
+          }
+        }
+      }
+    },
+    "Hindi": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hindi"
+          }
+        }
+      }
+    },
+    "Dutch": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holandés"
+          }
+        }
+      }
+    },
+    "Catalan": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalán"
+          }
+        }
+      }
+    },
+    "Thinking…": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pensando…"
+          }
+        }
+      }
+    },
+    "Copy code": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar código"
+          }
+        }
+      }
+    },
+    "Confirm action": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar acción"
+          }
+        }
+      }
+    },
+    "Calendar event": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evento de Calendario"
+          }
+        }
+      }
+    },
+    "Reminder": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recordatorio"
+          }
+        }
+      }
+    },
+    "Note": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota"
+          }
+        }
+      }
+    },
+    "Subject": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asunto"
+          }
+        }
+      }
+    },
+    "Title": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Título"
+          }
+        }
+      }
+    },
+    "Date and time (YYYY-MM-DDTHH:mm, empty = set later)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fecha y hora (AAAA-MM-DDTHH:mm, vacío = ajustar después)"
+          }
+        }
+      }
+    },
+    "Body": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuerpo"
+          }
+        }
+      }
+    },
+    "Notes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas"
+          }
+        }
+      }
+    },
+    "Content": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contenido"
+          }
+        }
+      }
+    },
+    "Create": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear"
+          }
+        }
+      }
+    },
+    "I don't recognize that action.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reconozco esa acción."
+          }
+        }
+      }
+    },
+    "Couldn't open Maps.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude abrir Maps."
+          }
+        }
+      }
+    },
+    "Opening in Maps": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abriendo en Maps"
+          }
+        }
+      }
+    },
+    "Couldn't compose the message.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude armar el mensaje."
+          }
+        }
+      }
+    },
+    "Message ready in %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mensaje listo en %@"
+          }
+        }
+      }
+    },
+    "No number found to call.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No encontré un número para llamar."
+          }
+        }
+      }
+    },
+    "Calling %@…": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llamando a %@…"
+          }
+        }
+      }
+    },
+    "You didn't tell me which Shortcut to run.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No me dijiste qué Atajo correr."
+          }
+        }
+      }
+    },
+    "Shortcut “%@” ran": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajo “%@” ejecutado"
+          }
+        }
+      }
+    },
+    "Couldn't run the shortcut.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude ejecutar el atajo."
+          }
+        }
+      }
+    },
+    "Empty note.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota vacía."
+          }
+        }
+      }
+    },
+    "Added to Notes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregado a Notas"
+          }
+        }
+      }
+    },
+    "Couldn't add to Notes (check Automation permissions).": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude agregar a Notas (revisá permisos de Automatización)."
+          }
+        }
+      }
+    },
+    "Couldn't compose the email.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude armar el mail."
+          }
+        }
+      }
+    },
+    "Email ready to send": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mail listo para enviar"
+          }
+        }
+      }
+    },
+    "Empty reminder.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recordatorio vacío."
+          }
+        }
+      }
+    },
+    "Reminders permission missing. Grant it in System Settings → Privacy.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falta permiso de Recordatorios. Concedelo en Ajustes del sistema → Privacidad."
+          }
+        }
+      }
+    },
+    "No Reminders list available.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay una lista de Recordatorios disponible."
+          }
+        }
+      }
+    },
+    "Added to Reminders": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregado a Recordatorios"
+          }
+        }
+      }
+    },
+    "Couldn't create the reminder.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude crear el recordatorio."
+          }
+        }
+      }
+    },
+    "Empty event.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evento vacío."
+          }
+        }
+      }
+    },
+    "Calendar permission missing. Grant it in System Settings → Privacy.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falta permiso de Calendario. Concedelo en Ajustes del sistema → Privacidad."
+          }
+        }
+      }
+    },
+    "No calendar available.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay un calendario disponible."
+          }
+        }
+      }
+    },
+    "Event added to Calendar": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evento agregado al Calendario"
+          }
+        }
+      }
+    },
+    "Event created (adjust the date in Calendar)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evento creado (ajustá la fecha en Calendario)"
+          }
+        }
+      }
+    },
+    "Couldn't create the event.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude crear el evento."
+          }
+        }
+      }
+    },
+    "🪄 Magic mode. Select, dictate your command and wiggle again to apply. With ⌥+wiggle it keeps listening on its own (cuts on silence). Esc to exit.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🪄 Modo Magic. Seleccioná, dictá tu comando y hacé wiggle de nuevo para aplicar. Con ⌥+wiggle queda escuchando solo (corta por silencio). Esc para salir."
+          }
+        }
+      }
+    },
+    "🪄 Couldn't start recording. Check the microphone permission.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🪄 No pude empezar a grabar. Revisá el permiso de micrófono."
+          }
+        }
+      }
+    },
+    "Magic isn't ready (model or AI not configured).": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Magic no está listo (modelo o IA sin configurar)."
+          }
+        }
+      }
+    },
+    "I didn't catch any command. Try again.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No te escuché ningún comando. Probá de nuevo."
+          }
+        }
+      }
+    },
+    "No selected text found to apply the command.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No encontré texto seleccionado para aplicar el comando."
+          }
+        }
+      }
+    },
+    "Couldn't process the command: %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude procesar el comando: %@"
+          }
+        }
+      }
+    },
+    "Couldn't complete: %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pude completar: %@"
+          }
+        }
+      }
+    },
+    "Share": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir"
+          }
+        }
+      }
+    },
+    "Replace text": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reemplazar texto"
+          }
+        }
+      }
+    },
+    "Replace / Paste into source": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reemplazar / Pegar en el origen"
+          }
+        }
+      }
+    },
+    "Copied": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar"
+          }
+        }
+      }
+    },
+    "Copy the result": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar el resultado"
+          }
+        }
+      }
+    },
+    "Open in": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en"
+          }
+        }
+      }
+    },
+    "Open in Claude": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en Claude"
+          }
+        }
+      }
+    },
+    "Open in ChatGPT": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en ChatGPT"
+          }
+        }
+      }
+    },
+    "Open in Gemini (copies the text to paste)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en Gemini (copia el texto para pegar)"
+          }
+        }
+      }
+    },
+    "Search on Google": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar en Google"
+          }
+        }
+      }
+    },
+    "📋 Text copied — paste it with ⌘V in Gemini": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📋 Texto copiado — pegalo con ⌘V en Gemini"
+          }
+        }
+      }
+    },
+    "Send via %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mandar por %@"
+          }
+        }
+      }
+    },
+    "View in Maps": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver en Maps"
+          }
+        }
+      }
+    },
+    "Keep asking…": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguí preguntando…"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshacer"
+          }
+        }
+      }
+    },
+    "Redo": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rehacer"
+          }
+        }
+      }
+    },
+    "No history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin historial"
+          }
+        }
+      }
+    },
+    "Clear history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpiar historial"
+          }
+        }
+      }
+    },
+    "Enable Magic Aura": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar Magic Aura"
+          }
+        }
+      }
+    },
+    "Enable Magic to configure the action buttons, translation and panel behavior.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activá Magic para configurar los botones de acción, la traducción y el comportamiento del panel."
+          }
+        }
+      }
+    },
+    "Select text, dictate or tap a button, and the AI acts on it instantly.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccioná texto, dictá o tocá un botón, y la IA actúa sobre eso al instante."
+          }
+        }
+      }
+    },
+    "Activation": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activación"
+          }
+        }
+      }
+    },
+    "Keyboard shortcut": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajo de teclado"
+          }
+        }
+      }
+    },
+    "The shortcut (%@) is only a modifier. Combine it with a key, e.g. ⌥M or ⌃⌥Z.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El atajo (%@) es solo un modificador. Combinalo con una tecla, ej. ⌥M o ⌃⌥Z."
+          }
+        }
+      }
+    },
+    "Also activate with the mouse wiggle gesture": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar también con el gesto wiggle del mouse"
+          }
+        }
+      }
+    },
+    "Shake the mouse side to side to activate Magic.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sacudí el mouse de lado a lado para activar Magic."
+          }
+        }
+      }
+    },
+    "Key for continuous mode": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla para modo continuo"
+          }
+        }
+      }
+    },
+    "Hold this key while you wiggle so Magic keeps listening in a loop (it cuts each command on silence). Release the key and keep giving commands until you close with Esc.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantené esta tecla mientras hacés el wiggle para que Magic quede escuchando en loop (corta cada comando por silencio). Soltás la tecla y seguís dando comandos hasta cerrar con Esc."
+          }
+        }
+      }
+    },
+    "Key for transcriber mode": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla para modo transcriptor"
+          }
+        }
+      }
+    },
+    "Hold this key during the wiggle to dictate text: it records your voice, transcribes it (and enhances it if you have AI enhancement enabled) and pastes it where the cursor is. Like regular dictation, but triggered with the wiggle.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantené esta tecla durante el wiggle para dictar texto: graba tu voz, la transcribe (y la mejora si tenés la mejora de IA activada) y la pega donde está el cursor. Como el dictado normal, pero invocado con el wiggle."
+          }
+        }
+      }
+    },
+    "Key for direct replace": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla para reemplazo directo"
+          }
+        }
+      }
+    },
+    "Hold this key during the wiggle so the result is pasted DIRECTLY over the selection, without opening the panel (\"I trust the answer\" mode).": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantené esta tecla durante el wiggle para que el resultado se pegue DIRECTO sobre la selección, sin abrir el panel (modo \"confío en la respuesta\")."
+          }
+        }
+      }
+    },
+    "The %@ key is assigned to more than one mode. Choose different keys for each.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tecla %@ está asignada a más de un modo. Elegí teclas distintas para cada uno."
+          }
+        }
+      }
+    },
+    "Aura color": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color del aura"
+          }
+        }
+      }
+    },
+    "The halo around the cursor when Magic Aura is active. Violet → cyan by default.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El halo que rodea el cursor cuando Magic Aura está activo. Por defecto es violeta → cyan."
+          }
+        }
+      }
+    },
+    "Restore default gradient": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar degradé por defecto"
+          }
+        }
+      }
+    },
+    "%lld changes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld cambios"
+          }
+        }
+      }
+    },
+    "Sensitivity (direction changes)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensibilidad (cambios de dirección)"
+          }
+        }
+      }
+    },
+    "Minimum wiggle speed": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velocidad mínima del wiggle"
+          }
+        }
+      }
+    },
+    "Detection window": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventana de detección"
+          }
+        }
+      }
+    },
+    "Cooldown between activations": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooldown entre activaciones"
+          }
+        }
+      }
+    },
+    "Wiggle sensitivity (advanced)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensibilidad del wiggle (avanzado)"
+          }
+        }
+      }
+    },
+    "Response panel": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panel de respuesta"
+          }
+        }
+      }
+    },
+    "Action buttons": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Botones de acción"
+          }
+        }
+      }
+    },
+    "Restore the default chips": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar los chips por defecto"
+          }
+        }
+      }
+    },
+    "Choose which ones you see in the panel, reorder them or create your own.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí cuáles ves en el panel, ordenalos o creá los tuyos."
+          }
+        }
+      }
+    },
+    "Preferred language": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma preferido"
+          }
+        }
+      }
+    },
+    "Detect the target language automatically": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detectar el idioma de destino automáticamente"
+          }
+        }
+      }
+    },
+    "If the text is already in your preferred language, it translates to your language; otherwise, to the preferred one. You can still pick another language from the chip.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si el texto ya está en tu idioma preferido, lo traduce a tu idioma; si no, al preferido. Igual podés elegir otro idioma desde el chip."
+          }
+        }
+      }
+    },
+    "Always translates to the preferred language. You can pick another one from the chip.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siempre traduce al idioma preferido. Podés elegir otro puntual desde el chip."
+          }
+        }
+      }
+    },
+    "On non-native Mac apps (Chrome, Slack, Discord, VS Code and others based on Chromium/Electron), due to a macOS limitation, Magic can't detect the text field. To paste the result, tap the **“Replace text”** button in the panel.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En apps que no son nativas de Mac (Chrome, Slack, Discord, VS Code y otras basadas en Chromium/Electron), por una limitación del propio macOS, Magic no puede detectar el campo de texto. Para pegar el resultado, tocá el botón **“Reemplazar texto”** del panel."
+          }
+        }
+      }
+    },
+    "Actions": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acciones"
+          }
+        }
+      }
+    },
+    "Confirm events without a date before creating": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar eventos sin fecha antes de crear"
+          }
+        }
+      }
+    },
+    "If you ask for an event and no date is detected, it shows a form to set it. The rest of the actions (email, message, map, reminder, event with a date) run directly.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si pedís un evento y no se detecta una fecha, muestra un formulario para ponerla. El resto de las acciones (mail, mensaje, mapa, recordatorio, evento con fecha) se ejecutan directo."
+          }
+        }
+      }
+    },
+    "Default messaging app": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App de mensajería por defecto"
+          }
+        }
+      }
+    },
+    "For “send this as a message”. The chosen app's icon appears in the panel.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para “mandá esto por mensaje”. El ícono de la app elegida aparece en el panel."
+          }
+        }
+      }
+    },
+    "Read text under the cursor with vision (OCR)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leer texto bajo el cursor con visión (OCR)"
+          }
+        }
+      }
+    },
+    "When an app doesn't expose its text (terminals, images, PDFs), Magic captures the area under the cursor and reads it with Apple's on-device recognition. Free and private.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando una app no expone su texto (terminales, imágenes, PDFs), Magic captura la zona bajo el cursor y la lee con reconocimiento on-device de Apple. Gratis y privado."
+          }
+        }
+      }
+    },
+    "The panel closes on its own": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El panel se cierra solo"
+          }
+        }
+      }
+    },
+    "Never": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nunca"
+          }
+        }
+      }
+    },
+    "New chip": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo chip"
+          }
+        }
+      }
+    },
+    "e.g. Formal tone": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ej: Tono formal"
+          }
+        }
+      }
+    },
+    "Instruction (what you ask the AI)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instrucción (lo que se le pide a la IA)"
+          }
+        }
+      }
+    },
+    "e.g. Rewrite this in a formal, professional tone.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ej: Reescribí esto en un tono formal y profesional."
+          }
+        }
+      }
+    },
+    "Icon": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ícono"
+          }
+        }
+      }
+    },
+    "Enable Magic Aura (preview)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar Magic Aura (preview)"
+          }
+        }
+      }
+    },
+    "Configure the action buttons, translation and panel behavior from **Magic** in the sidebar.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurá los botones de acción, la traducción y el comportamiento del panel desde **Magic** en la barra lateral."
+          }
+        }
+      }
+    },
+    "Your Mac isn't compatible with Apple Intelligence.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu Mac no es compatible con Apple Intelligence."
+          }
+        }
+      }
+    },
+    "Enable Apple Intelligence in System Settings.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activá Apple Intelligence en Ajustes del sistema."
+          }
+        }
+      }
+    },
+    "Apple's model is downloading or not ready yet.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El modelo de Apple se está descargando o no está listo."
+          }
+        }
+      }
+    },
+    "Apple Intelligence isn't available.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence no está disponible."
+          }
+        }
+      }
+    },
+    "Apple Intelligence requires macOS 26 or later.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence requiere macOS 26 o superior."
+          }
+        }
+      }
+    },
+    "Apple Intelligence isn't available on this device.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence no está disponible en este equipo."
+          }
+        }
+      }
+    },
+    "Apple Intelligence is ready — no API key needed.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence está listo — no necesita API key."
+          }
+        }
+      }
+    },
+    "Apple's on-device model: free, private and offline.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modelo on-device de Apple: gratis, privado y sin conexión."
+          }
+        }
+      }
+    },
+    "Next": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente"
+          }
+        }
+      }
     }
   }
 }

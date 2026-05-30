@@ -55,7 +55,7 @@ enum MagicActions {
             return runShortcut(name: params["name"] ?? "", input: body)
         default:
             logger.error("Acción desconocida: \(tool, privacy: .public)")
-            return Outcome(success: false, message: "No reconozco esa acción.", appName: nil)
+            return Outcome(success: false, message: String(localized: "I don't recognize that action."), appName: nil)
         }
     }
 
@@ -65,10 +65,10 @@ enum MagicActions {
     static func openMaps(_ query: String) -> Outcome {
         let enc = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         guard let url = URL(string: "https://maps.apple.com/?q=\(enc)") else {
-            return Outcome(success: false, message: "No pude abrir Maps.", appName: "Maps")
+            return Outcome(success: false, message: String(localized: "Couldn't open Maps."), appName: "Maps")
         }
         NSWorkspace.shared.open(url)
-        return Outcome(success: true, message: "Abriendo en Maps", appName: "Maps")
+        return Outcome(success: true, message: String(localized: "Opening in Maps"), appName: "Maps")
     }
 
     /// App de mensajería por defecto (Settings) o forzada.
@@ -89,27 +89,27 @@ enum MagicActions {
             }
         }()
         guard let url = URL(string: urlStr) else {
-            return Outcome(success: false, message: "No pude armar el mensaje.", appName: name)
+            return Outcome(success: false, message: String(localized: "Couldn't compose the message."), appName: name)
         }
         NSWorkspace.shared.open(url)
-        return Outcome(success: true, message: "Mensaje listo en \(name)", appName: name)
+        return Outcome(success: true, message: String(localized: "Message ready in \(name)"), appName: name)
     }
 
     @MainActor
     static func call(_ number: String) -> Outcome {
         let clean = number.filter { "+0123456789".contains($0) }
         guard !clean.isEmpty, let url = URL(string: "tel:\(clean)") else {
-            return Outcome(success: false, message: "No encontré un número para llamar.", appName: nil)
+            return Outcome(success: false, message: String(localized: "No number found to call."), appName: nil)
         }
         NSWorkspace.shared.open(url)
-        return Outcome(success: true, message: "Llamando a \(clean)…", appName: nil)
+        return Outcome(success: true, message: String(localized: "Calling \(clean)…"), appName: nil)
     }
 
     @MainActor
     static func runShortcut(name: String, input: String) -> Outcome {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            return Outcome(success: false, message: "No me dijiste qué Atajo correr.", appName: "Shortcuts")
+            return Outcome(success: false, message: String(localized: "You didn't tell me which Shortcut to run."), appName: "Shortcuts")
         }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/shortcuts")
@@ -124,10 +124,10 @@ enum MagicActions {
                 inPipe.fileHandleForWriting.write(data)
             }
             inPipe.fileHandleForWriting.closeFile()
-            return Outcome(success: true, message: "Atajo “\(trimmed)” ejecutado", appName: "Shortcuts")
+            return Outcome(success: true, message: String(localized: "Shortcut “\(trimmed)” ran"), appName: "Shortcuts")
         } catch {
             logger.error("shortcuts run falló: \(error.localizedDescription, privacy: .public)")
-            return Outcome(success: false, message: "No pude ejecutar el atajo.", appName: "Shortcuts")
+            return Outcome(success: false, message: String(localized: "Couldn't run the shortcut."), appName: "Shortcuts")
         }
     }
 
@@ -135,7 +135,7 @@ enum MagicActions {
 
     @MainActor
     private static func createNote(_ text: String) -> Outcome {
-        guard !text.isEmpty else { return Outcome(success: false, message: "Nota vacía.", appName: nil) }
+        guard !text.isEmpty else { return Outcome(success: false, message: String(localized: "Empty note."), appName: nil) }
         // Notes usa el primer renglón como título. Pasamos el texto como body.
         let escaped = appleScriptEscaped(text)
         let script = """
@@ -144,9 +144,9 @@ enum MagicActions {
         end tell
         """
         if runAppleScript(script) {
-            return Outcome(success: true, message: "Agregado a Notas", appName: "Notes")
+            return Outcome(success: true, message: String(localized: "Added to Notes"), appName: "Notes")
         }
-        return Outcome(success: false, message: "No pude agregar a Notas (revisá permisos de Automatización).", appName: "Notes")
+        return Outcome(success: false, message: String(localized: "Couldn't add to Notes (check Automation permissions)."), appName: "Notes")
     }
 
     // ── Mail (mailto: — sin permisos) ───────────────────────────────────
@@ -161,22 +161,22 @@ enum MagicActions {
         if !body.isEmpty { items.append(URLQueryItem(name: "body", value: body)) }
         comps.queryItems = items.isEmpty ? nil : items
         guard let url = comps.url else {
-            return Outcome(success: false, message: "No pude armar el mail.", appName: nil)
+            return Outcome(success: false, message: String(localized: "Couldn't compose the email."), appName: nil)
         }
         NSWorkspace.shared.open(url)
-        return Outcome(success: true, message: "Mail listo para enviar", appName: nil)
+        return Outcome(success: true, message: String(localized: "Email ready to send"), appName: nil)
     }
 
     // ── Recordatorios (EventKit) ────────────────────────────────────────
 
     @MainActor
     private static func createReminder(_ text: String) async -> Outcome {
-        guard !text.isEmpty else { return Outcome(success: false, message: "Recordatorio vacío.", appName: nil) }
+        guard !text.isEmpty else { return Outcome(success: false, message: String(localized: "Empty reminder."), appName: nil) }
         guard await requestReminderAccess() else {
-            return Outcome(success: false, message: "Falta permiso de Recordatorios. Concedelo en Ajustes del sistema → Privacidad.", appName: "Reminders")
+            return Outcome(success: false, message: String(localized: "Reminders permission missing. Grant it in System Settings → Privacy."), appName: "Reminders")
         }
         guard let list = eventStore.defaultCalendarForNewReminders() else {
-            return Outcome(success: false, message: "No hay una lista de Recordatorios disponible.", appName: "Reminders")
+            return Outcome(success: false, message: String(localized: "No Reminders list available."), appName: "Reminders")
         }
         let reminder = EKReminder(eventStore: eventStore)
         // Primera línea = título; el resto (si hay) van como nota.
@@ -188,10 +188,10 @@ enum MagicActions {
         reminder.calendar = list
         do {
             try eventStore.save(reminder, commit: true)
-            return Outcome(success: true, message: "Agregado a Recordatorios", appName: "Reminders")
+            return Outcome(success: true, message: String(localized: "Added to Reminders"), appName: "Reminders")
         } catch {
             logger.error("EventKit reminder falló: \(error.localizedDescription, privacy: .public)")
-            return Outcome(success: false, message: "No pude crear el recordatorio.", appName: "Reminders")
+            return Outcome(success: false, message: String(localized: "Couldn't create the reminder."), appName: "Reminders")
         }
     }
 
@@ -202,13 +202,13 @@ enum MagicActions {
         let summary = (title.components(separatedBy: "\n").first ?? title)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !summary.isEmpty else {
-            return Outcome(success: false, message: "Evento vacío.", appName: "Calendar")
+            return Outcome(success: false, message: String(localized: "Empty event."), appName: "Calendar")
         }
         guard await requestEventAccess() else {
-            return Outcome(success: false, message: "Falta permiso de Calendario. Concedelo en Ajustes del sistema → Privacidad.", appName: "Calendar")
+            return Outcome(success: false, message: String(localized: "Calendar permission missing. Grant it in System Settings → Privacy."), appName: "Calendar")
         }
         guard let cal = eventStore.defaultCalendarForNewEvents else {
-            return Outcome(success: false, message: "No hay un calendario disponible.", appName: "Calendar")
+            return Outcome(success: false, message: String(localized: "No calendar available."), appName: "Calendar")
         }
         // Con fecha → la usamos; sin fecha → placeholder (hoy + 1h) para ajustar.
         let hadDate = parseDate(dateISO) != nil
@@ -222,11 +222,11 @@ enum MagicActions {
         event.calendar = cal
         do {
             try eventStore.save(event, span: .thisEvent, commit: true)
-            let msg = hadDate ? "Evento agregado al Calendario" : "Evento creado (ajustá la fecha en Calendario)"
+            let msg = hadDate ? String(localized: "Event added to Calendar") : String(localized: "Event created (adjust the date in Calendar)")
             return Outcome(success: true, message: msg, appName: "Calendar")
         } catch {
             logger.error("EventKit event falló: \(error.localizedDescription, privacy: .public)")
-            return Outcome(success: false, message: "No pude crear el evento.", appName: "Calendar")
+            return Outcome(success: false, message: String(localized: "Couldn't create the event."), appName: "Calendar")
         }
     }
 
