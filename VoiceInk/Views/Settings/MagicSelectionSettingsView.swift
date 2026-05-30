@@ -180,6 +180,9 @@ struct MagicSelectionSection: View {
                     .help("Ver instrucciones")
                 }
 
+                // Configuración del panel de respuesta (chips, traducir, auto-cierre)
+                MagicPanelSettingsView()
+
                 // Panel de diagnóstico
                 GroupBox(label: HStack {
                     Label("Diagnóstico", systemImage: "stethoscope")
