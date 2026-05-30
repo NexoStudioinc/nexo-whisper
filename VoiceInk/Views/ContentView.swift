@@ -9,6 +9,7 @@ enum ViewType: String, CaseIterable, Identifiable {
     case history = "History"
     case models = "AI Models"
     case enhancement = "Enhancement"
+    case magicSelection = "Magic"
     case powerMode = "Power Mode"
     case permissions = "Permissions"
     case audioInput = "Audio Input"
@@ -29,6 +30,7 @@ enum ViewType: String, CaseIterable, Identifiable {
         case .history: return "doc.text.fill"
         case .models: return "brain.head.profile"
         case .enhancement: return "wand.and.stars"
+        case .magicSelection: return "cursorarrow.rays"
         case .powerMode: return "sparkles.square.fill.on.square"
         case .permissions: return "shield.fill"
         case .audioInput: return "mic.fill"
@@ -189,6 +191,8 @@ struct ContentView: View {
             ModelManagementView()
         case .enhancement:
             EnhancementSettingsView()
+        case .magicSelection:
+            MagicSelectionView()
         case .transcribeAudio:
             AudioTranscribeView()
         case .history:
