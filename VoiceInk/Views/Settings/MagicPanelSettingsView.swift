@@ -12,6 +12,7 @@ struct MagicPanelSettingsView: View {
     @AppStorage("magicSelection.translateAutoDetect") private var translateAutoDetect = true
     @AppStorage("magicSelection.confirmActions") private var confirmActions = true
     @AppStorage("magicSelection.messagingApp") private var messagingApp = "whatsapp"
+    @AppStorage("magicSelection.visionFallback") private var visionFallback = true
 
     @State private var showingAddChip = false
 
@@ -171,6 +172,13 @@ struct MagicPanelSettingsView: View {
                 .frame(width: 150)
             }
             Text("Para “mandá esto por mensaje”. El ícono de la app elegida aparece en el panel.")
+                .font(.caption).foregroundStyle(.secondary)
+
+            Divider()
+
+            Toggle("Leer texto bajo el cursor con visión (OCR)", isOn: $visionFallback)
+                .toggleStyle(.switch)
+            Text("Cuando una app no expone su texto (terminales, imágenes, PDFs), Magic captura la zona bajo el cursor y la lee con reconocimiento on-device de Apple. Gratis y privado.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

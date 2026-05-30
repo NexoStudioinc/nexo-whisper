@@ -261,6 +261,15 @@ class AIEnhancementService: ObservableObject {
             }
         }
 
+        if aiService.selectedProvider == .apple {
+            do {
+                let result = try await AppleFoundationService.generate(instructions: systemMessage, prompt: userMessage)
+                return AIEnhancementOutputFilter.filter(result.trimmingCharacters(in: .whitespacesAndNewlines))
+            } catch {
+                throw EnhancementError.customError(error.localizedDescription)
+            }
+        }
+
         try await waitForRateLimit()
 
         do {
@@ -501,8 +510,8 @@ class AIEnhancementService: ObservableObject {
         let family: MagicStreamingClient.Family
         let urlString: String
         switch provider {
-        case .localCLI:
-            return nil
+        case .localCLI, .apple:
+            return nil   // no streamean chat → fallback no-streaming (dispatchToProvider)
         case .anthropic:
             family = .anthropic
             urlString = "https://api.anthropic.com/v1/messages"

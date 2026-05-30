@@ -16,6 +16,7 @@ enum AIProvider: String, CaseIterable {
     case assemblyAI = "AssemblyAI"
     case ollama = "Ollama"
     case localCLI = "Local CLI"
+    case apple = "Apple"
     case custom = "Custom"
 
     /// ¿Este provider requiere licencia Pro para usarse?
@@ -39,6 +40,8 @@ enum AIProvider: String, CaseIterable {
             return false  // 100% local
         case .localCLI:
             return false  // gateado por cliEnhancement, no por byok
+        case .apple:
+            return false  // Apple Intelligence on-device, gratis y local
         default:
             return true   // todos los cloud + custom
         }
@@ -75,6 +78,8 @@ enum AIProvider: String, CaseIterable {
             return UserDefaults.standard.string(forKey: "ollamaBaseURL") ?? "http://localhost:11434"
         case .localCLI:
             return ""
+        case .apple:
+            return ""
         case .custom:
             return UserDefaults.standard.string(forKey: "customProviderBaseURL") ?? ""
         }
@@ -108,6 +113,8 @@ enum AIProvider: String, CaseIterable {
             return UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "mistral"
         case .localCLI:
             return "local-cli"
+        case .apple:
+            return "apple-intelligence"
         case .custom:
             return UserDefaults.standard.string(forKey: "customProviderModel") ?? ""
         case .openRouter:
@@ -180,6 +187,8 @@ enum AIProvider: String, CaseIterable {
             return []
         case .localCLI:
             return []
+        case .apple:
+            return ["apple-intelligence"]
         case .custom:
             return []
         case .openRouter:

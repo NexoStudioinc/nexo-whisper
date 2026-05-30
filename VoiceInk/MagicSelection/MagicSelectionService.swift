@@ -386,6 +386,16 @@ final class MagicSelectionService {
                     context.selectedText = clip
                 }
             }
+            // Tier 3 (visión): si AX y clipboard no dieron texto (terminales,
+            // imágenes, PDFs, Electron sin árbol), OCR on-device de la región
+            // bajo el cursor. Configurable (default ON).
+            let visionOn = UserDefaults.standard.object(forKey: "magicSelection.visionFallback") as? Bool ?? true
+            if (context.bestText?.isEmpty ?? true), visionOn {
+                if let ocr = await MagicVisionService.textUnderCursor(at: location) {
+                    context.elementText = ocr
+                    Self.logger.info("Tier 3 OCR capturó \(ocr.count) chars bajo el cursor")
+                }
+            }
             // Si AX no marcó la selección como editable (típico cuando vino por
             // portapapeles: webs, Electron), lo confirmamos mirando si hay un
             // campo editable bajo el cursor. Así pega en inputs web/Electron.
