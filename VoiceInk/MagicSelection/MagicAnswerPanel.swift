@@ -94,6 +94,29 @@ enum MagicImageSearch {
     }
 }
 
+/// Historial observable de respuestas. Reactivo: limpiar se refleja al toque.
+@MainActor
+final class MagicHistoryStore: ObservableObject {
+    struct Item: Identifiable {
+        let id = UUID()
+        let text: String
+        let imageQuery: String?
+        let date: Date
+        var preview: String {
+            let t = text.replacingOccurrences(of: "\n", with: " ")
+            return t.count > 48 ? String(t.prefix(48)) + "…" : t
+        }
+    }
+    @Published private(set) var items: [Item] = []
+    private let maxItems = 25
+
+    func add(text: String, imageQuery: String?) {
+        items.insert(Item(text: text, imageQuery: imageQuery, date: Date()), at: 0)
+        if items.count > maxItems { items.removeLast(items.count - maxItems) }
+    }
+    func clear() { items.removeAll() }
+}
+
 /// Panel flotante que muestra una respuesta de Magic Selection al lado del
 /// cursor, sin tocar el texto del usuario (para preguntas tipo "qué significa
 /// esto", "dame sinónimos", "qué es esto").
@@ -121,25 +144,12 @@ final class MagicAnswerPanel {
     private var currentText: String = ""
     private var lastAnchor: NSPoint = .zero
 
-    /// Item del historial de respuestas (por si se cierra la ventana y quedó
-    /// algo sin copiar). Vive en memoria; se puede limpiar.
-    struct HistoryItem: Identifiable {
-        let id = UUID()
-        let text: String
-        let imageQuery: String?
-        let date: Date
-        var preview: String {
-            let t = text.replacingOccurrences(of: "\n", with: " ")
-            return t.count > 48 ? String(t.prefix(48)) + "…" : t
-        }
-    }
-    private var history: [HistoryItem] = []
-    private let maxHistory = 25
+    /// Historial observable (reactivo) de respuestas.
+    private let historyStore = MagicHistoryStore()
 
     /// Muestra la respuesta cerca de `anchor` y la guarda en el historial.
     func show(text: String, imageQuery: String? = nil, near anchor: NSPoint) {
-        history.insert(HistoryItem(text: text, imageQuery: imageQuery, date: Date()), at: 0)
-        if history.count > maxHistory { history.removeLast(history.count - maxHistory) }
+        historyStore.add(text: text, imageQuery: imageQuery)
         showInternal(text: text, imageQuery: imageQuery, near: anchor)
     }
 
@@ -183,10 +193,11 @@ final class MagicAnswerPanel {
 
         let newPanel = NSPanel(
             contentRect: NSRect(origin: .zero, size: panelSize),
-            styleMask: [.borderless, .nonactivatingPanel],
+            styleMask: [.borderless, .nonactivatingPanel, .resizable],
             backing: .buffered,
             defer: false
         )
+        newPanel.minSize = NSSize(width: 280, height: 200)
         newPanel.isFloatingPanel = true
         // `.floating` (no `.screenSaver`): así el menú de Compartir del sistema
         // (nivel popUpMenu) aparece ENCIMA del panel y se puede tocar. Con
@@ -205,13 +216,11 @@ final class MagicAnswerPanel {
         let view = MagicAnswerView(
             text: text,
             imageQuery: imageQuery,
-            cardSize: cardSize,
-            history: history,
+            historyStore: historyStore,
             onSelectHistory: { [weak self] item in
                 guard let self else { return }
                 self.showInternal(text: item.text, imageQuery: item.imageQuery, near: self.lastAnchor)
             },
-            onClearHistory: { [weak self] in self?.history.removeAll() },
             onShare: { [weak self] in self?.presentShare() },
             onClose: { [weak self] in
                 Task { @MainActor in self?.hide() }
@@ -219,6 +228,7 @@ final class MagicAnswerPanel {
         )
         let hosting = NSHostingView(rootView: view)
         hosting.frame = NSRect(origin: .zero, size: panelSize)
+        hosting.autoresizingMask = [.width, .height]  // se adapta al resize
         newPanel.contentView = hosting
 
         self.panel = newPanel
@@ -279,10 +289,8 @@ final class MagicAnswerPanel {
 private struct MagicAnswerView: View {
     let text: String
     var imageQuery: String? = nil
-    var cardSize: NSSize = NSSize(width: 360, height: 300)
-    var history: [MagicAnswerPanel.HistoryItem] = []
-    var onSelectHistory: (MagicAnswerPanel.HistoryItem) -> Void = { _ in }
-    var onClearHistory: () -> Void = {}
+    @ObservedObject var historyStore: MagicHistoryStore
+    var onSelectHistory: (MagicHistoryStore.Item) -> Void = { _ in }
     let onShare: () -> Void
     let onClose: () -> Void
 
@@ -302,11 +310,11 @@ private struct MagicAnswerView: View {
     private let cyan = Color(red: 0.36, green: 0.80, blue: 0.95)
 
     var body: some View {
-        // La card va dentro de un contenedor más grande (con margen
-        // transparente) para que la SOMBRA tenga lugar y no se corte en un
-        // borde cuadrado.
+        // La card llena la ventana con 20px de margen para que la SOMBRA
+        // respire. Se adapta al resize de la ventana.
         card
-            .frame(width: cardSize.width + 40, height: cardSize.height + 40)
+            .padding(20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var card: some View {
@@ -386,7 +394,7 @@ private struct MagicAnswerView: View {
             imageURL = await MagicImageSearch.thumbnailURL(for: q)
             searchingImage = false
         }
-        .frame(width: cardSize.width, height: cardSize.height, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(red: 0.07, green: 0.07, blue: 0.10).opacity(0.97))
@@ -405,14 +413,14 @@ private struct MagicAnswerView: View {
     /// Menú de historial de respuestas (por si se cerró la ventana).
     private var historyMenu: some View {
         Menu {
-            if history.isEmpty {
+            if historyStore.items.isEmpty {
                 Text("Sin historial")
             } else {
-                ForEach(history) { item in
+                ForEach(historyStore.items) { item in
                     Button(item.preview) { onSelectHistory(item) }
                 }
                 Divider()
-                Button("Limpiar historial", role: .destructive, action: onClearHistory)
+                Button("Limpiar historial", role: .destructive) { historyStore.clear() }
             }
         } label: {
             Image(systemName: "clock.arrow.circlepath")
