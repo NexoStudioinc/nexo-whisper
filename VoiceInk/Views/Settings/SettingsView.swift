@@ -393,8 +393,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .controlSize(.small)
-        .environment(\.defaultMinListRowHeight, 28)
         .scrollContentBackground(.hidden)
         .background(Color(NSColor.controlBackgroundColor))
         .alert(t("Reset Onboarding"), isPresented: $showResetOnboardingAlert) {

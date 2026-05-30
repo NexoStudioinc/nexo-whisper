@@ -59,28 +59,12 @@ struct MagicSelectionView: View {
     // ── Encabezado ──────────────────────────────────────────────────────
 
     private var hero: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "cursorarrow.rays")
-                .font(.system(size: 26))
-                .foregroundStyle(
-                    LinearGradient(colors: [Color(red: 0.55, green: 0.36, blue: 0.96),
-                                            Color(red: 0.36, green: 0.80, blue: 0.95)],
-                                   startPoint: .leading, endPoint: .trailing)
-                )
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text("Magic Aura").font(.title2).bold()
-                    Text("PREVIEW")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .padding(.horizontal, 5).padding(.vertical, 2)
-                        .background(RoundedRectangle(cornerRadius: 4).fill(.purple.opacity(0.2)))
-                        .foregroundStyle(.purple)
-                }
-                Text("Select text, dictate or tap a button, and the AI acts on it instantly.")
-                    .font(.callout).foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
+        NexoHero(
+            title: "Magic Aura",
+            subtitle: "Select text, dictate or tap a button, and the AI acts on it instantly.",
+            systemImage: "cursorarrow.rays",
+            badge: "PREVIEW"
+        )
     }
 
     // ── Activación ──────────────────────────────────────────────────────
