@@ -809,6 +809,13 @@ class AIEnhancementService: ObservableObject {
         let predefinedTemplates = PredefinedPrompts.createDefaultPrompts()
         let validPredefinedIds = Set(predefinedTemplates.map { $0.id })
 
+        // Purga explícita de "Rewrite" (removido del set): por si quedó
+        // persistido de una versión anterior, incluso si su flag isPredefined
+        // se guardó mal. Su UUID estable era ...0005.
+        if let rewriteId = UUID(uuidString: "00000000-0000-0000-0000-000000000005") {
+            customPrompts.removeAll { $0.id == rewriteId }
+        }
+
         // Limpieza de prompts predefinidos viejos que ya no están en el set
         // actual (ej: "Assistant" que se removió). Solo afecta prompts
         // marcados `isPredefined`; los custom del usuario no se tocan.
