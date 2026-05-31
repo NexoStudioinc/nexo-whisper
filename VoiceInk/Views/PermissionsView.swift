@@ -211,10 +211,12 @@ struct PermissionCard: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding()
-        .background(CardBackground(isSelected: false))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, y: 2)
+        .padding(NexoSpacing.md)
+        .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: NexoRadius.control, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: NexoRadius.control, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+        )
     }
 }
 
@@ -224,16 +226,19 @@ struct PermissionsView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
-                // Header
-                CompactHeroSection(
-                    icon: "shield.lefthalf.filled",
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
+                NexoHero(
                     title: "App Permissions",
-                    description: "Nexo Whisper requires the following permissions to function properly"
+                    subtitle: "Nexo Whisper needs these macOS permissions to record, paste and detect your shortcut.",
+                    systemImage: "shield.lefthalf.filled"
                 )
-                
-                // Permission Cards
-                VStack(spacing: 16) {
+
+                // Permission Cards agrupadas en una NexoCard con header claro.
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Required Permissions", systemImage: "checklist",
+                                          subtitle: "Grant each one in System Settings. Tap refresh after granting to update the status.")
+                        Divider()
                     // Keyboard Shortcut Permission
                     //
                     // Importante: leer `isGranted` desde `permissionManager.isKeyboardShortcutSet`
@@ -336,9 +341,10 @@ struct PermissionsView: View {
                         infoTipMessage: String(localized: "Nexo Whisper captures on-screen text to understand the context of your voice input, which significantly improves transcription accuracy. Your privacy is important: this data is processed locally and is not stored."),
                         infoTipLink: NexoURLs.docsContext
                     )
+                    }
                 }
             }
-            .padding(24)
+            .nexoPage()
         }
         .background(Color(NSColor.controlBackgroundColor))
         .onAppear {

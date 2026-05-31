@@ -42,10 +42,12 @@ struct DictionarySettingsView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
                 heroSection
-                mainContent
+                sectionSelector
+                selectedSectionContent
             }
+            .nexoPage()
         }
         .frame(minWidth: 600, minHeight: 500)
         .background(Color(NSColor.controlBackgroundColor))
@@ -57,68 +59,58 @@ struct DictionarySettingsView: View {
             }
         }
     }
-    
+
     private var heroSection: some View {
-        CompactHeroSection(
-            icon: "brain.filled.head.profile",
+        NexoHero(
             title: "Dictionary Settings",
-            description: "Enhance Nexo Whisper's transcription accuracy by teaching it your vocabulary",
-            maxDescriptionWidth: 500
+            subtitle: "Teach Nexo Whisper your vocabulary and word replacements to improve transcription accuracy.",
+            systemImage: "brain.filled.head.profile"
         )
     }
-    
-    private var mainContent: some View {
-        VStack(spacing: 40) {
-            sectionSelector
-            selectedSectionContent
-        }
-        .padding(.horizontal, 32)
-        .padding(.vertical, 40)
-    }
-    
+
     private var sectionSelector: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Text("Select Section")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-
-                Spacer()
-
-                Button {
-                    withAnimation(.smooth(duration: 0.3)) {
-                        isShowingSettings.toggle()
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader(title: "Select Section", systemImage: "square.grid.2x2",
+                                  subtitle: "Choose what you want to manage.") {
+                    Button {
+                        withAnimation(.smooth(duration: 0.3)) {
+                            isShowingSettings.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "gear")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isShowingSettings ? .accentColor : .secondary)
                     }
-                } label: {
-                    Image(systemName: "gear")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(isShowingSettings ? .accentColor : .secondary)
+                    .buttonStyle(.plain)
+                    .help("Dictionary settings")
                 }
-                .buttonStyle(.plain)
-                .help("Dictionary settings")
-            }
-
-            HStack(spacing: 20) {
-                ForEach(DictionarySection.allCases, id: \.self) { section in
-                    SectionCard(
-                        section: section,
-                        isSelected: selectedSection == section,
-                        action: { selectedSection = section }
-                    )
+                Divider()
+                HStack(spacing: NexoSpacing.lg) {
+                    ForEach(DictionarySection.allCases, id: \.self) { section in
+                        SectionCard(
+                            section: section,
+                            isSelected: selectedSection == section,
+                            action: { selectedSection = section }
+                        )
+                    }
                 }
             }
         }
     }
-    
+
     private var selectedSectionContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            switch selectedSection {
-            case .spellings:
-                VocabularyView(whisperPrompt: whisperPrompt)
-                    .background(CardBackground(isSelected: false))
-            case .replacements:
-                WordReplacementView()
-                    .background(CardBackground(isSelected: false))
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader(selectedSection.titleKey, systemImage: selectedSection.icon,
+                                  subtitle: selectedSection.descriptionKey)
+                Divider()
+                switch selectedSection {
+                case .spellings:
+                    VocabularyView(whisperPrompt: whisperPrompt)
+                case .replacements:
+                    WordReplacementView()
+                }
             }
         }
     }

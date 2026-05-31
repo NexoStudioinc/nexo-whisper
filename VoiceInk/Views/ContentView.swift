@@ -134,7 +134,7 @@ struct ContentView: View {
             }
             .listStyle(.sidebar)
             .navigationTitle("Nexo Whisper")
-            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 220)
+            .navigationSplitViewColumnWidth(min: 186, ideal: 198, max: 240)
         } detail: {
             if let selectedView = selectedView {
                 detailView(for: selectedView)
@@ -261,19 +261,20 @@ private struct SidebarItemView: View {
     @AppStorage("appLanguage") private var appLanguage = AppLanguage.english.rawValue
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: viewType.icon)
-                .font(.system(size: 18, weight: .medium))
-                .frame(width: 24, height: 24)
+                .font(.system(size: 15, weight: .medium))
+                .frame(width: 20, height: 20)
 
             Text(viewType.displayName(language: appLanguage))
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
 
-            Spacer()
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-        .padding(.vertical, 8)
-        .padding(.horizontal, 2)
+        .padding(.vertical, 4)
     }
 }

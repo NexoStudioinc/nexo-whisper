@@ -106,6 +106,9 @@ struct MetricsContent: View {
 
                             brandCard
                             heroSection
+                            NexoSectionHeader("Your activity", systemImage: "chart.bar.fill",
+                                              subtitle: "A summary of how much you've dictated with Nexo Whisper.")
+                                .padding(.top, NexoSpacing.xs)
                             metricsSection
                             APISpendCard()
                             HStack(alignment: .top, spacing: 18) {
@@ -421,12 +424,10 @@ struct MetricsContent: View {
     }
     
     private var heroGradient: LinearGradient {
+        // Degradé de marca Nexo (violeta → cyan), el mismo de Magic Aura,
+        // para unificar la identidad visual de toda la app.
         LinearGradient(
-            gradient: Gradient(colors: [
-                Color(nsColor: .controlAccentColor),
-                Color(nsColor: .controlAccentColor).opacity(0.85),
-                Color(nsColor: .controlAccentColor).opacity(0.7)
-            ]),
+            colors: [.nexoViolet, .nexoCyan],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

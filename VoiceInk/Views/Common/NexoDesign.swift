@@ -116,6 +116,14 @@ extension NexoSectionHeader where Trailing == EmptyView {
     }
 }
 
+extension NexoSectionHeader {
+    /// Variante con título posicional + contenido trailing (botón, toggle).
+    init(_ title: LocalizedStringKey, systemImage: String? = nil,
+         subtitle: LocalizedStringKey? = nil, @ViewBuilder trailing: () -> Trailing) {
+        self.init(title: title, systemImage: systemImage, subtitle: subtitle, trailing: trailing)
+    }
+}
+
 /// Hero de pantalla: ícono con acento de marca + título + descripción + badge
 /// opcional (ej. "PREVIEW"). Unifica los distintos heros ad-hoc de la app.
 struct NexoHero: View {

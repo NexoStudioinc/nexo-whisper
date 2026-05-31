@@ -6,157 +6,144 @@ struct AudioInputSettingsView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
                 heroSection
-                mainContent
+                inputModeSection
+
+                switch audioDeviceManager.inputMode {
+                case .systemDefault:
+                    systemDefaultSection
+                case .custom:
+                    customDeviceSection
+                case .prioritized:
+                    prioritizedDevicesSection
+                }
             }
+            .nexoPage()
         }
         .background(Color(NSColor.controlBackgroundColor))
     }
-    
-    private var mainContent: some View {
-        VStack(spacing: 40) {
-            inputModeSection
 
-            switch audioDeviceManager.inputMode {
-            case .systemDefault:
-                systemDefaultSection
-            case .custom:
-                customDeviceSection
-            case .prioritized:
-                prioritizedDevicesSection
-            }
-        }
-        .padding(.horizontal, 32)
-        .padding(.vertical, 40)
-    }
-    
     private var heroSection: some View {
-        CompactHeroSection(
-            icon: "waveform",
+        NexoHero(
             title: "Audio Input",
-            description: "Configure your microphone preferences"
+            subtitle: "Choose which microphone Nexo Whisper uses to record your voice.",
+            systemImage: "waveform"
         )
     }
-    
+
     private var inputModeSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Input Mode")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            HStack(spacing: 20) {
-                ForEach(AudioInputMode.allCases, id: \.self) { mode in
-                    InputModeCard(
-                        mode: mode,
-                        isSelected: audioDeviceManager.inputMode == mode,
-                        action: { audioDeviceManager.selectInputMode(mode) }
-                    )
-                }
-            }
-        }
-    }
-    
-    private var systemDefaultSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Current Device")
-                .font(.title2)
-                .fontWeight(.semibold)
-
-            HStack {
-                Image(systemName: "display")
-                    .foregroundStyle(.secondary)
-
-                Text(audioDeviceManager.getSystemDefaultDeviceName() ?? "No device available")
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                Label("Active", systemImage: "wave.3.right")
-                    .font(.caption)
-                    .foregroundStyle(.green)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(.green.opacity(0.1))
-                    )
-            }
-            .padding()
-            .background(CardBackground(isSelected: false))
-        }
-    }
-
-    private var customDeviceSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Text("Available Devices")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-
-                Spacer()
-
-                Button(action: { audioDeviceManager.loadAvailableDevices() }) {
-                    Label("Refresh", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(.borderless)
-            }
-
-            VStack(spacing: 12) {
-                ForEach(audioDeviceManager.availableDevices, id: \.id) { device in
-                    DeviceSelectionCard(
-                        name: device.name,
-                        isSelected: audioDeviceManager.selectedDeviceID == device.id,
-                        isActive: audioDeviceManager.getCurrentDevice() == device.id
-                    ) {
-                        audioDeviceManager.selectDevice(id: device.id)
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Input Mode", systemImage: "slider.horizontal.3",
+                                  subtitle: "Pick how Nexo Whisper decides which input device to use.")
+                Divider()
+                HStack(spacing: NexoSpacing.lg) {
+                    ForEach(AudioInputMode.allCases, id: \.self) { mode in
+                        InputModeCard(
+                            mode: mode,
+                            isSelected: audioDeviceManager.inputMode == mode,
+                            action: { audioDeviceManager.selectInputMode(mode) }
+                        )
                     }
                 }
             }
         }
     }
-    
+
+    private var systemDefaultSection: some View {
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Current Device", systemImage: "display",
+                                  subtitle: "The input device your Mac is currently using by default.")
+                Divider()
+                HStack {
+                    Image(systemName: "display")
+                        .foregroundStyle(.secondary)
+
+                    Text(audioDeviceManager.getSystemDefaultDeviceName() ?? "No device available")
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Label("Active", systemImage: "wave.3.right")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(.green.opacity(0.1))
+                        )
+                }
+            }
+        }
+    }
+
+    private var customDeviceSection: some View {
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader(title: "Available Devices", systemImage: "mic",
+                                  subtitle: "Select the specific microphone you want to use.") {
+                    Button(action: { audioDeviceManager.loadAvailableDevices() }) {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderless)
+                    .controlSize(.small)
+                }
+                Divider()
+                VStack(spacing: NexoSpacing.md) {
+                    ForEach(audioDeviceManager.availableDevices, id: \.id) { device in
+                        DeviceSelectionCard(
+                            name: device.name,
+                            isSelected: audioDeviceManager.selectedDeviceID == device.id,
+                            isActive: audioDeviceManager.getCurrentDevice() == device.id
+                        ) {
+                            audioDeviceManager.selectDevice(id: device.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var prioritizedDevicesSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        Group {
             if audioDeviceManager.availableDevices.isEmpty {
-                emptyDevicesState
+                NexoCard { emptyDevicesState }
             } else {
                 prioritizedDevicesContent
-                Divider().padding(.vertical, 8)
                 availableDevicesContent
             }
         }
     }
-    
+
     private var prioritizedDevicesContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Prioritized Devices")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                Text("Devices will be used in order of priority. If a device is unavailable, the next one will be tried. If no prioritized device is available, the built-in microphone will be used.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            
-            if audioDeviceManager.prioritizedDevices.isEmpty {
-                Text("No prioritized devices")
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 8)
-            } else {
-                prioritizedDevicesList
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Prioritized Devices", systemImage: "list.number",
+                                  subtitle: "Devices are used in order of priority. If a device is unavailable, the next one is tried; if none are available, the built-in microphone is used.")
+                Divider()
+
+                if audioDeviceManager.prioritizedDevices.isEmpty {
+                    Text("No prioritized devices")
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 8)
+                } else {
+                    prioritizedDevicesList
+                }
             }
         }
     }
-    
+
     private var availableDevicesContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Available Devices")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            availableDevicesList
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Available Devices", systemImage: "mic",
+                                  subtitle: "Add a device to the priority list.")
+                Divider()
+                availableDevicesList
+            }
         }
     }
     

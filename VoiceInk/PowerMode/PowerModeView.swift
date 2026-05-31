@@ -96,62 +96,41 @@ struct PowerModeView: View {
             VStack(spacing: 0) {
                 // Header Section
                 VStack(spacing: 12) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 8) {
-                                Text("Power Modes")
-                                    .font(.system(size: 28, weight: .bold, design: .default))
-                                    .foregroundColor(.primary)
-                                
-                                InfoTip(
-                                    "Automatically apply custom configurations based on the app/website you are using.",
-                                    learnMoreURL: NexoURLs.docsAppProfiles
-                                )
-                            }
-                            
-                            Text("Automate your workflows with context-aware configurations.")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
+                    HStack(alignment: .top) {
+                        // Hero del sistema de diseño + InfoTip de docs al lado del título.
+                        HStack(alignment: .top, spacing: NexoSpacing.sm) {
+                            NexoHero(
+                                title: "Power Modes",
+                                subtitle: "Automate your workflows with context-aware configurations.",
+                                systemImage: "square.grid.2x2.fill"
+                            )
+                            InfoTip(
+                                "Automatically apply custom configurations based on the app/website you are using.",
+                                learnMoreURL: NexoURLs.docsAppProfiles
+                            )
+                            .padding(.top, 4)
                         }
-                        
-                        Spacer()
-                        
+
+                        Spacer(minLength: NexoSpacing.lg)
+
                         HStack(spacing: 8) {
                             Button(action: {
                                 openPanel(mode: .add)
                             }) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "plus")
-                                        .font(.system(size: 12, weight: .medium))
                                     Text("Add Power Mode")
-                                        .font(.system(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.accentColor)
-                                .cornerRadius(6)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(.nexoPrimary)
 
                             Button(action: { openReorderPanel() }) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "arrow.up.arrow.down")
-                                        .font(.system(size: 12, weight: .medium))
                                     Text("Reorder")
-                                        .font(.system(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(.primary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color(NSColor.controlBackgroundColor))
-                                .cornerRadius(6)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color(NSColor.separatorColor), lineWidth: 1)
-                                )
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(.nexoSecondary)
                         }
                     }
                 }

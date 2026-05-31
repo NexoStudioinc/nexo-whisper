@@ -47,5 +47,9 @@ struct MetricCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.thinMaterial)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.07), lineWidth: 1)
+        )
     }
 }

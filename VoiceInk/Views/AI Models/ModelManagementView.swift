@@ -43,7 +43,13 @@ struct ModelManagementView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
+                NexoHero(
+                    title: "Transcription Models",
+                    subtitle: "Choose the model that turns your voice into text, set its language and manage downloads.",
+                    systemImage: "waveform"
+                )
+
                 if SystemArchitecture.isIntelMac {
                     intelMacWarningBanner
                 }
@@ -52,7 +58,7 @@ struct ModelManagementView: View {
                 languageSelectionSection
                 availableModelsSection
             }
-            .padding(40)
+            .nexoPage()
         }
         .frame(minWidth: 600, minHeight: 500)
         .background(Color(NSColor.controlBackgroundColor))
@@ -104,26 +110,36 @@ struct ModelManagementView: View {
     }
     
     private var defaultModelSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Default Model")
-                .font(.headline)
-                .foregroundColor(.secondary)
-            Text(transcriptionModelManager.currentTranscriptionModel?.displayName ?? "No model selected")
-                .font(.title2)
-                .fontWeight(.bold)
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Default Model", systemImage: "checkmark.seal",
+                                  subtitle: "The model used for every transcription. Pick it from the list below.")
+                Divider()
+                Text(transcriptionModelManager.currentTranscriptionModel?.displayName ?? "No model selected")
+                    .font(.title2)
+                    .fontWeight(.bold)
+            }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CardBackground(isSelected: false))
-        .cornerRadius(10)
     }
 
     private var languageSelectionSection: some View {
-        LanguageSelectionView(transcriptionModelManager: transcriptionModelManager, displayMode: .full, whisperPrompt: whisperPrompt)
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Language", systemImage: "globe",
+                                  subtitle: "Set the language the model should expect, or let it detect it automatically.")
+                Divider()
+                LanguageSelectionView(transcriptionModelManager: transcriptionModelManager, displayMode: .full, whisperPrompt: whisperPrompt)
+            }
+        }
     }
     
     private var availableModelsSection: some View {
+        NexoCard {
         VStack(alignment: .leading, spacing: 16) {
+            NexoSectionHeader("Available Models", systemImage: "square.stack.3d.up",
+                              subtitle: "Browse, download and switch between transcription models. Filter by recommended, local, cloud or custom.")
+            Divider()
+
             HStack {
                 // Modern compact pill switcher
                 HStack(spacing: 12) {
@@ -266,8 +282,8 @@ struct ModelManagementView: View {
                     }
                 }
             }
-        .padding()
-    }
+        }
+        }
 
     private var localModelStorageSection: some View {
         VStack(alignment: .leading, spacing: 10) {

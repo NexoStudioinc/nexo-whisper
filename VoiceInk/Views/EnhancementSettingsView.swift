@@ -39,81 +39,102 @@ struct EnhancementSettingsView: View {
     }
 
     var body: some View {
-        Form {
-            Section {
-                Toggle(isOn: $enhancementService.isEnhancementEnabled) {
-                    HStack(spacing: 4) {
-                        Text("Enable Enhancement")
-                        InfoTip(
-                            "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc.",
-                            learnMoreURL: NexoURLs.docsRecommendedModels
+        ScrollView {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
+                NexoHero(
+                    title: "AI Enhancement",
+                    subtitle: "Run your transcription through an AI model to clean it up, reformat it or rewrite it for a specific purpose.",
+                    systemImage: "wand.and.stars"
+                )
+
+                // ── Activación del enhancement ──────────────────────────
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Enhancement", systemImage: "sparkles",
+                                          subtitle: "Turn this on to post-process every transcription with an AI model before it is pasted.") {
+                            Button {
+                                withAnimation(.smooth(duration: 0.3)) {
+                                    isEditingPrompt = false
+                                    selectedPromptForEdit = nil
+                                    isShowingSettings.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "gear")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(isShowingSettings ? .accentColor : .secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Enhancement settings")
+                        }
+                        Divider()
+
+                        Toggle(isOn: $enhancementService.isEnhancementEnabled) {
+                            HStack(spacing: 4) {
+                                Text("Enable Enhancement")
+                                InfoTip(
+                                    "AI enhancement lets you pass the transcribed audio through LLMs to post-process using different prompts suitable for different use cases like e-mails, summary, writing, etc.",
+                                    learnMoreURL: NexoURLs.docsRecommendedModels
+                                )
+                            }
+                        }
+                        .toggleStyle(.switch)
+                    }
+                }
+
+                // ── Proveedor / API key ─────────────────────────────────
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("AI Provider", systemImage: "key",
+                                          subtitle: "Choose which AI provider runs the enhancement and connect it with your API key.")
+                        Divider()
+
+                        APIKeyManagementView()
+                    }
+                }
+                .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+
+                // ── Prompts de enhancement ──────────────────────────────
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Enhancement Prompts", systemImage: "text.badge.star",
+                                          subtitle: "Pick the prompt that shapes the result (e-mail, summary, notes…). Drag to reorder, double-click to edit.") {
+                            Button {
+                                openPromptPanel()
+                                withAnimation(.smooth(duration: 0.3)) {
+                                    isEditingPrompt = true
+                                }
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 18))
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Add new prompt")
+                        }
+                        Divider()
+
+                        ReorderablePromptGrid(
+                            selectedPromptId: enhancementService.selectedPromptId,
+                            onPromptSelected: { prompt in
+                                enhancementService.setActivePrompt(prompt)
+                            },
+                            onEditPrompt: { prompt in
+                                openPromptPanel()
+                                withAnimation(.smooth(duration: 0.3)) {
+                                    selectedPromptForEdit = prompt
+                                }
+                            },
+                            onDeletePrompt: { prompt in
+                                enhancementService.deletePrompt(prompt)
+                            }
                         )
                     }
                 }
-                .toggleStyle(.switch)
-            } header: {
-                HStack {
-                    Text("General")
-                    Spacer()
-                    Button {
-                        withAnimation(.smooth(duration: 0.3)) {
-                            isEditingPrompt = false
-                            selectedPromptForEdit = nil
-                            isShowingSettings.toggle()
-                        }
-                    } label: {
-                        Image(systemName: "gear")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(isShowingSettings ? .accentColor : .secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Enhancement settings")
-                }
-            }
-
-            APIKeyManagementView()
                 .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
-
-            Section {
-                ReorderablePromptGrid(
-                    selectedPromptId: enhancementService.selectedPromptId,
-                    onPromptSelected: { prompt in
-                        enhancementService.setActivePrompt(prompt)
-                    },
-                    onEditPrompt: { prompt in
-                        openPromptPanel()
-                        withAnimation(.smooth(duration: 0.3)) {
-                            selectedPromptForEdit = prompt
-                        }
-                    },
-                    onDeletePrompt: { prompt in
-                        enhancementService.deletePrompt(prompt)
-                    }
-                )
-                .padding(.vertical, 8)
-            } header: {
-                HStack {
-                    Text("Enhancement Prompts")
-                    Spacer()
-                    Button {
-                        openPromptPanel()
-                        withAnimation(.smooth(duration: 0.3)) {
-                            isEditingPrompt = true
-                        }
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 18))
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Add new prompt")
-                }
             }
-            .opacity(enhancementService.isEnhancementEnabled ? 1.0 : 0.8)
+            .nexoPage()
         }
-        .formStyle(.grouped)
-        .scrollContentBackground(.hidden)
         .background(Color(NSColor.controlBackgroundColor))
         .slidingPanel(isPresented: .init(
             get: { isPanelOpen },

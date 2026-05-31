@@ -7367,6 +7367,606 @@
           }
         }
       }
+    },
+    "Run your transcription through an AI model to clean it up, reformat it or rewrite it for a specific purpose.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasá tu transcripción por un modelo de IA para limpiarla, reformatearla o reescribirla con un fin específico."
+          }
+        }
+      }
+    },
+    "Turn this on to post-process every transcription with an AI model before it is pasted.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activalo para post-procesar cada transcripción con un modelo de IA antes de pegarla."
+          }
+        }
+      }
+    },
+    "Choose which AI provider runs the enhancement and connect it with your API key.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí qué proveedor de IA corre la mejora y conectalo con tu API key."
+          }
+        }
+      }
+    },
+    "Pick the prompt that shapes the result (e-mail, summary, notes…). Drag to reorder, double-click to edit.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí el prompt que le da forma al resultado (mail, resumen, notas…). Arrastrá para reordenar, doble clic para editar."
+          }
+        }
+      }
+    },
+    "Choose the model that turns your voice into text, set its language and manage downloads.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí el modelo que convierte tu voz en texto, definí su idioma y gestioná las descargas."
+          }
+        }
+      }
+    },
+    "The model used for every transcription. Pick it from the list below.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El modelo que se usa en cada transcripción. Elegilo de la lista de abajo."
+          }
+        }
+      }
+    },
+    "Set the language the model should expect, or let it detect it automatically.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definí el idioma que el modelo debe esperar, o dejá que lo detecte automáticamente."
+          }
+        }
+      }
+    },
+    "Available Models": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modelos disponibles"
+          }
+        }
+      }
+    },
+    "Browse, download and switch between transcription models. Filter by recommended, local, cloud or custom.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explorá, descargá y cambiá entre modelos de transcripción. Filtrá por recomendados, locales, en la nube o propios."
+          }
+        }
+      }
+    },
+    "Your activity": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu actividad"
+          }
+        }
+      }
+    },
+    "A summary of how much you've dictated with Nexo Whisper.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un resumen de cuánto dictaste con Nexo Whisper."
+          }
+        }
+      }
+    },
+    "Choose which microphone Nexo Whisper uses to record your voice.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí qué micrófono usa Nexo Whisper para grabar tu voz."
+          }
+        }
+      }
+    },
+    "Pick how Nexo Whisper decides which input device to use.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí cómo decide Nexo Whisper qué dispositivo de entrada usar."
+          }
+        }
+      }
+    },
+    "The input device your Mac is currently using by default.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El dispositivo de entrada que tu Mac usa por defecto ahora mismo."
+          }
+        }
+      }
+    },
+    "Select the specific microphone you want to use.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccioná el micrófono específico que querés usar."
+          }
+        }
+      }
+    },
+    "Devices are used in order of priority. If a device is unavailable, the next one is tried; if none are available, the built-in microphone is used.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos se usan por orden de prioridad. Si uno no está disponible, se prueba el siguiente; si no hay ninguno, se usa el micrófono integrado."
+          }
+        }
+      }
+    },
+    "Add a device to the priority list.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregá un dispositivo a la lista de prioridad."
+          }
+        }
+      }
+    },
+    "Nexo Whisper needs these macOS permissions to record, paste and detect your shortcut.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nexo Whisper necesita estos permisos de macOS para grabar, pegar y detectar tu atajo."
+          }
+        }
+      }
+    },
+    "Required Permissions": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permisos necesarios"
+          }
+        }
+      }
+    },
+    "Grant each one in System Settings. Tap refresh after granting to update the status.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concedé cada uno en Ajustes del sistema. Tocá actualizar después de conceder para refrescar el estado."
+          }
+        }
+      }
+    },
+    "Teach Nexo Whisper your vocabulary and word replacements to improve transcription accuracy.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enseñale a Nexo Whisper tu vocabulario y reemplazos de palabras para mejorar la precisión de la transcripción."
+          }
+        }
+      }
+    },
+    "Choose what you want to manage.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí qué querés gestionar."
+          }
+        }
+      }
+    },
+    "Buy once, own forever. Unlock cloud transcription, your own AI keys and more.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprá una vez, es tuyo para siempre. Desbloqueá transcripción en la nube, tus propias API keys y más."
+          }
+        }
+      }
+    },
+    "1 Mac per license": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Mac por licencia"
+          }
+        }
+      }
+    },
+    "Enter your license key to activate this Mac.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingresá tu clave de licencia para activar esta Mac."
+          }
+        }
+      }
+    },
+    "Need another Mac?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Necesitás otra Mac?"
+          }
+        }
+      }
+    },
+    "Each license activates 1 Mac.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada licencia activa 1 Mac."
+          }
+        }
+      }
+    },
+    "Each license activates 1 Mac. To use another Mac, buy a second license. From the portal you can also deactivate this device, view invoices or request a refund.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada licencia activa 1 Mac. Para usar otra Mac, comprá una segunda licencia. Desde el portal también podés desactivar este dispositivo, ver facturas o pedir un reembolso."
+          }
+        }
+      }
+    },
+    "The free version includes everything essential to dictate text on your Mac at no cost.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La versión gratis incluye todo lo esencial para dictar texto en tu Mac sin costo."
+          }
+        }
+      }
+    },
+    "Local transcription (Whisper + Parakeet), all models": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcripción local (Whisper + Parakeet), todos los modelos"
+          }
+        }
+      }
+    },
+    "AI enhancement via local Ollama (no internet, no API key)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejora con IA vía Ollama local (sin internet, sin API key)"
+          }
+        }
+      }
+    },
+    "Dictionary + word replacements": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diccionario + reemplazos de palabras"
+          }
+        }
+      }
+    },
+    "Customizable global shortcuts": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajos globales personalizables"
+          }
+        }
+      }
+    },
+    "Pro unlocks:": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro desbloquea:"
+          }
+        }
+      }
+    },
+    "AI enhancement using your own API key (Anthropic, OpenAI, Gemini, Groq, Mistral)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejora con IA usando tu propia API key (Anthropic, OpenAI, Gemini, Groq, Mistral)"
+          }
+        }
+      }
+    },
+    "Cloud transcription (Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics, Mistral)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcripción en la nube (Groq, Deepgram, ElevenLabs, AssemblyAI, Soniox, Speechmatics, Mistral)"
+          }
+        }
+      }
+    },
+    "Power Mode (per-app modes) — auto-configure by application": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Power Mode (modos por app) — autoconfigura según la aplicación"
+          }
+        }
+      }
+    },
+    "Audio transcription (.mp3, .wav, .m4a files)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcripción de audio (archivos .mp3, .wav, .m4a)"
+          }
+        }
+      }
+    },
+    "Enhancement via local CLI (Claude Code, Codex, Antigravity, Copilot)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejora vía CLI local (Claude Code, Codex, Antigravity, Copilot)"
+          }
+        }
+      }
+    },
+    "7 extra predefined prompts (Chat, Email, Rewrite, Formal, Coding, Summary, Fun)": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 prompts predefinidos extra (Chat, Mail, Reescribir, Formal, Código, Resumen, Diversión)"
+          }
+        }
+      }
+    },
+    "Custom prompts — create your own prompts": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompts propios — creá tus propios prompts"
+          }
+        }
+      }
+    },
+    "Your Pro license is activated on this Mac.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu licencia Pro está activada en esta Mac."
+          }
+        }
+      }
+    },
+    "This license activates 1 Mac. To use another Mac, buy a second license.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta licencia activa 1 Mac. Para usar otra Mac, comprá una segunda licencia."
+          }
+        }
+      }
+    },
+    "Manage your subscription or free up this device's slot.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestioná tu suscripción o liberá el lugar de este dispositivo."
+          }
+        }
+      }
+    },
+    "Get Nexo Whisper Pro": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conseguí Nexo Whisper Pro"
+          }
+        }
+      }
+    },
+    "Configure shortcuts, recording, language and more.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurá atajos, grabación, idioma y más."
+          }
+        }
+      }
+    },
+    "The microphone used to record your dictation.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El micrófono que se usa para grabar tu dictado."
+          }
+        }
+      }
+    },
+    "Grant microphone and accessibility access so recording and pasting work.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concedé acceso al micrófono y a accesibilidad para que la grabación y el pegado funcionen."
+          }
+        }
+      }
+    },
+    "The language used for the app interface.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El idioma de la interfaz de la app."
+          }
+        }
+      }
+    },
+    "The keys you press to start and stop recording.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las teclas que apretás para arrancar y frenar la grabación."
+          }
+        }
+      }
+    },
+    "Extra keys to paste, retry or cancel a transcription.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclas extra para pegar, reintentar o cancelar una transcripción."
+          }
+        }
+      }
+    },
+    "Sounds, audio muting and how transcriptions are pasted.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonidos, silenciado de audio y cómo se pegan las transcripciones."
+          }
+        }
+      }
+    },
+    "Apply different preferences automatically depending on the active app or website.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicá preferencias distintas automáticamente según la app o el sitio web activo."
+          }
+        }
+      }
+    },
+    "The look of the recording indicator that appears while you dictate.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El aspecto del indicador de grabación que aparece mientras dictás."
+          }
+        }
+      }
+    },
+    "Newer options that are still being tested.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones nuevas que todavía están en prueba."
+          }
+        }
+      }
+    },
+    "App-wide options like the Dock icon, launch at login and updates.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones generales como el ícono del Dock, abrir al iniciar sesión y actualizaciones."
+          }
+        }
+      }
+    },
+    "Control how your transcription history and audio recordings are kept or auto-deleted.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlá cómo se guarda o se borra automáticamente tu historial de transcripciones y grabaciones."
+          }
+        }
+      }
+    },
+    "Export your settings to a file, or import them from a backup.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportá tu configuración a un archivo, o importala desde un backup."
+          }
+        }
+      }
+    },
+    "Export app logs to help troubleshoot a problem.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportá los registros de la app para ayudar a diagnosticar un problema."
+          }
+        }
+      }
+    },
+    "Your plan and activation status.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan y estado de activación."
+          }
+        }
+      }
     }
   }
 }

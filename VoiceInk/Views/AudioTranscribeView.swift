@@ -82,20 +82,15 @@ struct AudioTranscribeView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 24) {
-            // Hero / descripción del módulo
-            VStack(spacing: 8) {
-                Image(systemName: "waveform.badge.mic")
-                    .font(.system(size: 36, weight: .light))
-                    .foregroundStyle(.tint)
-                Text("Transcribe Audio")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                Text("Convert audio or video files into text. Drop the files here, pick a model, and get the transcription with optional AI enhancement.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
+            // Hero del sistema de diseño dentro de una card.
+            NexoCard {
+                NexoHero(
+                    title: "Transcribe Audio",
+                    subtitle: "Convert audio or video files into text. Drop the files here, pick a model, and get the transcription with optional AI enhancement.",
+                    systemImage: "waveform.badge.mic"
+                )
             }
+            .frame(maxWidth: NexoSpacing.contentMaxWidth)
             .padding(.top, 24)
 
             // Drop zone

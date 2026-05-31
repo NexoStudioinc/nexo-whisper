@@ -41,359 +41,412 @@ struct SettingsView: View {
     // scrolleables, estilo Settings clásico de macOS.)
 
     var body: some View {
-        Form {
-            // MARK: - Entrada de audio (atajo a vista completa)
-            Section {
-                LabeledContent(t("Current Device")) {
-                    Text(deviceManager.getDeviceName(deviceID: deviceManager.getCurrentDevice()) ?? AppText.t("System Default", language: appLanguage))
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Spacer()
-                    Button(t("Open Audio Input settings")) {
-                        NotificationCenter.default.post(
-                            name: .navigateToDestination,
-                            object: nil,
-                            userInfo: ["destination": "Audio Input"]
-                        )
-                    }
-                }
-            } header: {
-                Label(t("Audio Input"), systemImage: "mic.fill")
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: NexoSpacing.lg) {
+                NexoHero(
+                    title: "Settings",
+                    subtitle: "Configure shortcuts, recording, language and more.",
+                    systemImage: "gearshape.fill"
+                )
 
-            // MARK: - Permisos (atajo a vista completa)
-            Section {
-                HStack {
-                    Spacer()
-                    Button(t("Open Permissions")) {
-                        NotificationCenter.default.post(
-                            name: .navigateToDestination,
-                            object: nil,
-                            userInfo: ["destination": "Permissions"]
-                        )
-                    }
-                }
-            } header: {
-                Label(t("Permissions"), systemImage: "shield.lefthalf.filled")
-            }
+                // MARK: - Entrada de audio (atajo a vista completa)
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Audio Input", systemImage: "mic.fill",
+                                          subtitle: "The microphone used to record your dictation.")
+                        Divider()
 
-            // MARK: - Idioma
-            Section {
-                Picker(t("App Language"), selection: $appLanguage) {
-                    ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName).tag(language.rawValue)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: appLanguage) { _, newValue in
-                    if let language = AppLanguage(rawValue: newValue) {
-                        LocalizationManager.shared.setLanguage(language)
-                    }
-                }
-            } header: {
-                Label(t("Language"), systemImage: "globe")
-            }
-
-            // MARK: - Shortcuts
-            Section {
-                LabeledContent(t("Primary Shortcut")) {
-                    HStack(spacing: 8) {
-                        Spacer()
-                        shortcutModePicker(binding: $recordingShortcutManager.primaryRecordingShortcutMode)
-                        ShortcutRecorder(action: .primaryRecording) {
-                            recordingShortcutManager.primaryRecordingShortcut = .custom
-                            recordingShortcutManager.updateShortcutStatus()
+                        LabeledContent(t("Current Device")) {
+                            Text(deviceManager.getDeviceName(deviceID: deviceManager.getCurrentDevice()) ?? AppText.t("System Default", language: appLanguage))
+                                .foregroundStyle(.secondary)
                         }
-                        .controlSize(.small)
+                        HStack {
+                            Spacer()
+                            Button(t("Open Audio Input settings")) {
+                                NotificationCenter.default.post(
+                                    name: .navigateToDestination,
+                                    object: nil,
+                                    userInfo: ["destination": "Audio Input"]
+                                )
+                            }
+                        }
                     }
                 }
 
-                if recordingShortcutManager.secondaryRecordingShortcut != .none {
-                    LabeledContent(t("Secondary Shortcut")) {
-                        HStack(spacing: 8) {
+                // MARK: - Permisos (atajo a vista completa)
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Permissions", systemImage: "shield.lefthalf.filled",
+                                          subtitle: "Grant microphone and accessibility access so recording and pasting work.")
+                        Divider()
+
+                        HStack {
                             Spacer()
-                            shortcutModePicker(binding: $recordingShortcutManager.secondaryRecordingShortcutMode)
-                            ShortcutRecorder(action: .secondaryRecording) {
-                                recordingShortcutManager.secondaryRecordingShortcut = .custom
+                            Button(t("Open Permissions")) {
+                                NotificationCenter.default.post(
+                                    name: .navigateToDestination,
+                                    object: nil,
+                                    userInfo: ["destination": "Permissions"]
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // MARK: - Idioma
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Language", systemImage: "globe",
+                                          subtitle: "The language used for the app interface.")
+                        Divider()
+
+                        Picker(t("App Language"), selection: $appLanguage) {
+                            ForEach(AppLanguage.allCases) { language in
+                                Text(language.displayName).tag(language.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: appLanguage) { _, newValue in
+                            if let language = AppLanguage(rawValue: newValue) {
+                                LocalizationManager.shared.setLanguage(language)
+                            }
+                        }
+                    }
+                }
+
+                // MARK: - Shortcuts
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Shortcuts", systemImage: "keyboard",
+                                          subtitle: "The keys you press to start and stop recording.")
+                        Divider()
+
+                        LabeledContent(t("Primary Shortcut")) {
+                            HStack(spacing: 8) {
+                                Spacer()
+                                shortcutModePicker(binding: $recordingShortcutManager.primaryRecordingShortcutMode)
+                                ShortcutRecorder(action: .primaryRecording) {
+                                    recordingShortcutManager.primaryRecordingShortcut = .custom
+                                    recordingShortcutManager.updateShortcutStatus()
+                                }
+                                .controlSize(.small)
+                            }
+                        }
+
+                        if recordingShortcutManager.secondaryRecordingShortcut != .none {
+                            LabeledContent(t("Secondary Shortcut")) {
+                                HStack(spacing: 8) {
+                                    Spacer()
+                                    shortcutModePicker(binding: $recordingShortcutManager.secondaryRecordingShortcutMode)
+                                    ShortcutRecorder(action: .secondaryRecording) {
+                                        recordingShortcutManager.secondaryRecordingShortcut = .custom
+                                        recordingShortcutManager.updateShortcutStatus()
+                                    }
+                                    .controlSize(.small)
+                                    Button {
+                                        withAnimation { recordingShortcutManager.secondaryRecordingShortcut = .none }
+                                    } label: {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+
+                        if recordingShortcutManager.secondaryRecordingShortcut == .none {
+                            Button(t("Add Second Shortcut")) {
+                                withAnimation { recordingShortcutManager.secondaryRecordingShortcut = .custom }
+                            }
+                        }
+                    }
+                }
+
+                // MARK: - Additional Shortcuts
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Additional Shortcuts", systemImage: "command",
+                                          subtitle: "Extra keys to paste, retry or cancel a transcription.")
+                        Divider()
+
+                        LabeledContent(t("Paste Last Transcription (Original)")) {
+                            ShortcutRecorder(action: .pasteLastTranscription) {
                                 recordingShortcutManager.updateShortcutStatus()
                             }
-                            .controlSize(.small)
-                            Button {
-                                withAnimation { recordingShortcutManager.secondaryRecordingShortcut = .none }
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.secondary)
+                                .controlSize(.small)
+                        }
+
+                        LabeledContent(t("Paste Last Transcription (Enhanced)")) {
+                            ShortcutRecorder(action: .pasteLastEnhancement) {
+                                recordingShortcutManager.updateShortcutStatus()
                             }
-                            .buttonStyle(.plain)
+                                .controlSize(.small)
                         }
-                    }
-                }
 
-                if recordingShortcutManager.secondaryRecordingShortcut == .none {
-                    Button(t("Add Second Shortcut")) {
-                        withAnimation { recordingShortcutManager.secondaryRecordingShortcut = .custom }
-                    }
-                }
-            } header: {
-                Label(t("Shortcuts"), systemImage: "keyboard")
-            }
+                        LabeledContent(t("Retry Last Transcription")) {
+                            ShortcutRecorder(action: .retryLastTranscription) {
+                                recordingShortcutManager.updateShortcutStatus()
+                            }
+                                .controlSize(.small)
+                        }
 
-            // MARK: - Additional Shortcuts
-            Section {
-                LabeledContent(t("Paste Last Transcription (Original)")) {
-                    ShortcutRecorder(action: .pasteLastTranscription) {
-                        recordingShortcutManager.updateShortcutStatus()
-                    }
-                        .controlSize(.small)
-                }
+                        LabeledContent(t("Cancel Recording")) {
+                            HStack(spacing: 8) {
+                                ShortcutRecorder(
+                                    action: .cancelRecorder,
+                                    defaultShortcut: Self.defaultCancelRecordingShortcut
+                                ) {
+                                    hasCancelRecordingShortcut = true
+                                }
+                                    .id(cancelRecordingShortcutRecorderResetID)
+                                    .controlSize(.small)
 
-                LabeledContent(t("Paste Last Transcription (Enhanced)")) {
-                    ShortcutRecorder(action: .pasteLastEnhancement) {
-                        recordingShortcutManager.updateShortcutStatus()
-                    }
-                        .controlSize(.small)
-                }
+                                Button {
+                                    ShortcutStore.setShortcut(nil, for: .cancelRecorder)
+                                    hasCancelRecordingShortcut = false
+                                    cancelRecordingShortcutRecorderResetID += 1
+                                } label: {
+                                    Image(systemName: "arrow.counterclockwise")
+                                }
+                                .buttonStyle(.plain)
+                                .help(t("Reset to default"))
+                            }
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: ShortcutStore.shortcutDidChange)) { notification in
+                            guard let action = notification.object as? ShortcutAction, action == .cancelRecorder else { return }
+                            hasCancelRecordingShortcut = ShortcutStore.shortcut(for: .cancelRecorder) != nil
+                        }
 
-                LabeledContent(t("Retry Last Transcription")) {
-                    ShortcutRecorder(action: .retryLastTranscription) {
-                        recordingShortcutManager.updateShortcutStatus()
-                    }
-                        .controlSize(.small)
-                }
-
-                LabeledContent(t("Cancel Recording")) {
-                    HStack(spacing: 8) {
-                        ShortcutRecorder(
-                            action: .cancelRecorder,
-                            defaultShortcut: Self.defaultCancelRecordingShortcut
+                        // Middle-Click
+                        ExpandableSettingsRow(
+                            isExpanded: $isMiddleClickExpanded,
+                            isEnabled: $recordingShortcutManager.isMiddleClickToggleEnabled,
+                            label: "Middle-Click Recording"
                         ) {
-                            hasCancelRecordingShortcut = true
+                            LabeledContent(t("Activation Delay")) {
+                                HStack {
+                                    TextField("", value: $recordingShortcutManager.middleClickActivationDelay, formatter: {
+                                        let formatter = NumberFormatter()
+                                        formatter.minimum = 0
+                                        return formatter
+                                    }())
+                                        .textFieldStyle(.roundedBorder)
+                                        .frame(width: 60)
+                                    Text("ms")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
-                            .id(cancelRecordingShortcutRecorderResetID)
-                            .controlSize(.small)
+                    }
+                }
 
-                        Button {
-                            ShortcutStore.setShortcut(nil, for: .cancelRecorder)
-                            hasCancelRecordingShortcut = false
-                            cancelRecordingShortcutRecorderResetID += 1
+                // MARK: - Recording Feedback
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Recording Feedback", systemImage: "speaker.wave.2.fill",
+                                          subtitle: "Sounds, audio muting and how transcriptions are pasted.")
+                        Divider()
+
+                        // Sound Feedback
+                        ExpandableSettingsRow(
+                            isExpanded: $isSoundFeedbackExpanded,
+                            isEnabled: $soundManager.isEnabled,
+                            label: "Sound Feedback"
+                        ) {
+                            CustomSoundSettingsView()
+                        }
+
+                        // Mute System Audio
+                        ExpandableSettingsRow(
+                            isExpanded: $isMuteSystemExpanded,
+                            isEnabled: $mediaController.isSystemMuteEnabled,
+                            label: "Mute Audio While Recording"
+                        ) {
+                            Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
+                                Text("0s").tag(0.0)
+                                Text("1s").tag(1.0)
+                                Text("2s").tag(2.0)
+                                Text("3s").tag(3.0)
+                                Text("4s").tag(4.0)
+                                Text("5s").tag(5.0)
+                            }
+                        }
+
+                        // Keep Clipboard Content
+                        ExpandableSettingsRow(
+                            isExpanded: $isRestoreClipboardExpanded,
+                            isEnabled: $restoreClipboardAfterPaste,
+                            label: "Keep Clipboard Content",
+                            infoMessage: t("Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
+                        ) {
+                            Picker(t("Restore Delay"), selection: $clipboardRestoreDelay) {
+                                Text("250ms").tag(0.25)
+                                Text("500ms").tag(0.5)
+                                Text("1s").tag(1.0)
+                                Text("2s").tag(2.0)
+                                Text("3s").tag(3.0)
+                                Text("4s").tag(4.0)
+                                Text("5s").tag(5.0)
+                            }
+                        }
+
+                        // Paste Method
+                        Picker(selection: $pasteMethodRawValue) {
+                            ForEach(PasteMethod.allCases) { method in
+                                Text(method.displayName).tag(method.rawValue)
+                            }
                         } label: {
-                            Image(systemName: "arrow.counterclockwise")
+                            HStack(spacing: 4) {
+                                Text(t("Paste Method"))
+                                InfoTip("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly.")
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .help(t("Reset to default"))
+                        .pickerStyle(.menu)
+                        .onChange(of: pasteMethodRawValue) { _, newValue in
+                            guard let method = PasteMethod(rawValue: newValue) else {
+                                pasteMethodRawValue = PasteMethod.standard.rawValue
+                                return
+                            }
+                            PasteMethod.setCurrent(method)
+                        }
                     }
                 }
-                .onReceive(NotificationCenter.default.publisher(for: ShortcutStore.shortcutDidChange)) { notification in
-                    guard let action = notification.object as? ShortcutAction, action == .cancelRecorder else { return }
-                    hasCancelRecordingShortcut = ShortcutStore.shortcut(for: .cancelRecorder) != nil
+
+                // MARK: - Power Mode
+                PowerModeSection()
+
+                // MARK: - Interface
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Interface", systemImage: "rectangle.on.rectangle",
+                                          subtitle: "The look of the recording indicator that appears while you dictate.")
+                        Divider()
+
+                        Picker(t("Recorder Style"), selection: $recorderUIManager.recorderType) {
+                            Text("Notch").tag("notch")
+                            Text("Mini").tag("mini")
+                        }
+                        .pickerStyle(.segmented)
+                    }
                 }
 
-                // Middle-Click
-                ExpandableSettingsRow(
-                    isExpanded: $isMiddleClickExpanded,
-                    isEnabled: $recordingShortcutManager.isMiddleClickToggleEnabled,
-                    label: "Middle-Click Recording"
-                ) {
-                    LabeledContent(t("Activation Delay")) {
+                // MARK: - Experimental
+                ExperimentalSection()
+
+                // MARK: - Magic Selection (PREVIEW)
+                // MagicSelectionSection trae su propio header ("Magic Aura" +
+                // PREVIEW), por eso va directo en la NexoCard sin doble header.
+                NexoCard {
+                    MagicSelectionSection()
+                }
+
+                // MARK: - General
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("General", systemImage: "gearshape.fill",
+                                          subtitle: "App-wide options like the Dock icon, launch at login and updates.")
+                        Divider()
+
+                        Toggle(t("Hide Dock Icon"), isOn: $menuBarManager.isMenuBarOnly)
+
+                        LaunchAtLogin.Toggle("Launch at Login")
+
+                        Toggle(t("Auto-check Updates"), isOn: Binding(
+                            get: { updaterViewModel.automaticallyChecksForUpdates },
+                            set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
+                        ))
+
                         HStack {
-                            TextField("", value: $recordingShortcutManager.middleClickActivationDelay, formatter: {
-                                let formatter = NumberFormatter()
-                                formatter.minimum = 0
-                                return formatter
-                            }())
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 60)
-                            Text("ms")
-                                .foregroundColor(.secondary)
+                            Button(t("Check for Updates")) {
+                                updaterViewModel.checkForUpdates()
+                            }
+                            .disabled(!updaterViewModel.canCheckForUpdates)
+
+                            Button(t("Reset Onboarding")) {
+                                showResetOnboardingAlert = true
+                            }
                         }
                     }
                 }
-            } header: {
-                Label(t("Additional Shortcuts"), systemImage: "command")
+
+                // MARK: - Privacy
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Privacy", systemImage: "lock.fill",
+                                          subtitle: "Control how your transcription history and audio recordings are kept or auto-deleted.")
+                        Divider()
+
+                        AudioCleanupSettingsView()
+                    }
+                }
+
+                // MARK: - Backup
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Backup", systemImage: "arrow.down.doc.fill",
+                                          subtitle: "Export your settings to a file, or import them from a backup.")
+                        Divider()
+
+                        LabeledContent(t("Export Settings")) {
+                            Button(t("Export")) {
+                                ImportExportService.shared.exportSettings(
+                                    enhancementService: enhancementService,
+                                    recordingShortcutManager: recordingShortcutManager,
+                                    menuBarManager: menuBarManager,
+                                    mediaController: mediaController,
+                                    playbackController: playbackController,
+                                    soundManager: soundManager,
+                                    recorderUIManager: recorderUIManager,
+                                    modelContext: modelContext
+                                )
+                            }
+                        }
+
+                        LabeledContent(t("Import Settings")) {
+                            Button(t("Import")) {
+                                ImportExportService.shared.importSettings(
+                                    enhancementService: enhancementService,
+                                    recordingShortcutManager: recordingShortcutManager,
+                                    menuBarManager: menuBarManager,
+                                    mediaController: mediaController,
+                                    playbackController: playbackController,
+                                    soundManager: soundManager,
+                                    recorderUIManager: recorderUIManager,
+                                    modelContext: modelContext,
+                                    transcriptionModelManager: transcriptionModelManager
+                                )
+                            }
+                        }
+                        Text(t("Export all settings, or choose specific categories when importing a backup."))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                // MARK: - Diagnostics
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("Diagnostics", systemImage: "wrench.and.screwdriver.fill",
+                                          subtitle: "Export app logs to help troubleshoot a problem.")
+                        Divider()
+
+                        DiagnosticsSettingsView()
+                    }
+                }
+
+                // MARK: - License
+                NexoCard {
+                    VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                        NexoSectionHeader("License", systemImage: "checkmark.seal.fill",
+                                          subtitle: "Your plan and activation status.")
+                        Divider()
+
+                        LicenseSettingsSection()
+                    }
+                }
             }
-
-            // MARK: - Recording Feedback
-            Section {
-                // Sound Feedback
-                ExpandableSettingsRow(
-                    isExpanded: $isSoundFeedbackExpanded,
-                    isEnabled: $soundManager.isEnabled,
-                    label: "Sound Feedback"
-                ) {
-                    CustomSoundSettingsView()
-                }
-
-                // Mute System Audio
-                ExpandableSettingsRow(
-                    isExpanded: $isMuteSystemExpanded,
-                    isEnabled: $mediaController.isSystemMuteEnabled,
-                    label: "Mute Audio While Recording"
-                ) {
-                    Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
-                        Text("0s").tag(0.0)
-                        Text("1s").tag(1.0)
-                        Text("2s").tag(2.0)
-                        Text("3s").tag(3.0)
-                        Text("4s").tag(4.0)
-                        Text("5s").tag(5.0)
-                    }
-                }
-
-                // Keep Clipboard Content
-                ExpandableSettingsRow(
-                    isExpanded: $isRestoreClipboardExpanded,
-                    isEnabled: $restoreClipboardAfterPaste,
-                    label: "Keep Clipboard Content",
-                    infoMessage: t("Nexo Whisper temporarily uses the clipboard to paste transcription. When enabled, it restores your previous clipboard content after the selected delay. When disabled, the pasted transcription stays on your clipboard.")
-                ) {
-                    Picker(t("Restore Delay"), selection: $clipboardRestoreDelay) {
-                        Text("250ms").tag(0.25)
-                        Text("500ms").tag(0.5)
-                        Text("1s").tag(1.0)
-                        Text("2s").tag(2.0)
-                        Text("3s").tag(3.0)
-                        Text("4s").tag(4.0)
-                        Text("5s").tag(5.0)
-                    }
-                }
-
-                // Paste Method
-                Picker(selection: $pasteMethodRawValue) {
-                    ForEach(PasteMethod.allCases) { method in
-                        Text(method.displayName).tag(method.rawValue)
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(t("Paste Method"))
-                        InfoTip("Default uses simulated Cmd+V key events. AppleScript can help when custom keyboard layouts do not paste correctly.")
-                    }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: pasteMethodRawValue) { _, newValue in
-                    guard let method = PasteMethod(rawValue: newValue) else {
-                        pasteMethodRawValue = PasteMethod.standard.rawValue
-                        return
-                    }
-                    PasteMethod.setCurrent(method)
-                }
-            } header: {
-                Label(t("Recording Feedback"), systemImage: "speaker.wave.2.fill")
-            }
-
-            // MARK: - Power Mode (mantiene su Section interno propio)
-            PowerModeSection()
-
-            // MARK: - Interface
-            Section {
-                Picker(t("Recorder Style"), selection: $recorderUIManager.recorderType) {
-                    Text("Notch").tag("notch")
-                    Text("Mini").tag("mini")
-                }
-                .pickerStyle(.segmented)
-
-            } header: {
-                Label(t("Interface"), systemImage: "rectangle.on.rectangle")
-            }
-
-            // MARK: - Experimental (mantiene su Section interno propio)
-            ExperimentalSection()
-
-            // MARK: - Magic Selection (PREVIEW — F1, sin recorder integration aún)
-            MagicSelectionSection()
-
-            // MARK: - General
-            Section {
-                Toggle(t("Hide Dock Icon"), isOn: $menuBarManager.isMenuBarOnly)
-
-                LaunchAtLogin.Toggle("Launch at Login")
-
-                Toggle(t("Auto-check Updates"), isOn: Binding(
-                    get: { updaterViewModel.automaticallyChecksForUpdates },
-                    set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
-                ))
-
-                HStack {
-                    Button(t("Check for Updates")) {
-                        updaterViewModel.checkForUpdates()
-                    }
-                    .disabled(!updaterViewModel.canCheckForUpdates)
-
-                    Button(t("Reset Onboarding")) {
-                        showResetOnboardingAlert = true
-                    }
-                }
-            } header: {
-                Label(t("General"), systemImage: "gearshape.fill")
-            }
-
-            // MARK: - Privacy
-            // Nota: Section(isExpanded:content:header:) no soporta footer.
-            // El texto del footer original se renderiza ahora dentro del content.
-            Section {
-                AudioCleanupSettingsView()
-                Text(t("Control how Nexo Whisper handles your transcription data and audio recordings."))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } header: {
-                Label(t("Privacy"), systemImage: "lock.fill")
-            }
-
-            // MARK: - Backup
-            Section {
-                LabeledContent(t("Export Settings")) {
-                    Button(t("Export")) {
-                        ImportExportService.shared.exportSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            soundManager: soundManager,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext
-                        )
-                    }
-                }
-
-                LabeledContent(t("Import Settings")) {
-                    Button(t("Import")) {
-                        ImportExportService.shared.importSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            soundManager: soundManager,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext,
-                            transcriptionModelManager: transcriptionModelManager
-                        )
-                    }
-                }
-                Text(t("Export all settings, or choose specific categories when importing a backup."))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } header: {
-                Label(t("Backup"), systemImage: "arrow.down.doc.fill")
-            }
-
-            // MARK: - Diagnostics
-            Section {
-                DiagnosticsSettingsView()
-            } header: {
-                Label(t("Diagnostics"), systemImage: "wrench.and.screwdriver.fill")
-            }
-
-            // MARK: - License
-            Section {
-                LicenseSettingsSection()
-            } header: {
-                Label(t("License"), systemImage: "checkmark.seal.fill")
-            }
+            .nexoPage(maxWidth: 720)
         }
-        .formStyle(.grouped)
-        .scrollContentBackground(.hidden)
         .background(Color(NSColor.controlBackgroundColor))
         .alert(t("Reset Onboarding"), isPresented: $showResetOnboardingAlert) {
             Button(t("Cancel"), role: .cancel) { }
@@ -513,23 +566,27 @@ struct PowerModeSection: View {
     }
 
     var body: some View {
-        Section {
-            ExpandableSettingsRow(
-                isExpanded: $isExpanded,
-                isEnabled: toggleBinding,
-                label: "Power Mode",
-                infoMessage: t("Apply custom settings based on active app or website."),
-                infoURL: NexoURLs.docsAppProfiles
-            ) {
-                Toggle(isOn: $powerModePersistSettings) {
-                    HStack(spacing: 4) {
-                        Text(t("Persist Configured Preferences"))
-                        InfoTip("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates.")
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Power Mode", systemImage: "bolt.fill",
+                                  subtitle: "Apply different preferences automatically depending on the active app or website.")
+                Divider()
+
+                ExpandableSettingsRow(
+                    isExpanded: $isExpanded,
+                    isEnabled: toggleBinding,
+                    label: "Power Mode",
+                    infoMessage: t("Apply custom settings based on active app or website."),
+                    infoURL: NexoURLs.docsAppProfiles
+                ) {
+                    Toggle(isOn: $powerModePersistSettings) {
+                        HStack(spacing: 4) {
+                            Text(t("Persist Configured Preferences"))
+                            InfoTip("When enabled, Power Mode preferences stay active after you stop recording instead of reverting to your original preferences. They will only change when a different Power Mode activates.")
+                        }
                     }
                 }
             }
-        } header: {
-            Text(t("Power Mode"))
         }
         .alert(t("Power Mode Still Active"), isPresented: $showDisableAlert) {
             Button(t("Got it"), role: .cancel) { }
@@ -569,24 +626,28 @@ struct ExperimentalSection: View {
     }
 
     var body: some View {
-        Section {
-            ExpandableSettingsRow(
-                isExpanded: $isPauseMediaExpanded,
-                isEnabled: $playbackController.isPauseMediaEnabled,
-                label: "Pause Media While Recording",
-                infoMessage: t("Pauses playing media when recording starts and resumes when done.")
-            ) {
-                Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
-                    Text("0s").tag(0.0)
-                    Text("1s").tag(1.0)
-                    Text("2s").tag(2.0)
-                    Text("3s").tag(3.0)
-                    Text("4s").tag(4.0)
-                    Text("5s").tag(5.0)
+        NexoCard {
+            VStack(alignment: .leading, spacing: NexoSpacing.md) {
+                NexoSectionHeader("Experimental", systemImage: "flask.fill",
+                                  subtitle: "Newer options that are still being tested.")
+                Divider()
+
+                ExpandableSettingsRow(
+                    isExpanded: $isPauseMediaExpanded,
+                    isEnabled: $playbackController.isPauseMediaEnabled,
+                    label: "Pause Media While Recording",
+                    infoMessage: t("Pauses playing media when recording starts and resumes when done.")
+                ) {
+                    Picker(t("Resume Delay"), selection: $mediaController.audioResumptionDelay) {
+                        Text("0s").tag(0.0)
+                        Text("1s").tag(1.0)
+                        Text("2s").tag(2.0)
+                        Text("3s").tag(3.0)
+                        Text("4s").tag(4.0)
+                        Text("5s").tag(5.0)
+                    }
                 }
             }
-        } header: {
-            Text(t("Experimental"))
         }
     }
 }
