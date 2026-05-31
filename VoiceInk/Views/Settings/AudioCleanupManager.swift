@@ -131,6 +131,9 @@ class AudioCleanupManager {
 
                 if deletedCount > 0 {
                     try modelContext.save()
+                    // Avisa al Historial para que refresque y deje de mostrar
+                    // el audio de los items limpiados.
+                    NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
                 }
             }
         } catch {
@@ -167,6 +170,9 @@ class AudioCleanupManager {
 
                 if deletedCount > 0 || errorCount > 0 {
                     try? modelContext.save()
+                }
+                if deletedCount > 0 {
+                    NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
                 }
 
                 return (deletedCount, errorCount)

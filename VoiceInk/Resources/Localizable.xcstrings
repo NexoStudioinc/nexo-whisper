@@ -7967,6 +7967,16 @@
           }
         }
       }
+    },
+    "No audio files to delete.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay audios para borrar."
+          }
+        }
+      }
     }
   }
 }

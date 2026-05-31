@@ -145,6 +145,14 @@ struct InlineHistoryView: View {
                 }
             }
         }
+        // Refresca cuando una limpieza (Privacidad) borra transcripciones/audios,
+        // así el historial no queda mostrando items ya eliminados.
+        .onReceive(NotificationCenter.default.publisher(for: .transcriptionDeleted)) { _ in
+            Task {
+                await resetPagination()
+                await loadInitialContent()
+            }
+        }
     }
 
     // MARK: - Top Bar

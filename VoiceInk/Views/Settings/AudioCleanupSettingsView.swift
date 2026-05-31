@@ -98,21 +98,19 @@ struct AudioCleanupSettingsView: View {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isTranscriptExpanded = true
                     }
-                    AudioCleanupManager.shared.stopAutomaticCleanup()
                 } else {
                     isTranscriptExpanded = false
-                    if isAudioCleanupEnabled {
-                        AudioCleanupManager.shared.startAutomaticCleanup(modelContext: modelContext)
-                    }
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     isHandlingTranscriptToggle = false
                 }
             }
 
-            // Audio cleanup - only show if transcript cleanup is disabled
-            if !isTranscriptionCleanupEnabled {
-                VStack(alignment: .leading, spacing: 0) {
+            Divider().opacity(0.4)
+
+            // Audio cleanup (independiente del borrado de transcripciones: borra
+            // solo el archivo de audio y conserva el texto). Siempre visible.
+            VStack(alignment: .leading, spacing: 0) {
                     HStack {
                         Toggle(isOn: $isAudioCleanupEnabled) {
                             HStack(spacing: 4) {
@@ -142,6 +140,7 @@ struct AudioCleanupSettingsView: View {
                     if isAudioCleanupEnabled && isAudioExpanded {
                         VStack(alignment: .leading, spacing: 8) {
                             Picker("Keep Audio For", selection: $audioRetentionPeriod) {
+                                Text("Immediately").tag(0)
                                 Text("1 day").tag(1)
                                 Text("3 days").tag(3)
                                 Text("7 days").tag(7)
@@ -190,6 +189,8 @@ struct AudioCleanupSettingsView: View {
                 } message: {
                     if cleanupInfo.fileCount > 0 {
                         Text("This will delete \(cleanupInfo.fileCount) audio files (\(AudioCleanupManager.shared.formatFileSize(cleanupInfo.totalSize))).")
+                    } else if audioRetentionPeriod == 0 {
+                        Text("No audio files to delete.")
                     } else {
                         Text("No audio files found older than \(audioRetentionPeriod) day\(audioRetentionPeriod > 1 ? "s" : "").")
                     }
@@ -209,14 +210,15 @@ struct AudioCleanupSettingsView: View {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             isAudioExpanded = true
                         }
+                        AudioCleanupManager.shared.startAutomaticCleanup(modelContext: modelContext)
                     } else {
                         isAudioExpanded = false
+                        AudioCleanupManager.shared.stopAutomaticCleanup()
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         isHandlingAudioToggle = false
                     }
                 }
-            }
         }
     }
 }

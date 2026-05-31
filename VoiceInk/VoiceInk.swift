@@ -346,8 +346,10 @@ struct VoiceInkApp: App {
                             }
                         }
 
-                        // Start the automatic audio cleanup process only if transcript cleanup is not enabled
-                        if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {
+                        // Arranca el auto-borrado de audio según su propio toggle
+                        // (independiente del borrado de transcripciones — ahora
+                        // son dos opciones separadas en Privacidad).
+                        if UserDefaults.standard.bool(forKey: "IsAudioCleanupEnabled") {
                             audioCleanupManager.startAutomaticCleanup(modelContext: container.mainContext)
                         }
 
