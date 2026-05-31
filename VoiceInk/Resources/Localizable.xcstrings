@@ -7977,6 +7977,186 @@
           }
         }
       }
+    },
+    "Enable Magic Clipboard": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar Magic Clipboard"
+          }
+        }
+      }
+    },
+    "A clean, Spotlight-style clipboard history: search what you copied and paste it back in one tap.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un historial de portapapeles limpio estilo Spotlight: buscá lo que copiaste y volvé a pegarlo en un toque."
+          }
+        }
+      }
+    },
+    "Shortcut": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajo"
+          }
+        }
+      }
+    },
+    "The key you press to open the clipboard history.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tecla que apretás para abrir el historial del portapapeles."
+          }
+        }
+      }
+    },
+    "Open clipboard": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir portapapeles"
+          }
+        }
+      }
+    },
+    "Press it anywhere: a clean panel appears with everything you copied, plus an emoji picker.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apretala en cualquier lado: aparece un panel limpio con todo lo que copiaste, más un selector de emojis."
+          }
+        }
+      }
+    },
+    "What gets captured": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué se captura"
+          }
+        }
+      }
+    },
+    "Choose which types of content the history keeps.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegí qué tipos de contenido guarda el historial."
+          }
+        }
+      }
+    },
+    "Capture images": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capturar imágenes"
+          }
+        }
+      }
+    },
+    "Turn off to keep only text in the history.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivá para guardar solo texto en el historial."
+          }
+        }
+      }
+    },
+    "%lld items in history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ítems en el historial"
+          }
+        }
+      }
+    },
+    "Enable Magic Clipboard to set its shortcut and what it captures.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activá Magic Clipboard para configurar su atajo y qué captura."
+          }
+        }
+      }
+    },
+    "Search emoji…": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar emoji…"
+          }
+        }
+      }
+    },
+    "Search what you copied…": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar lo que copiaste…"
+          }
+        }
+      }
+    },
+    "Nothing copied yet": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no copiaste nada"
+          }
+        }
+      }
+    },
+    "Copy something and it'll show up here.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiá algo y va a aparecer acá."
+          }
+        }
+      }
+    },
+    "No matches": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin coincidencias"
+          }
+        }
+      }
+    },
+    "Try another search.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probá otra búsqueda."
+          }
+        }
+      }
     }
   }
 }

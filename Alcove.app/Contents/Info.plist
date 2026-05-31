@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>25E246</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Alcove</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.henrikruscon.Alcove</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Alcove</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.7.2</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.henrikruscon.Alcove</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>alcove</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>188</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string>25E5207k</string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>DTPlatformVersion</key>
+	<string>26.4</string>
+	<key>DTSDKBuild</key>
+	<string>25E5207k</string>
+	<key>DTSDKName</key>
+	<string>macosx26.4</string>
+	<key>DTXcode</key>
+	<string>2640</string>
+	<key>DTXcodeBuild</key>
+	<string>17E5159k</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>MDItemKeywords</key>
+	<string>dynamic,island,notch,media,controls,hud,interface</string>
+	<key>NSAccentColorName</key>
+	<string>AccentColor</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Alcove needs your permission to control and display your playing music.</string>
+	<key>NSAppleScriptEnabled</key>
+	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Alcove needs your permission to visualize your connected audio devices.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Alcove needs your permission to show your upcoming events.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Alcove needs your permission to validate your license.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>Alcove needs your permission to determine your location.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

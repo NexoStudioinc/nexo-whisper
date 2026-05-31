@@ -291,6 +291,8 @@ enum ShortcutMigration {
             return nil
         case .magicSelection:
             return nil // No tiene legacy key — feature nuevo en v1.81
+        case .magicClipboard:
+            return nil // Feature nuevo — sin legacy key
         }
     }
 

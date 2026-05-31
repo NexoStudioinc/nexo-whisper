@@ -294,6 +294,8 @@ class RecordingShortcutManager: ObservableObject {
             DictionaryQuickAddManager.shared.toggle(modelContainer: engine.modelContext.container)
         case .magicSelection:
             MagicSelectionService.shared.triggerFromHotkey()
+        case .magicClipboard:
+            MagicClipboardService.shared.togglePanel()
         default:
             break
         }

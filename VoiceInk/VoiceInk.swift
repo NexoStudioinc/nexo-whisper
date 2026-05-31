@@ -176,6 +176,8 @@ struct VoiceInkApp: App {
         Task { @MainActor in
             MagicSelectionService.shared.configure(engine: engine)
             MagicSelectionService.shared.startIfNeeded()
+            // Magic Clipboard: arranca el monitor del portapapeles si está activado.
+            MagicClipboardService.shared.startIfEnabled()
         }
 
         let prewarmService = ModelPrewarmService(
