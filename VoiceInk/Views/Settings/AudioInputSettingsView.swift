@@ -21,7 +21,7 @@ struct AudioInputSettingsView: View {
             }
             .nexoPage()
         }
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var heroSection: some View {

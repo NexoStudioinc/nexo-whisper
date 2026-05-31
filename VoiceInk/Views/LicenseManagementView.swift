@@ -28,7 +28,7 @@ struct LicenseManagementView: View {
             }
             .nexoPage()
         }
-        .background(Color(NSColor.controlBackgroundColor))
+        .background(Color(NSColor.windowBackgroundColor))
         .sheet(isPresented: $showPricingSheet) {
             ProPricingSheet(isPresented: $showPricingSheet)
         }
