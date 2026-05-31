@@ -61,7 +61,7 @@ struct ModelManagementView: View {
             .nexoPage()
         }
         .frame(minWidth: 600, minHeight: 500)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.underPageBackgroundColor))
         .slidingPanel(isPresented: $isShowingSettings, width: settingsPanelWidth) {
             settingsPanelContent
         }

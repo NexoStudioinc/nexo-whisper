@@ -135,7 +135,7 @@ struct EnhancementSettingsView: View {
             }
             .nexoPage()
         }
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.underPageBackgroundColor))
         .slidingPanel(isPresented: .init(
             get: { isPanelOpen },
             set: { newValue in

@@ -447,7 +447,7 @@ struct SettingsView: View {
             }
             .nexoPage(maxWidth: 720)
         }
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.underPageBackgroundColor))
         .alert(t("Reset Onboarding"), isPresented: $showResetOnboardingAlert) {
             Button(t("Cancel"), role: .cancel) { }
             Button(t("Reset"), role: .destructive) {

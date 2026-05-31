@@ -346,7 +346,7 @@ struct PermissionsView: View {
             }
             .nexoPage()
         }
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.underPageBackgroundColor))
         .onAppear {
             permissionManager.checkAllPermissions()
         }

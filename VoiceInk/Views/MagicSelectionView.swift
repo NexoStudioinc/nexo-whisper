@@ -54,6 +54,7 @@ struct MagicSelectionView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Color(NSColor.underPageBackgroundColor))
     }
 
     // ── Encabezado ──────────────────────────────────────────────────────
