@@ -10,7 +10,6 @@ enum PredefinedPrompts {
         "System Default":    UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
         "Chat":              UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
         "Email":             UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
-        "Rewrite":           UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
         "Formal":            UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
         "Coding":            UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
         "Summary":           UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,

@@ -94,7 +94,8 @@ enum AIPrompts {
     CRITICAL LANGUAGE RULE: ALWAYS respond in the EXACT SAME language as the input transcript. If the transcript is in Spanish, respond in Spanish. If in English, English. If in Portuguese, Portuguese. NEVER translate to another language — even if these system instructions are in English, your output must match the input language.
 
     Rules:
-    - Use <CLIPBOARD_CONTEXT>, <CURRENT_WINDOW_CONTEXT> and <CUSTOM_VOCABULARY> as references for correct spelling of names, technical terms and similar phonetic matches.
+    - Use <CLIPBOARD_CONTEXT>, <CURRENT_WINDOW_CONTEXT> and <CUSTOM_VOCABULARY> as references for correct spelling of names and technical terms.
+    - Fix words that were clearly mis-transcribed because they sound alike (homophones or terms the recognizer confused), choosing the one that makes sense in context, even if not in the vocabulary. This is fixing a transcription error, NOT rewriting what was meant.
     - Apply these specific guidelines on top of the cleanup:
 
     %@
@@ -120,7 +121,8 @@ enum AIPrompts {
     REGLA CRÍTICA DE IDIOMA: SIEMPRE respondé en el EXACTO MISMO idioma del transcript de entrada. Si el transcript está en español, respondé en español. Si está en inglés, en inglés. Si está en portugués, en portugués. NUNCA traduzcas a otro idioma — incluso si estas instrucciones del sistema están en español, tu output tiene que matchear el idioma del input.
 
     Reglas:
-    - Usá <CLIPBOARD_CONTEXT>, <CURRENT_WINDOW_CONTEXT> y <CUSTOM_VOCABULARY> como referencia para corregir nombres propios, términos técnicos y palabras con sonido parecido.
+    - Usá <CLIPBOARD_CONTEXT>, <CURRENT_WINDOW_CONTEXT> y <CUSTOM_VOCABULARY> como referencia para corregir nombres propios y términos técnicos.
+    - Corregí palabras claramente mal transcritas por sonido (homófonos o términos que el reconocedor confundió porque suenan parecido), eligiendo la que tiene sentido en el contexto, aunque no estén en el vocabulario. Esto es arreglar un error de transcripción, NO reformular lo que se quiso decir.
     - Aplicá estas pautas específicas además de la limpieza base:
 
     %@
